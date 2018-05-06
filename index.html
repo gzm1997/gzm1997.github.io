@@ -229,6 +229,135 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/06/多维数组最短路径问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gzm1997">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/06/多维数组最短路径问题/" itemprop="url">Untitled</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-06T16:18:02+08:00">
+                2018-05-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="多维数组最短路径问题"><a href="#多维数组最短路径问题" class="headerlink" title="多维数组最短路径问题"></a>多维数组最短路径问题</h1><p>标签： 算法</p>
+<hr>
+<p>题目<br>给定一个矩阵m，从左上角开始每次只能向右或者向下走，最后到达右下角的位置，路径上所有的数字累加起来就是路径和，返回所有路径中最小的路径和。<br>例子：<br>给定m如下：<br>1 3 5 9<br>8 1 3 4<br>5 0 6 1<br>8 8 4 0<br>路径1,3,1,0,6,1,0是所有路径中路径和最小的，所以返回12。</p>
+<blockquote>
+<p>一般这种这种问题可以通过动态规划来解决，因为去年没选算法导论，一直对动态规划这个概念理解不是很清楚</p>
+</blockquote>
+<p>维基百科上的解释为<br>动态规划（英语：Dynamic programming，简称DP）是一种在数学、管理科学、计算机科学、经济学和生物信息学中使用的，通过把原问题分解为相对简单的子问题的方式求解复杂问题的方法。</p>
+<p>以往的斐波那契数列和背包问题都是用到动态规划的思想，只是一直知道这就是动态规划而已。</p>
+<p>最短路径问题：<br>设一个数组dp[n][n]，用来存从0，0点到这一点的最短路径和，对于每一点dp[i][j]的值，它等于min(dp[i-1][j], dp[i][j-1]) + arr[i][j]，特别的，dp[0][0] = arr[0][0]，对于第一行，dp[0][j] = dp[0][j - 1] + arr[0][j]对于第一列，dp[i][0] = dp[i-1][0] + arr[i][0]</p>
+<p>代码<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line">arr = sys.stdin.readline().strip().split(<span class="string">" "</span>)</span><br><span class="line">arr = [[int(i) <span class="keyword">for</span> i <span class="keyword">in</span> arr]]</span><br><span class="line"></span><br><span class="line">num = len(arr[<span class="number">0</span>])</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(num<span class="number">-1</span>):</span><br><span class="line">    new_arr = sys.stdin.readline().strip().split(<span class="string">" "</span>)</span><br><span class="line">    new_arr = [int(i) <span class="keyword">for</span> i <span class="keyword">in</span> new_arr]</span><br><span class="line">    arr.append(new_arr)</span><br><span class="line"></span><br><span class="line">dp = [[<span class="number">0</span> <span class="keyword">for</span> i <span class="keyword">in</span> range(num)] <span class="keyword">for</span> i <span class="keyword">in</span> range(num)]</span><br><span class="line">dp[<span class="number">0</span>][<span class="number">0</span>] = arr[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,num):</span><br><span class="line">	dp[<span class="number">0</span>][i] = dp[<span class="number">0</span>][i<span class="number">-1</span>] + arr[<span class="number">0</span>][i]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,num):</span><br><span class="line">	dp[i][<span class="number">0</span>] = dp[<span class="number">0</span>][i<span class="number">-1</span>] + arr[<span class="number">0</span>][i]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,num):</span><br><span class="line">	<span class="keyword">for</span> j <span class="keyword">in</span> range(<span class="number">1</span>,num):</span><br><span class="line">		dp[i][j] = min(dp[i<span class="number">-1</span>][j], dp[i][j<span class="number">-1</span>]) + arr[i][j]</span><br><span class="line"></span><br><span class="line">print(dp[num<span class="number">-1</span>][num<span class="number">-1</span>])</span><br></pre></td></tr></table></figure></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -588,7 +717,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
