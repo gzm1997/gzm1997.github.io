@@ -3,16 +3,22 @@
 <head>
   <meta charset="utf-8">
   
-  <title>flask包调用中的的路径问题 | Hexo</title>
+  <title>Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="article">
-<meta property="og:title" content="flask包调用中的的路径问题">
+  <meta name="description" content="flask包调用中的的路径问题标签： flask深入学习  前言 这篇短文写在我的腾讯一面搞砸之后，这次面试让我深刻认识到我一直是一个很功利的人。总结了一下一共有几个要点：  看需求办事，有什么需求谷歌什么，查看文档相关部分，而其他的部分置之不理，全然没有深入学习的决心 对一个框架没有深入了解，仅仅止步于工具化，也没有对框架有更深层的了解，这让我很惭愧 做事没有从工程层面来思考问题，仅仅从个人角度">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
 <meta property="og:url" content="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="flask包调用中的的路径问题标签： flask深入学习  前言 这篇短文写在我的腾讯一面搞砸之后，这次面试让我深刻认识到我一直是一个很功利的人。总结了一下一共有几个要点：  看需求办事，有什么需求谷歌什么，查看文档相关部分，而其他的部分置之不理，全然没有深入学习的决心 对一个框架没有深入了解，仅仅止步于工具化，也没有对框架有更深层的了解，这让我很惭愧 做事没有从工程层面来思考问题，仅仅从个人角度">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-05-06T08:00:53.416Z">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/pjq99hklds5g8hdm90oqgvk6/image_1c8h30e029l51fi92jdv9f1rbt9.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/ymyj8prm5y05y2psgjni1ct9/image_1c8h31ai6r1hidf187l10fo6q6m.png">
+<meta property="og:updated_time" content="2018-05-06T08:02:29.222Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="flask包调用中的的路径问题">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="flask包调用中的的路径问题标签： flask深入学习  前言 这篇短文写在我的腾讯一面搞砸之后，这次面试让我深刻认识到我一直是一个很功利的人。总结了一下一共有几个要点：  看需求办事，有什么需求谷歌什么，查看文档相关部分，而其他的部分置之不理，全然没有深入学习的决心 对一个框架没有深入了解，仅仅止步于工具化，也没有对框架有更深层的了解，这让我很惭愧 做事没有从工程层面来思考问题，仅仅从个人角度">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/pjq99hklds5g8hdm90oqgvk6/image_1c8h30e029l51fi92jdv9f1rbt9.png">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -230,7 +236,7 @@
   
     <div class="article-meta">
       <a href="/2018/05/06/flask包调用中的的路径问题/" class="article-date">
-      <time datetime="2018-05-06T08:00:53.000Z" itemprop="datePublished">2018-05-06</time>
+      <time datetime="2018-05-06T08:00:53.415Z" itemprop="datePublished">2018-05-06</time>
 </a>
     </div>
   
@@ -239,28 +245,70 @@
       <input type="hidden" class="isFancy" />
     
     
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      flask包调用中的的路径问题
-    </h1>
-  
-
-      </header>
-      
-      <div class="article-info article-info-post">
-        
-
-        
-        <div class="clearfix"></div>
-      </div>
-      
-    
     <div class="article-entry" itemprop="articleBody">
       
           
-        
+        <h1 id="flask包调用中的的路径问题"><a href="#flask包调用中的的路径问题" class="headerlink" title="flask包调用中的的路径问题"></a>flask包调用中的的路径问题</h1><p>标签： flask深入学习</p>
+<hr>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>这篇短文写在我的腾讯一面搞砸之后，这次面试让我深刻认识到我一直是一个很功利的人。总结了一下一共有几个要点：</p>
+<ul>
+<li><strong>看需求办事</strong>，有什么需求谷歌什么，查看文档相关部分，而其他的部分置之不理，全然没有深入学习的决心</li>
+<li>对一个框架没有深入了解，仅仅止步于<strong>工具化</strong>，也没有对框架有更深层的了解，这让我很惭愧</li>
+<li>做事<strong>没有从工程层面</strong>来思考问题，仅仅从个人角度思考问题</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="flask包调用过程中的路径问题"><a href="#flask包调用过程中的路径问题" class="headerlink" title="flask包调用过程中的路径问题"></a>flask包调用过程中的路径问题</h2><p>假设有如下情况,my_app是封装为包的一个flask app，app声明在my_app/__init__.py文件中，h.py是包内的一个辅助模块，在run_app.py中调用my_app这个包的flask app进行运行</p>
+<ul>
+<li>my_app<ul>
+<li>static</li>
+<li>templates</li>
+<li>__init__.py</li>
+<li>h.py</li>
+</ul>
+</li>
+<li>run_app.py</li>
+</ul>
+<hr>
+<p>###在辅助模块h.py中加载static中的静态文件###<br>当情况是运行run_app.py，而h.py需要加载static中静态文件的时候，在h.py中使用的路径可以是两种情况：</p>
+<ul>
+<li>绝对路径</li>
+<li>相对路径 ./my_app/static/file_name</li>
+</ul>
+<blockquote>
+<p>注意包调用情况下，如果包内非__init__模块要加载static内静态文件，需要使用从包外路径开始定位</p>
+</blockquote>
+<hr>
+<p>###html内加载静态文件###<br>当情况是运行run_app.py，html内需要加载静态文件，路径必须是相对路径，形式为：/static/file_name</p>
+<hr>
+<p>###实例文件夹###<br>flask除了提供 app.static_folder和app.template_folder之外<br><img src="http://static.zybuluo.com/gzm1997/pjq99hklds5g8hdm90oqgvk6/image_1c8h30e029l51fi92jdv9f1rbt9.png" alt="image_1c8h30e029l51fi92jdv9f1rbt9.png-7.8kB"><br>flask还提供了instance_path<br><img src="http://static.zybuluo.com/gzm1997/ymyj8prm5y05y2psgjni1ct9/image_1c8h31ai6r1hidf187l10fo6q6m.png" alt="image_1c8h31ai6r1hidf187l10fo6q6m.png-4.3kB"><br>instance_path也可以用来存放静态文件，但是要注意的是instance_path所在的位置</p>
+<p>flask文档对instance_path位置的阐述如下：</p>
+<ul>
+<li>未安装的模块:</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/myapp.py</span><br><span class="line">/instance</span><br></pre></td></tr></table></figure>
+<ul>
+<li>未安装的包</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/myapp</span><br><span class="line">    /__init__.py</span><br><span class="line">/instance</span><br></pre></td></tr></table></figure>
+<ul>
+<li>已安装的包或模块:</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$PREFIX/lib/python2.X/site-packages/myapp</span><br><span class="line">$PREFIX/var/myapp-instance</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>$PREFIX 是你 Python 安装的前缀。这个前缀可以是 /usr 或者你的 virtualenv 的路径。你可以打印 sys.prefix 的值来查看前缀被设置成了什么</p>
+</blockquote>
+<p>所以上面已经阐述得很清楚了，在我们包调用的情况下，instance_path是跟my_app并列的位置上的，所以可以在my_app/__init__.py内的app使用app.instance_path来加载位于与my_app并列的instance中的静态文件，如下：</p>
+<ul>
+<li>instance<ul>
+<li>static_file_to_load</li>
+</ul>
+</li>
+<li>my_app</li>
+<li>run.py</li>
+</ul>
+
       
       
         <div class="page-reward">
@@ -315,12 +363,12 @@
   
     
     <div class="copyright">
-        <p><span>本文标题:</span><a href="/2018/05/06/flask包调用中的的路径问题/">flask包调用中的的路径问题</a></p>
+        <p><span>本文标题:</span><a href="/2018/05/06/flask包调用中的的路径问题/"></a></p>
         <p><span>文章作者:</span><a href="/" title="访问 gzm1997 的个人博客">gzm1997</a></p>
         <p><span>发布时间:</span>2018年05月06日 - 16时00分</p>
-        <p><span>最后更新:</span>2018年05月06日 - 16时00分</p>
+        <p><span>最后更新:</span>2018年05月06日 - 16时02分</p>
         <p>
-            <span>原始链接:</span><a class="post-url" href="/2018/05/06/flask包调用中的的路径问题/" title="flask包调用中的的路径问题">http://yoursite.com/2018/05/06/flask包调用中的的路径问题/</a>
+            <span>原始链接:</span><a class="post-url" href="/2018/05/06/flask包调用中的的路径问题/" title="">http://yoursite.com/2018/05/06/flask包调用中的的路径问题/</a>
             <span class="copy-path" data-clipboard-text="原文: http://yoursite.com/2018/05/06/flask包调用中的的路径问题/　　作者: gzm1997" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
             <script src="/js/clipboard.min.js"></script>
             <script> var clipboard = new Clipboard('.copy-path'); </script>
@@ -347,7 +395,7 @@
 
     <div id="toc" class="toc-article">
     <strong class="toc-title">文章目录</strong>
-    
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#flask包调用中的的路径问题"><span class="toc-number">1.</span> <span class="toc-text">flask包调用中的的路径问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#flask包调用过程中的路径问题"><span class="toc-number">1.2.</span> <span class="toc-text">flask包调用过程中的路径问题</span></a></li></ol></li></ol>
 </div>
 <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
 
