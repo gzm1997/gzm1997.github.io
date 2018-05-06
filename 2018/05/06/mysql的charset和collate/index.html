@@ -79,13 +79,22 @@
 
 
 
-<meta property="og:type" content="website">
+<meta name="description" content="mysql的charset和collate标签： mysql  mysql的charsetcharset用于给数据库确定使用哪种编码方式进行编码  mysql的collatecollate叫做数据库的校验，就是一种对字符串进行比较的规则 stackoverflow上对charset和collate的解释：  A character set is a set of symbols and encod">
+<meta property="og:type" content="article">
 <meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta property="og:url" content="http://yoursite.com/2018/05/06/mysql的charset和collate/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="mysql的charset和collate标签： mysql  mysql的charsetcharset用于给数据库确定使用哪种编码方式进行编码  mysql的collatecollate叫做数据库的校验，就是一种对字符串进行比较的规则 stackoverflow上对charset和collate的解释：  A character set is a set of symbols and encod">
 <meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/rmk5nlv1sadhg885fh9kmj1h/image_1ccpviqo3i3d1tbs1fd22p470h9.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/q3s6k93zkqtubpt4t60sxu5f/image_1ccpvon1q16g6b0v16dh1gkuh4qm.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/i2rbpzyz7egslkfpnhsxbsmy/image_1ccq0rujm13qo1ln46ulrl51c4d13.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/wlrv4j9geyg8q2bzjkpmcj21/image_1ccq1cgd91bo6hl21le3fpo1d6v1g.png">
+<meta property="og:updated_time" content="2018-05-06T07:13:58.402Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="mysql的charset和collate标签： mysql  mysql的charsetcharset用于给数据库确定使用哪种编码方式进行编码  mysql的collatecollate叫做数据库的校验，就是一种对字符串进行比较的规则 stackoverflow上对charset和collate的解释：  A character set is a set of symbols and encod">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/rmk5nlv1sadhg885fh9kmj1h/image_1ccpviqo3i3d1tbs1fd22p470h9.png">
 
 
 
@@ -115,13 +124,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/05/06/mysql的charset和collate/"/>
 
 
 
 
 
-  <title>Hexo</title>
+  <title> | Hexo</title>
   
 
 
@@ -140,8 +149,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -214,9 +222,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -246,9 +254,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/06/mysql的charset和collate/" itemprop="url">Untitled</a></h1>
+          <h1 class="post-title" itemprop="name headline"></h1>
         
 
         <div class="post-meta">
@@ -298,9 +304,7 @@
       
 
       
-        
-          
-            <h1 id="mysql的charset和collate"><a href="#mysql的charset和collate" class="headerlink" title="mysql的charset和collate"></a>mysql的charset和collate</h1><p>标签： mysql</p>
+        <h1 id="mysql的charset和collate"><a href="#mysql的charset和collate" class="headerlink" title="mysql的charset和collate"></a>mysql的charset和collate</h1><p>标签： mysql</p>
 <hr>
 <h2 id="mysql的charset"><a href="#mysql的charset" class="headerlink" title="mysql的charset"></a>mysql的charset</h2><p>charset用于给数据库确定使用哪种编码方式进行编码<br><img src="http://static.zybuluo.com/gzm1997/rmk5nlv1sadhg885fh9kmj1h/image_1ccpviqo3i3d1tbs1fd22p470h9.png" alt="image_1ccpviqo3i3d1tbs1fd22p470h9.png-76.1kB"></p>
 <hr>
@@ -329,8 +333,6 @@
 <p>测试代码<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> sqlalchemy <span class="keyword">import</span> Column, String, Integer, create_engine</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.orm <span class="keyword">import</span> sessionmaker</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.ext.declarative <span class="keyword">import</span> declarative_base</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建对象的基类:</span></span><br><span class="line">Base = declarative_base()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义User对象:</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">'user'</span></span><br><span class="line">    id = Column(String(<span class="number">20</span>), primary_key=<span class="keyword">True</span>)</span><br><span class="line">    name = Column(String(<span class="number">20</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化数据库连接:</span></span><br><span class="line">engine = create_engine(<span class="string">'mysql+mysqlconnector://root:Gzm20125@localhost:3306/test'</span>)</span><br><span class="line"><span class="comment"># 创建DBSession类型:</span></span><br><span class="line">DBSession = sessionmaker(bind=engine)</span><br><span class="line"></span><br><span class="line"><span class="comment">#Base.metadata.drop_all(engine)</span></span><br><span class="line">Base.metadata.create_all(engine)</span><br><span class="line"><span class="comment"># 创建session对象:</span></span><br><span class="line"></span><br><span class="line">session = DBSession()</span><br><span class="line"><span class="comment"># 创建新User对象:</span></span><br><span class="line">new_user = User(id=<span class="string">"5"</span>, name=<span class="string">'Bob'</span>)</span><br><span class="line"><span class="comment"># 添加到session:</span></span><br><span class="line">session.add(new_user)</span><br><span class="line"><span class="comment"># 提交即保存到数据库:</span></span><br><span class="line">session.commit()</span><br><span class="line"><span class="comment"># 关闭session:</span></span><br><span class="line">session.close()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建Session:</span></span><br><span class="line">session = DBSession()</span><br><span class="line"><span class="comment"># 创建Query查询，filter是where条件，最后调用one()返回唯一行，如果调用all()则返回所有行:</span></span><br><span class="line">user = session.query(User).filter_by(id = <span class="string">"5"</span>).one()</span><br><span class="line"><span class="comment"># 打印类型和对象的name属性:</span></span><br><span class="line">print(<span class="string">'type:'</span>, type(user))</span><br><span class="line">print(<span class="string">'name:'</span>, user.name)</span><br><span class="line"><span class="comment"># 关闭Session:</span></span><br><span class="line">session.close()</span><br></pre></td></tr></table></figure></p>
 <p><img src="http://static.zybuluo.com/gzm1997/wlrv4j9geyg8q2bzjkpmcj21/image_1ccq1cgd91bo6hl21le3fpo1d6v1g.png" alt="image_1ccq1cgd91bo6hl21le3fpo1d6v1g.png-8.3kB"></p>
 
-          
-        
       
     </div>
     
@@ -347,12 +349,12 @@
       
 
       
+      
+      
 
       
 
       
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -362,10 +364,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -373,6 +376,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -393,8 +400,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -436,6 +452,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql的charset和collate"><span class="nav-number">1.</span> <span class="nav-text">mysql的charset和collate</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql的charset"><span class="nav-number">1.1.</span> <span class="nav-text">mysql的charset</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql的collate"><span class="nav-number">1.2.</span> <span class="nav-text">mysql的collate</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql中常用的编码和校验方式"><span class="nav-number">1.3.</span> <span class="nav-text">mysql中常用的编码和校验方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql实践中的问题"><span class="nav-number">1.4.</span> <span class="nav-text">mysql实践中的问题</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -576,6 +608,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
