@@ -62,6 +62,415 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-软件生命周期" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/15/软件生命周期/" class="article-date">
+  <time datetime="2018-05-15T15:02:50.000Z" itemprop="datePublished">2018-05-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/15/软件生命周期/">软件生命周期</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>这几天我都在深深地反思，发现自己的确是一个很功利的人，从框架的工具化就可以看出来。越是患得患失就越容易失去。我觉得我这段时间可以多写点代码，并且这不能很以往一样，一个劲地写，应该从工程上开始考量所有问题。</p>
+</blockquote>
+<hr>
+<h2 id="软件生命周期6大阶段"><a href="#软件生命周期6大阶段" class="headerlink" title="软件生命周期6大阶段"></a>软件生命周期6大阶段</h2><ol>
+<li>可行性分析和计划阶段<ul>
+<li>确定软件开发的总体目标，给出功能，性能，可靠性，接口等方面的要求，进行可行性分析</li>
+<li>估计可利用的资源(硬件，软件，人力等)，成本，效益，开发进度，进行投资收益分析，制定开发计划</li>
+<li>提交可行性分析报告，开发计划等文档</li>
+</ul>
+</li>
+<li>需求分析阶段<ul>
+<li>分析用户提出的要求，给出需求详细定义，确定软件系统的各项功能，性能需求和设计约束，确定对文档的编制的要求</li>
+<li>提交软件需求说明，软件规格说明，数据要求说明等文档和初步用户手册</li>
+</ul>
+</li>
+<li>设计阶段<ul>
+<li>概要设计：将各项需求转换为软件的体系结构。软件的每一组成部分都是意义明确的模块，每个模块和某些需求相对应</li>
+<li>详细设计：对没一个模块要完成的工作进行具体的描述，提供源编程编写的直接依据</li>
+<li>提交结构设计说明，详细设计说明和测试计划初稿等文稿</li>
+</ul>
+</li>
+<li>实现阶段<ul>
+<li>实现源码编码，编译，和排错调试，得到没有语法错误的程序清单。程序结构良好，清晰易读，且与设计想一致</li>
+<li>编写进度日报，周报，和月报</li>
+<li>提交用户手册，操作手册等面向用户的文档的编写工作</li>
+<li>编写测试计划</li>
+</ul>
+</li>
+<li>测试阶段<ul>
+<li>全面测试目标软件系统，并检查审阅已编制的文档，提交测试分析报告。逐项评价所生产的程序、文档以及开发工作本身，提交项目开发总结报告</li>
+<li>在整个开发过程中 (即前五个阶段中)，开发集体需要按月编写<br>开发进度月报。</li>
+</ul>
+</li>
+<li>运行与维护阶段<ul>
+<li>软件提交给用户后，在运行使用中得到持续维护，根据用户新<br>提出的需求进行必要而且可能的扩充、删改、更新和升级。</li>
+<li>软件维护包括改正性维护 (发现错误)、适应性维护 (适应运行<br>环境变化) 和完善性维护 (增强功能)。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="常见软件生命周期模型"><a href="#常见软件生命周期模型" class="headerlink" title="常见软件生命周期模型"></a>常见软件生命周期模型</h2><blockquote>
+<p>软件开发过程一般应该采用某种类型的软件生命周期模型，按<br>照一定的开发方法，使用相应的工具系统实现。</p>
+</blockquote>
+<p>常见模型</p>
+<ul>
+<li>瀑布模型 (Waterfall Model)</li>
+<li>V-W 模型 (V Model and W Model)</li>
+<li>快速应用开发模型 (RAD Model)</li>
+<li>原型模型 (Prototype Model)</li>
+<li>增量/演化/迭代模型 (Incremental Model)</li>
+<li>螺旋模型 (Spiral Model)</li>
+<li>喷泉模型 (Fountain Model, Object-Oriented Model)</li>
+<li>基于构件的开发模型 (CBSD Model)</li>
+<li>Rational 统一过程模型 (RUP Model)</li>
+<li>*敏捷开发模型与极限编程 (Agile Modeling and XP)</li>
+</ul>
+<hr>
+<h2 id="瀑布模型"><a href="#瀑布模型" class="headerlink" title="瀑布模型"></a>瀑布模型</h2><p><img src="http://static.zybuluo.com/gzm1997/ovwgmbl03ugmj2l9sm1p0jfy/image_1c8ias8gck9c5rmro9cihae89.png" alt="image_1c8ias8gck9c5rmro9cihae89.png-96.4kB"></p>
+<p>特征</p>
+<ul>
+<li>每一阶段工作对象来自于上一阶段的输出</li>
+<li>根据本阶段的活动规程执行相应的任务</li>
+<li>本阶段产生相关软件工件，作为下一阶段活动的输入</li>
+<li>对本阶段的活动情况进行评审</li>
+</ul>
+<p>优点</p>
+<ul>
+<li>降低软件开发的复杂程度，提高软件开发过程的透明性，提高软件开发过程的可管理性</li>
+<li>推迟软件实现，强调在软件实现前必须进行分析和设计工作</li>
+<li>以项目的阶段评审和文档控制为手段有效地对整个开发过程进行指导，保证了阶段之间的正确衔接，能够及时发现并纠正开发过程中存在的缺陷，使产品达到预期的质量要求</li>
+</ul>
+<p>缺点</p>
+<ul>
+<li>强调过程活动的线性顺序</li>
+<li>缺乏灵活性，特别是无法解决软件需求不明确或不准确的问题</li>
+<li>风险控制能力较弱</li>
+<li>瀑布模型中的软件活动是文档驱动的，当阶段之间规定过多的文档时，会极大地增加系统的工作量</li>
+<li>管理人员如果仅仅以文档的完成情况来评估项目完成进度，往往会产生错误的结论</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cjh7t4ln6000bpco08n6wif9b" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-sysu教务选课系统登陆" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/15/sysu教务选课系统登陆/" class="article-date">
+  <time datetime="2018-05-15T15:01:05.000Z" itemprop="datePublished">2018-05-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/15/sysu教务选课系统登陆/">sysu教务选课系统登陆</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>准备：<br>python3<br>安装tesseract,本人提供的tesseract百度云下载，亲测版本4比较多坑，这是版本3，已经够用的了<br>链接: <a href="http://pan.baidu.com/s/1boHp2Jt" target="_blank" rel="noopener">http://pan.baidu.com/s/1boHp2Jt</a> 密码: 6trj</p>
+<hr>
+<ul>
+<li>下载本项目到本地</li>
+<li>进入主目录，输入以下命令安装相关依赖：</li>
+</ul>
+<pre><code>pip install -r requirements.txt
+</code></pre><ul>
+<li><p>在如下59和64行输入你的账号和密码：<br><img src="https://github.com/15331094/sysu_login/blob/master/screenshots/input.png?raw=true" alt="输入账号密码"></p>
+</li>
+<li><p>输入一下命令运行代码：</p>
+<p> python login.py</p>
+</li>
+</ul>
+<p>运行之后打印不少内容：<br>第一个是一个byte,内容就是下载下来的验证码：<br><img src="https://github.com/15331094/sysu_login/blob/master/screenshots/icode.png?raw=true" alt="验证码"><br>第二个是登陆后的页面：<br><img src="https://github.com/15331094/sysu_login/blob/master/screenshots/after_login.png?raw=true" alt="登陆之后"><br>第三个是我的选课结果：<br><img src="https://github.com/15331094/sysu_login/blob/master/screenshots/my_lesson.png?raw=true" alt="选课结果"></p>
+<hr>
+<p>最后可以发现本地生成了一个after_login.html的html文件，打开之后发现你的选课结果被下载下来了：<br><img src="https://github.com/15331094/sysu_login/blob/master/screenshots/lession.png?raw=true" alt="选课结果"></p>
+<h2 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h2><ul>
+<li>icode模块负责图片去噪和识别验证码</li>
+<li>entryption模块负责加密密码</li>
+<li>login模块负责登陆和抓取一些页面</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/" data-id="cjh7t4lmy0004pco049q7qkiw" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/requests/">requests</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-上传和展示pdf以及markdown" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/15/上传和展示pdf以及markdown/" class="article-date">
+  <time datetime="2018-05-15T14:57:44.000Z" itemprop="datePublished">2018-05-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/15/上传和展示pdf以及markdown/">上传和展示pdf以及markdown</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <hr>
+<h2 id="demo"><a href="#demo" class="headerlink" title="demo"></a>demo</h2><p><a href="http://138.68.235.123/upload" target="_blank" rel="noopener">查看地址</a></p>
+<p><a href="http://138.68.235.123/show?file_name=readme.pdf" target="_blank" rel="noopener">pdf版本readme地址</a></p>
+<hr>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这个是开学前跟别人赌气写下的一个很小的web app，功能是上传pdf文件，然后获得这个文件在线浏览的url，需求很简单。之前为了方便只是把上传到服务器的文件存在flask static文件夹下，会有不便于管理等等问题。这个周末做了如下改进：使用mysql进行存储文件，进行模块的细化。</p>
+<p align="right">郭柱明 2018/3/25</p>
+
+
+<hr>
+<h2 id="可行性分析"><a href="#可行性分析" class="headerlink" title="可行性分析"></a>可行性分析</h2><blockquote>
+<p>从需求上而言，这个web app仅仅有上传，展示两个功能。<br>我一个人可以进行开发，但是在人力物力上已经绰绰有余。<br>在app的服务器部署上，我有一个digital ocean vps可以用来部署，所以部署上也没有太大问题。</p>
+</blockquote>
+<hr>
+<h2 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h2><ol>
+<li>上传pdf文件</li>
+<li>获得在线浏览此pdf文件的url</li>
+<li>打开这个url可以进行文件的预览</li>
+</ol>
+<hr>
+<h2 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h2><p>###大概设计###</p>
+<p><img src="http://static.zybuluo.com/gzm1997/5de0ll4jozkxxzntxo20ni2x/struction.png" alt="struction.png-12.1kB"></p>
+<p>整个结构呈现cs结构，server我使用nginx，server使用wsgi接口调用flask app</p>
+<p>###详细设计###</p>
+<ul>
+<li>包-pdf(整个web app打包为一个包)<ul>
+<li>db.py模块(定义一个包含数据库链接的类以及初始化数据库的函数)</li>
+<li>f.py模块(定义File类)</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h2><blockquote>
+<p>编码情况详细见<a href="https://github.com/gzm1997/pdf" target="_blank" rel="noopener">github</a></p>
+</blockquote>
+<hr>
+<h2 id="测试与运行"><a href="#测试与运行" class="headerlink" title="测试与运行"></a>测试与运行</h2><p><img src="http://static.zybuluo.com/gzm1997/v93gqdz11aenv30kisr64r41/pdf.gif" alt="pdf.gif-631.7kB"></p>
+<hr>
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><blockquote>
+<p>部署有个问题：无法从事先设置的环境变量中加载出mysql的账号和密码，在服务器上调试没问题，但是一旦部署上去就会在这部分出问题，无奈下只能在代码使用mysql的账号密码，有一定的安全风险。</p>
+</blockquote>
+<hr>
+<h2 id="后期改进"><a href="#后期改进" class="headerlink" title="后期改进"></a>后期改进</h2><blockquote>
+<p>增加了上传和预览markdown文件的功能，具有改进为博客系统的潜质</p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/05/15/上传和展示pdf以及markdown/" data-id="cjh7t4lmz0005pco0ptj4tdsv" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask/">flask</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-暗网爬虫" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/15/暗网爬虫/" class="article-date">
+  <time datetime="2018-05-15T14:54:11.000Z" itemprop="datePublished">2018-05-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/15/暗网爬虫/">暗网爬虫</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>暗网蜘蛛，本项目<a href="https://github.com/15331094/shadow_spider" target="_blank" rel="noopener">github地址</a></p>
+<hr>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/spider.jpg?raw=true" alt="shadow_spider"></p>
+<hr>
+<p>暗网</p>
+<blockquote>
+<p>暗网（英语：Darknet或Dark Web）通称只能用特殊软件、特殊授权、或对电脑做特殊设置才能连上的网络，使用一般的浏览器和搜索引擎找不到暗网的内容</p>
+</blockquote>
+<hr>
+<h2 id="在python上进入暗网"><a href="#在python上进入暗网" class="headerlink" title="在python上进入暗网"></a>在python上进入暗网</h2><hr>
+<p>在python中进入暗网需要配置tor代理，因为本人使用的win10，所以主要讲在win10下配置tor代理</p>
+<hr>
+<p><strong>下载准备</strong>：（除了下载给出的下载链接，本人此项目github也提供相关资源下载 <a href="https://github.com/15331094/shadow_spider/tree/master/resources" target="_blank" rel="noopener">下载链接</a>）</p>
+<ol>
+<li><p>首先下载tor expert bundle<br>官方下载<a href="https://www.torproject.org/download/download" target="_blank" rel="noopener">链接</a><br>本人提供的百度云<a href="http://pan.baidu.com/s/1eRNpqa2" target="_blank" rel="noopener">链接</a>，密码: fsp8<br>下载解压</p>
+</li>
+<li><p>下载到的tor expert bundle没有图形界面，使用起来不方便，因此需要下载Vidalia配合使用<br>本人提供的百度云<a href="http://pan.baidu.com/s/1bOdr6e" target="_blank" rel="noopener">链接</a>，密码: kknf</p>
+</li>
+<li><p>cow下载，百度云<a href="http://pan.baidu.com/s/1c1QHf1m" target="_blank" rel="noopener">连接</a>，密码: c4kx。<br>由于tor使用的协议是socks5，由于需要python的<strong>requests</strong>和<strong>selenium</strong>两个模块进行get， post请求。但是经过本人尝试，requests对socks5协议代理支持是很不良好的，使用requests加上socks5协议代理去get类似于 <a href="https://api.ipify.org/?format=json" target="_blank" rel="noopener">https://api.ipify.org/?format=json</a> 这样查询ip的url是没有问题的，但是去get其他url或者暗网的url马上会出现莫名其妙的错误。所以需要使用cow把tor的socks5协议转为http协议</p>
+</li>
+</ol>
+<hr>
+<p><strong>配置</strong></p>
+<hr>
+<p>我们要配置上面下载到的工具，使得我们的代理路线如下：<br><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/net.png?raw=true" alt="net"><br>1,解压下载下来的tor expert bundle</p>
+<p>2,开启你的vpn，本人使用的green vpn，socks5协议，监听1080端口</p>
+<p>3,安装vidalia，安装后如图所示：</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/vidalia.png?raw=true" alt="vidalia"></p>
+<p>然后以<strong>管理员身份</strong>运行Start Vidalia.exe</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/vidalia%20run.png?raw=true" alt="vidalia run"></p>
+<p>点击设定，在常规那里选中vidalia启动时运行tor软件，并在下面的路径中找到解压tor expert bundle后得到的tor.exe</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/setting1.png?raw=true" alt="setting1"></p>
+<p>点击网络，选中我使用代理服务器连接网络，由于本人使用的green vpn是监听本地的1080端口，所以地址写为：127.0.0.1，端口写为：1080（貌似shadowsocks等vpn也是监听本地1080端口）</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/setting2.png?raw=true" alt="setting2"></p>
+<p>点击高级，在tor配置文件下选中vidalia安装后得到的Data/Tor/torrc文件，在数据目录那里选中Data文件夹（貌似我是多余地自己另外创建了一个Data文件夹给它，但是并不影响，有一个Data文件夹给vidalia存储数据就可以了）</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/setting3.png?raw=true" alt="setting3"></p>
+<p>点击确认</p>
+<p>点击启动tor</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/run.png?raw=true" alt="run"></p>
+<p>稍等片刻，显示连接tor网络成功！</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/connect.png?raw=true" alt="connect"></p>
+<p>因为需要在requests模块上使用tor代理而requests模块对socks5支持非常不良好，所以我们需要配置cow把socks5转为http<br>打开解压后的cow目录：</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/cow.png?raw=true" alt="cow"></p>
+<p>修改rc.txt内容为如下：</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/rc.png?raw=true" alt="rc"></p>
+<p>点击运行cow.exe或者点击cow-hide.exe后台运行</p>
+<hr>
+<p><strong>在python中使用tor代理</strong></p>
+<hr>
+<p>再次重申上面配置好的代理结构：</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/net.png?raw=true" alt="net"></p>
+<p>能否正常使用tor代理一个很好的检验方法就是能否<strong>进入暗网</strong>，这是一个收集了很多暗网url的网站：<a href="https://onionlinks.org/" target="_blank" rel="noopener">https://onionlinks.org/</a></p>
+<p>我给出一个暗网url:<strong><a href="http://hcutffpecnc44vef.onion/" target="_blank" rel="noopener">http://hcutffpecnc44vef.onion/</a></strong><br>这是一个暗网的金融网站，普通的上网方式是打不开的，作为一个大哥哥，真心建议18-的小朋友还是不要去看暗网一些其他内容，为了你的身心健康。那下面的测试就是在python中进入这个暗网url为检验标准。</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/cash%20machine.png?raw=true" alt="cash machine"></p>
+<p><em>在requests中进入暗网</em>：<br>新建一个test.py,输入以下内容：</p>
+<pre><code>import requests
+proxies = {&apos;http&apos;: &apos;http://127.0.0.1:7777&apos;, &apos;https&apos;: &apos;http://127.0.0.1:7777&apos;}
+s = requests.Session()
+r = s.get(&quot;http://hcutffpecnc44vef.onion/&quot;, proxies = proxies)
+print(r.text)
+f = open(&quot;onion.html&quot;, &quot;wb&quot;)
+f.write(r.content)
+f.close()
+</code></pre><p>运行，发现可以打印这个暗网网页的内容出来了：</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/run%20test.png?raw=true" alt="run test"></p>
+<p>打开test.py同一目录下，生成了一个onion.html的文件，点开，发现把内容也下载下来了：</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/get.png?raw=true" alt="get"></p>
+<p><em>在python的selenium模块的模拟浏览器phantomjs中进入暗网</em><br>selenium有三种，chrome，firefox，phantomjs，前两种有图形界面，第三种没有图形界面，所以我选中phantomjs</p>
+<p>phantomjs下载：<br>本人github上的下载<a href="https://github.com/15331094/shadow_spider/blob/master/resources/phantomjs-2.1.1-windows.zip" target="_blank" rel="noopener">下载链接</a><br>本人百度云<a href="http://pan.baidu.com/s/1eSxNa86" target="_blank" rel="noopener">下载链接</a>，密码: pj81</p>
+<p>这次我们选择另一个暗网url:<a href="http://zqktlwi4fecvo6ri.onion/wiki/index.php/Main_Page" target="_blank" rel="noopener">http://zqktlwi4fecvo6ri.onion/wiki/index.php/Main_Page</a><br>这是一个暗网wiki，上面有很多分类好的暗网url,各位要谨慎点开那些url，因为不少内容不健康的。<br>下载phantomjs解压，新建一个test2.py文件(下面的executable_path是上面下载解压phantomjs得到的phantomjs.exe运行文件的路径)</p>
+<pre><code>from selenium import webdriver
+
+executable_path = &quot;C:/Users/Administrator/Downloads/phantomjs-2.1.1-windows/phantomjs-2.1.1-windows/bin/phantomjs.exe&quot;
+service_args = [&apos;--proxy=127.0.0.1:7777&apos;, &apos;--proxy-type=http&apos;]
+
+driver = webdriver.PhantomJS(executable_path = executable_path, service_args = service_args)
+
+driver.get(&quot;http://zqktlwi4fecvo6ri.onion/wiki/index.php/Main_Page&quot;)
+
+print(driver.page_source)
+
+f = open(&quot;onion.html&quot;, &quot;wb&quot;)
+f.write(driver.page_source.encode(&quot;utf-8&quot;))
+f.close()
+</code></pre><p>结果也可行：</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/run%20test2.png?raw=true" alt="run test2"><br><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/wiki.png?raw=true" alt="wiki"></p>
+<hr>
+<h2 id="本人的shadow-spider项目（未完待续）"><a href="#本人的shadow-spider项目（未完待续）" class="headerlink" title="本人的shadow_spider项目（未完待续）"></a>本人的shadow_spider项目（未完待续）</h2><hr>
+<p>项目<a href="https://github.com/15331094/shadow_spider" target="_blank" rel="noopener">github地址</a><br>本项目目的在于最大程度还原暗网上网页的内容，这就意味着需要：</p>
+<p>注意要点：</p>
+<ul>
+<li>下载html</li>
+<li>在下载html之前必须加载javascript。因为javascript里面会有ajax，如果把javascript下载下来，而不是加载完javascript再下载html，那么下载到本地ajax向tor网络（暗网）中的服务器发送网络请求，这是行不通的。所以必须加载完javascript再下载html（网上有人说暗网上的网页都没有javascript，但是经本人尝试，暗网上的网页是有javascript的）。而python里加载javascript一个很好的工具就是上面的selenium</li>
+<li>下载css和图片等静态资源，需要使用requests模块，不能使用selenium。selenium下载图片和css等资源是很蛋疼的。因为这些模拟浏览器要下载资源就必须做到模仿我们在真的浏览器上那样右键另存为等操作，而这时候会弹出下载确认的弹窗，而selenium中的chrome和firefox是需要手动点击代码运行过程中弹出来的确认保存弹窗的，而phantomjs没有图形界面，所以就根本下载不图片和css等资源。</li>
+</ul>
+<p>代码细节不详细说了，在我的<a href="https://github.com/15331094/shadow_spider" target="_blank" rel="noopener">github</a>中下载到本地，输入：</p>
+<pre><code>pip install -r requirements.txt
+</code></pre><p>安装需要的响应模块</p>
+<p>运行main.py文件，输入一个暗网url:</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/run%20main.png?raw=true" alt="run main"></p>
+<p>下载到本地的结果：</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/result.png?raw=true" alt="result"></p>
+<p>下面是一些暗网网页真实模样和我还原的样子：<br>真实1：</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/real1.png?raw=true" alt="real1"></p>
+<p>还原1：</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/imitate1.png?raw=true" alt="imitate1"></p>
+<p>真实2：</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/real2.png?raw=true" alt="real2"></p>
+<p>还原2：</p>
+<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/imitate2.png?raw=true" alt="imitate2"></p>
+<p>此项目shadow_spider未完待续，等到暑假回考虑添加服务端。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/05/15/暗网爬虫/" data-id="cjh7t4ln40009pco0udvjxept" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deep-web/">deep web</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-sqlalchemy级联" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/05/15/sqlalchemy级联/" class="article-date">
@@ -117,7 +526,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/sqlalchemy级联/" data-id="cjh7spr6a0001l0o055irbpct" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/sqlalchemy级联/" data-id="cjh7t4lmr0001pco0qq70vcwo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li></ul>
@@ -163,7 +572,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/06/多维数组最短路径问题/" data-id="cjh7spr6h0004l0o08fr6k4dk" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/06/多维数组最短路径问题/" data-id="cjh7t4ln20008pco0rushptt9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/算法/">算法</a></li></ul>
@@ -259,7 +668,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/" data-id="cjh7spr630000l0o00i314en9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/" data-id="cjh7t4lmk0000pco049jxul9m" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li></ul>
@@ -323,7 +732,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/06/mysql的charset和collate/" data-id="cjh7spr6f0003l0o09dgjg6ug" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/06/mysql的charset和collate/" data-id="cjh7t4lmw0003pco0kvkopl5d" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
@@ -348,7 +757,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -358,7 +767,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/sqlalchemy/" style="font-size: 10px;">sqlalchemy</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+      <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/sqlalchemy/" style="font-size: 10px;">sqlalchemy</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -380,19 +789,23 @@
       <ul>
         
           <li>
+            <a href="/2018/05/15/软件生命周期/">软件生命周期</a>
+          </li>
+        
+          <li>
+            <a href="/2018/05/15/sysu教务选课系统登陆/">sysu教务选课系统登陆</a>
+          </li>
+        
+          <li>
+            <a href="/2018/05/15/上传和展示pdf以及markdown/">上传和展示pdf以及markdown</a>
+          </li>
+        
+          <li>
+            <a href="/2018/05/15/暗网爬虫/">暗网爬虫</a>
+          </li>
+        
+          <li>
             <a href="/2018/05/15/sqlalchemy级联/">sqlalchemy级联</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/06/多维数组最短路径问题/">多维数组最短路径问题</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/06/flask包调用中的的路径问题/">flask包调用中的的路径问题</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/06/mysql的charset和collate/">mysql的charset和collate</a>
           </li>
         
       </ul>
