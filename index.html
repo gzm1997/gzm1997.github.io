@@ -62,6 +62,57 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-sqlalchemy一些常见概念" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/16/sqlalchemy一些常见概念/" class="article-date">
+  <time datetime="2018-05-16T08:00:53.000Z" itemprop="datePublished">2018-05-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/16/sqlalchemy一些常见概念/">sqlalchemy一些常见概念</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="metadata"><a href="#metadata" class="headerlink" title="metadata"></a>metadata</h2><p>官方文档解释</p>
+<blockquote>
+<p>The MetaData is a registry which includes the ability to emit a limited set of schema generation commands to the database. As our SQLite database does not actually have a users table present, we can use MetaData to issue CREATE TABLE statements to the database for all tables that don’t yet exist. Below, we call the MetaData.create_all() method, passing in our Engine as a source of database connectivity</p>
+</blockquote>
+<p>metadata是一个注册器，里面包含一些数据库的模式生成命令，可以调用metadata发起create table命令来创建这个表</p>
+<p><img src="http://static.zybuluo.com/gzm1997/y94c7jye04to8blqvbn15su3/image_1cdjqt91j1hpr34cos1euqodr9.png" alt="image_1cdjqt91j1hpr34cos1euqodr9.png-5.9kB"></p>
+<hr>
+<h2 id="mapper"><a href="#mapper" class="headerlink" title="mapper"></a>mapper</h2><p>sqlalchemy中创建一个继承declarative_base的类的本质是，创建一个class的同时生成一个同名的Table对象，并且使用一个mapper对象将两个对象映射在一起。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">'my_table'</span></span><br><span class="line">    id = Column(Integer, primary_key=<span class="keyword">True</span>)</span><br><span class="line">    type = Column(String(<span class="number">50</span>))</span><br><span class="line">    alt = Column(<span class="string">"some_alt"</span>, Integer)</span><br><span class="line"></span><br><span class="line">    __mapper_args__ = &#123;</span><br><span class="line">        <span class="string">'polymorphic_on'</span> : type</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码跟下面效果是一样的<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">my_table = Table(<span class="string">"my_table"</span>, metadata,</span><br><span class="line">    Column(<span class="string">'id'</span>, Integer, primary_key=<span class="keyword">True</span>),</span><br><span class="line">    Column(<span class="string">'type'</span>, String(<span class="number">50</span>)),</span><br><span class="line">    Column(<span class="string">"some_alt"</span>, Integer)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">mapper(MyClass, my_table,</span><br><span class="line">    polymorphic_on=my_table.c.type,</span><br><span class="line">    properties=&#123;</span><br><span class="line">        <span class="string">'alt'</span>:my_table.c.some_alt</span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="对象状态转换"><a href="#对象状态转换" class="headerlink" title="对象状态转换"></a>对象状态转换</h2><p><img src="http://static.zybuluo.com/gzm1997/j5p2qxy0l2s5t54tvk4jx59y/image_1cdjs8hm616i15k3vss1r6u17ju3j.png" alt="image_1cdjs8hm616i15k3vss1r6u17ju3j.png-14.2kB"></p>
+<p>值得一提的是，当class被add到session中，但是没有commit，此时这个class并没有被写入数据库，但是此时进行query查询这个class是可以被查询出来的，因为当执行query时，执行了flush操作，调用了sql语句，这个class对应的row被生成。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sqlalchemy <span class="keyword">import</span> Column, String, Integer, ForeignKey, create_engine</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.orm <span class="keyword">import</span> sessionmaker, relationship, backref</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.ext.declarative <span class="keyword">import</span> declarative_base</span><br><span class="line">Base = declarative_base()</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">"user"</span></span><br><span class="line">    id = Column(Integer, primary_key = <span class="keyword">True</span>)</span><br><span class="line">    name = Column(String(<span class="number">20</span>))</span><br><span class="line"></span><br><span class="line">engine = create_engine(<span class="string">'mysql+mysqlconnector://root:Gzm20125@localhost:3306/test'</span>)</span><br><span class="line">DBSession = sessionmaker(bind = engine)</span><br><span class="line"></span><br><span class="line">Base.metadata.drop_all(engine)</span><br><span class="line">Base.metadata.create_all(engine)</span><br><span class="line"><span class="comment"># 创建session对象:</span></span><br><span class="line"></span><br><span class="line">session = DBSession()</span><br><span class="line"></span><br><span class="line">u = User(id = <span class="number">1</span>, name = <span class="string">"gzm"</span>)</span><br><span class="line">session.add(u)</span><br><span class="line">print(session.query(User).filter_by(id = <span class="number">1</span>).first())</span><br></pre></td></tr></table></figure>
+<p>输出<br><img src="http://static.zybuluo.com/gzm1997/2uovj0ildc954przw50hrcia/image_1cdjsg49k1qk49j6192o1vmd1vdp40.png" alt="image_1cdjsg49k1qk49j6192o1vmd1vdp40.png-13.5kB"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/05/16/sqlalchemy一些常见概念/" data-id="cjh8thuyx00001co04k83r7cz" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-软件生命周期" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/05/15/软件生命周期/" class="article-date">
@@ -168,7 +219,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cjh7t5nei000b6wo0cznrmodx" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cjh8thv0g000n1co09xsr7hom" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
@@ -228,7 +279,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/" data-id="cjh7t5ne900036wo0jyi4z3te" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/" data-id="cjh8thv0000061co03mxy8c17" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/requests/">requests</a></li></ul>
@@ -310,7 +361,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/上传和展示pdf以及markdown/" data-id="cjh7t5nee00086wo08xr0rlci" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/上传和展示pdf以及markdown/" data-id="cjh8thuzx00041co000drz5r9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask/">flask</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
@@ -459,7 +510,7 @@ f.close()
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/暗网爬虫/" data-id="cjh7t5neg00096wo0l98nb1dw" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/暗网爬虫/" data-id="cjh8thv0h000o1co0xch76p3y" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deep-web/">deep web</a></li></ul>
@@ -501,6 +552,14 @@ f.close()
 <p>同时因为</p>
 <pre><code>backref = backref(&quot;article&quot;)
 </code></pre><p>使得user具有article属性，由外键关系知道user和article为一对多关系，所以，user.article类型为[]。</p>
+<p>backref和back_populates<br>stackoverflow上对两者的解释</p>
+<blockquote>
+<p>If you use backref you don’t need to declare the relationship on the second table</p>
+</blockquote>
+<p>就是使用backref就不用再两个具有外键的类上都声明relationship。</p>
+<p>backref<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Parent</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">'parent'</span></span><br><span class="line">    id = Column(Integer, primary_key=<span class="keyword">True</span>)</span><br><span class="line">    children = relationship(<span class="string">"Child"</span>, backref=<span class="string">"parent"</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Child</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">'child'</span></span><br><span class="line">    id = Column(Integer, primary_key=<span class="keyword">True</span>)</span><br><span class="line">    parent_id = Column(Integer, ForeignKey(<span class="string">'parent.id'</span>))</span><br></pre></td></tr></table></figure></p>
+<p>back_populates<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Parent</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">'parent'</span></span><br><span class="line">    id = Column(Integer, primary_key=<span class="keyword">True</span>)</span><br><span class="line">    children = relationship(<span class="string">"Child"</span>, back_populates=<span class="string">"parent"</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Child</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">'child'</span></span><br><span class="line">    id = Column(Integer, primary_key=<span class="keyword">True</span>)</span><br><span class="line">    parent_id = Column(Integer, ForeignKey(<span class="string">'parent.id'</span>))</span><br><span class="line">    parent = relationship(<span class="string">"Parent"</span>, back_populates=<span class="string">"children"</span>)</span><br></pre></td></tr></table></figure></p>
+<p>上面两者是等价的</p>
 <hr>
 <h2 id="cascade级联"><a href="#cascade级联" class="headerlink" title="cascade级联"></a>cascade级联</h2><p>例子中</p>
 <pre><code>cascade = &quot;save-update, merge, delete&quot;
@@ -521,12 +580,14 @@ f.close()
 <blockquote>
 <p>delete-orphan实在delete的基础上，加上当子对象被解除跟父对象的关系的时候就会被标志为删除</p>
 </blockquote>
-<h2 id="4-其他还有merge，refresh-expire，expunge那些不常用的就不要求理解了"><a href="#4-其他还有merge，refresh-expire，expunge那些不常用的就不要求理解了" class="headerlink" title="4.其他还有merge，refresh-expire，expunge那些不常用的就不要求理解了"></a>4.其他还有merge，refresh-expire，expunge那些不常用的就不要求理解了</h2><h2 id="测试代码"><a href="#测试代码" class="headerlink" title="测试代码"></a>测试代码</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sqlalchemy <span class="keyword">import</span> Column, String, Integer, ForeignKey, create_engine</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.orm <span class="keyword">import</span> sessionmaker, relationship, backref</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.ext.declarative <span class="keyword">import</span> declarative_base</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Base = declarative_base()</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">"user"</span></span><br><span class="line">    id = Column(Integer, primary_key = <span class="keyword">True</span>)</span><br><span class="line">    name = Column(String(<span class="number">20</span>))</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">"article"</span></span><br><span class="line">    id = Column(Integer, primary_key = <span class="keyword">True</span>)</span><br><span class="line">    user_id = Column(Integer, ForeignKey(<span class="string">"user.id"</span>))</span><br><span class="line">    user = relationship(<span class="string">"User"</span>, order_by = <span class="string">"Article.id"</span>, backref = backref(<span class="string">"article"</span>), cascade = <span class="string">"save-update, merge, delete"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">engine = create_engine(<span class="string">'mysql+mysqlconnector://root:Gzm20125@localhost:3306/test'</span>)</span><br><span class="line">DBSession = sessionmaker(bind = engine)</span><br><span class="line"></span><br><span class="line">Base.metadata.drop_all(engine)</span><br><span class="line">Base.metadata.create_all(engine)</span><br><span class="line"><span class="comment"># 创建session对象:</span></span><br><span class="line"></span><br><span class="line">session = DBSession()</span><br></pre></td></tr></table></figure>
+<p>4.其他还有merge，refresh-expire，expunge那些不常用的就不要求理解了</p>
+<hr>
+<h2 id="测试代码"><a href="#测试代码" class="headerlink" title="测试代码"></a>测试代码</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sqlalchemy <span class="keyword">import</span> Column, String, Integer, ForeignKey, create_engine</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.orm <span class="keyword">import</span> sessionmaker, relationship, backref</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.ext.declarative <span class="keyword">import</span> declarative_base</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Base = declarative_base()</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">"user"</span></span><br><span class="line">    id = Column(Integer, primary_key = <span class="keyword">True</span>)</span><br><span class="line">    name = Column(String(<span class="number">20</span>))</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">"article"</span></span><br><span class="line">    id = Column(Integer, primary_key = <span class="keyword">True</span>)</span><br><span class="line">    user_id = Column(Integer, ForeignKey(<span class="string">"user.id"</span>))</span><br><span class="line">    user = relationship(<span class="string">"User"</span>, order_by = <span class="string">"Article.id"</span>, backref = backref(<span class="string">"article"</span>), cascade = <span class="string">"save-update, merge, delete"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">engine = create_engine(<span class="string">'mysql+mysqlconnector://root:Gzm20125@localhost:3306/test'</span>)</span><br><span class="line">DBSession = sessionmaker(bind = engine)</span><br><span class="line"></span><br><span class="line">Base.metadata.drop_all(engine)</span><br><span class="line">Base.metadata.create_all(engine)</span><br><span class="line"><span class="comment"># 创建session对象:</span></span><br><span class="line"></span><br><span class="line">session = DBSession()</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/sqlalchemy级联/" data-id="cjh7t5neb00046wo0aml2t49e" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/sqlalchemy级联/" data-id="cjh8thuzk00011co0fsfwk7pv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li></ul>
@@ -572,7 +633,7 @@ f.close()
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/06/多维数组最短路径问题/" data-id="cjh7t5nec00056wo00hygsvwr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/06/多维数组最短路径问题/" data-id="cjh8thv0200081co0scokdhvv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/算法/">算法</a></li></ul>
@@ -668,7 +729,7 @@ f.close()
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/" data-id="cjh7t5ndy00006wo06si3mlh8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/" data-id="cjh8thuzz00051co0iqaubbpk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li></ul>
@@ -732,7 +793,7 @@ f.close()
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/06/mysql的charset和collate/" data-id="cjh7t5ne400016wo05tkno3mn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/06/mysql的charset和collate/" data-id="cjh8thuzo00021co0csrdo80s" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
@@ -789,6 +850,10 @@ f.close()
       <ul>
         
           <li>
+            <a href="/2018/05/16/sqlalchemy一些常见概念/">sqlalchemy一些常见概念</a>
+          </li>
+        
+          <li>
             <a href="/2018/05/15/软件生命周期/">软件生命周期</a>
           </li>
         
@@ -802,10 +867,6 @@ f.close()
         
           <li>
             <a href="/2018/05/15/暗网爬虫/">暗网爬虫</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/15/sqlalchemy级联/">sqlalchemy级联</a>
           </li>
         
       </ul>
