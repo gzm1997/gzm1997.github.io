@@ -62,6 +62,102 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-flask包调用中的的路径问题" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/06/flask包调用中的的路径问题/" class="article-date">
+  <time datetime="2018-05-06T08:00:53.415Z" itemprop="datePublished">2018-05-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/06/flask包调用中的的路径问题/">flask包调用中的的路径问题</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>这篇短文写在我的腾讯一面搞砸之后，这次面试让我深刻认识到我一直是一个很功利的人。总结了一下一共有几个要点：</p>
+<ul>
+<li><strong>看需求办事</strong>，有什么需求谷歌什么，查看文档相关部分，而其他的部分置之不理，全然没有深入学习的决心</li>
+<li>对一个框架没有深入了解，仅仅止步于<strong>工具化</strong>，也没有对框架有更深层的了解，这让我很惭愧</li>
+<li>做事<strong>没有从工程层面</strong>来思考问题，仅仅从个人角度思考问题</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="flask包调用过程中的路径问题"><a href="#flask包调用过程中的路径问题" class="headerlink" title="flask包调用过程中的路径问题"></a>flask包调用过程中的路径问题</h2><p>假设有如下情况,my_app是封装为包的一个flask app，app声明在my_app/__init__.py文件中，h.py是包内的一个辅助模块，在run_app.py中调用my_app这个包的flask app进行运行</p>
+<ul>
+<li>my_app<ul>
+<li>static</li>
+<li>templates</li>
+<li>__init__.py</li>
+<li>h.py</li>
+</ul>
+</li>
+<li>run_app.py</li>
+</ul>
+<hr>
+<p>###在辅助模块h.py中加载static中的静态文件###<br>当情况是运行run_app.py，而h.py需要加载static中静态文件的时候，在h.py中使用的路径可以是两种情况：</p>
+<ul>
+<li>绝对路径</li>
+<li>相对路径 ./my_app/static/file_name</li>
+</ul>
+<blockquote>
+<p>注意包调用情况下，如果包内非__init__模块要加载static内静态文件，需要使用从包外路径开始定位</p>
+</blockquote>
+<hr>
+<p>###html内加载静态文件###<br>当情况是运行run_app.py，html内需要加载静态文件，路径必须是相对路径，形式为：/static/file_name</p>
+<hr>
+<p>###实例文件夹###<br>flask除了提供 app.static_folder和app.template_folder之外<br><img src="http://static.zybuluo.com/gzm1997/pjq99hklds5g8hdm90oqgvk6/image_1c8h30e029l51fi92jdv9f1rbt9.png" alt="image_1c8h30e029l51fi92jdv9f1rbt9.png-7.8kB"><br>flask还提供了instance_path<br><img src="http://static.zybuluo.com/gzm1997/ymyj8prm5y05y2psgjni1ct9/image_1c8h31ai6r1hidf187l10fo6q6m.png" alt="image_1c8h31ai6r1hidf187l10fo6q6m.png-4.3kB"><br>instance_path也可以用来存放静态文件，但是要注意的是instance_path所在的位置</p>
+<p>flask文档对instance_path位置的阐述如下：</p>
+<ul>
+<li>未安装的模块:</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/myapp.py</span><br><span class="line">/instance</span><br></pre></td></tr></table></figure>
+<ul>
+<li>未安装的包</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/myapp</span><br><span class="line">    /__init__.py</span><br><span class="line">/instance</span><br></pre></td></tr></table></figure>
+<ul>
+<li>已安装的包或模块:</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$PREFIX/lib/python2.X/site-packages/myapp</span><br><span class="line">$PREFIX/var/myapp-instance</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>$PREFIX 是你 Python 安装的前缀。这个前缀可以是 /usr 或者你的 virtualenv 的路径。你可以打印 sys.prefix 的值来查看前缀被设置成了什么</p>
+</blockquote>
+<p>所以上面已经阐述得很清楚了，在我们包调用的情况下，instance_path是跟my_app并列的位置上的，所以可以在my_app/__init__.py内的app使用app.instance_path来加载位于与my_app并列的instance中的静态文件，如下：</p>
+<ul>
+<li>instance<ul>
+<li>static_file_to_load</li>
+</ul>
+</li>
+<li>my_app</li>
+<li>run.py</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/" data-id="cjhmso7nl0000zgo0d8dcs2se" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-mysql的charset和collate" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/05/06/mysql的charset和collate/" class="article-date">
@@ -118,7 +214,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/06/mysql的charset和collate/" data-id="cjhm78ugx0001iko0yualw23y" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/06/mysql的charset和collate/" data-id="cjhmso7o50005zgo0hp9omgvu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
@@ -148,7 +244,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -158,7 +254,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/async/" style="font-size: 10px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/sqlalchemy/" style="font-size: 15px;">sqlalchemy</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/sqlalchemy/" style="font-size: 15px;">sqlalchemy</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -180,6 +276,10 @@
       <ul>
         
           <li>
+            <a href="/2018/05/26/使用异步ORM-aiomysql-sa/">使用异步ORM aiomysql.sa</a>
+          </li>
+        
+          <li>
             <a href="/2018/05/26/aiohttp基本使用/">aiohttp基本使用</a>
           </li>
         
@@ -193,10 +293,6 @@
         
           <li>
             <a href="/2018/05/15/软件生命周期/">软件生命周期</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/15/sysu教务选课系统登陆/">sysu教务选课系统登陆</a>
           </li>
         
       </ul>
