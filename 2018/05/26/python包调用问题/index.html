@@ -5,26 +5,20 @@
   
 
   
-  <title>sysu教务选课系统登陆 | gzm&#39;s blogs</title>
+  <title>python包调用问题 | gzm&#39;s blogs</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="准备：python3安装tesseract,本人提供的tesseract百度云下载，亲测版本4比较多坑，这是版本3，已经够用的了链接: http://pan.baidu.com/s/1boHp2Jt 密码: 6trj   下载本项目到本地 进入主目录，输入以下命令安装相关依赖：  pip install -r requirements.txt  在如下59和64行输入你的账号和密码：  输入一下命">
-<meta name="keywords" content="requests">
+  <meta name="description" content="前言 以前其实一直不是很清楚包调用的具体情况，觉得可以调用就可以了，但是这次系分大作业上我想把结构设计得更好看一点，这时候包调用就出现了一些问题   嵌套调用嵌套调用没什么特别的，就是在包中调用这个包里面的一个包，有结构如下  out_module __init__.py out.py in_module __init__.py in.py     test.py  在out_module这个包中">
+<meta name="keywords" content="python,package">
 <meta property="og:type" content="article">
-<meta property="og:title" content="sysu教务选课系统登陆">
-<meta property="og:url" content="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/index.html">
+<meta property="og:title" content="python包调用问题">
+<meta property="og:url" content="http://yoursite.com/2018/05/26/python包调用问题/index.html">
 <meta property="og:site_name" content="gzm&#39;s blogs">
-<meta property="og:description" content="准备：python3安装tesseract,本人提供的tesseract百度云下载，亲测版本4比较多坑，这是版本3，已经够用的了链接: http://pan.baidu.com/s/1boHp2Jt 密码: 6trj   下载本项目到本地 进入主目录，输入以下命令安装相关依赖：  pip install -r requirements.txt  在如下59和64行输入你的账号和密码：  输入一下命">
+<meta property="og:description" content="前言 以前其实一直不是很清楚包调用的具体情况，觉得可以调用就可以了，但是这次系分大作业上我想把结构设计得更好看一点，这时候包调用就出现了一些问题   嵌套调用嵌套调用没什么特别的，就是在包中调用这个包里面的一个包，有结构如下  out_module __init__.py out.py in_module __init__.py in.py     test.py  在out_module这个包中">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="https://github.com/15331094/sysu_login/blob/master/screenshots/input.png?raw=true">
-<meta property="og:image" content="https://github.com/15331094/sysu_login/blob/master/screenshots/icode.png?raw=true">
-<meta property="og:image" content="https://github.com/15331094/sysu_login/blob/master/screenshots/after_login.png?raw=true">
-<meta property="og:image" content="https://github.com/15331094/sysu_login/blob/master/screenshots/my_lesson.png?raw=true">
-<meta property="og:image" content="https://github.com/15331094/sysu_login/blob/master/screenshots/lession.png?raw=true">
-<meta property="og:updated_time" content="2018-05-15T15:01:45.145Z">
+<meta property="og:updated_time" content="2018-05-26T03:23:09.008Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="sysu教务选课系统登陆">
-<meta name="twitter:description" content="准备：python3安装tesseract,本人提供的tesseract百度云下载，亲测版本4比较多坑，这是版本3，已经够用的了链接: http://pan.baidu.com/s/1boHp2Jt 密码: 6trj   下载本项目到本地 进入主目录，输入以下命令安装相关依赖：  pip install -r requirements.txt  在如下59和64行输入你的账号和密码：  输入一下命">
-<meta name="twitter:image" content="https://github.com/15331094/sysu_login/blob/master/screenshots/input.png?raw=true">
+<meta name="twitter:title" content="python包调用问题">
+<meta name="twitter:description" content="前言 以前其实一直不是很清楚包调用的具体情况，觉得可以调用就可以了，但是这次系分大作业上我想把结构设计得更好看一点，这时候包调用就出现了一些问题   嵌套调用嵌套调用没什么特别的，就是在包中调用这个包里面的一个包，有结构如下  out_module __init__.py out.py in_module __init__.py in.py     test.py  在out_module这个包中">
   
     <link rel="alternate" href="/atom.xml" title="gzm&#39;s blogs" type="application/atom+xml">
   
@@ -71,10 +65,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-sysu教务选课系统登陆" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-python包调用问题" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2018/05/15/sysu教务选课系统登陆/" class="article-date">
-  <time datetime="2018-05-15T15:01:05.000Z" itemprop="datePublished">2018-05-15</time>
+    <a href="/2018/05/26/python包调用问题/" class="article-date">
+  <time datetime="2018-05-26T03:22:36.000Z" itemprop="datePublished">2018-05-26</time>
 </a>
     
   </div>
@@ -85,7 +79,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      sysu教务选课系统登陆
+      python包调用问题
     </h1>
   
 
@@ -93,36 +87,50 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>准备：<br>python3<br>安装tesseract,本人提供的tesseract百度云下载，亲测版本4比较多坑，这是版本3，已经够用的了<br>链接: <a href="http://pan.baidu.com/s/1boHp2Jt" target="_blank" rel="noopener">http://pan.baidu.com/s/1boHp2Jt</a> 密码: 6trj</p>
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>以前其实一直不是很清楚包调用的具体情况，觉得可以调用就可以了，但是这次系分大作业上我想把结构设计得更好看一点，这时候包调用就出现了一些问题</p>
+</blockquote>
 <hr>
+<h2 id="嵌套调用"><a href="#嵌套调用" class="headerlink" title="嵌套调用"></a>嵌套调用</h2><p>嵌套调用没什么特别的，就是在包中调用这个包里面的一个包，有结构如下</p>
 <ul>
-<li>下载本项目到本地</li>
-<li>进入主目录，输入以下命令安装相关依赖：</li>
+<li>out_module<ul>
+<li>__init__.py</li>
+<li>out.py</li>
+<li>in_module<ul>
+<li>__init__.py</li>
+<li>in.py</li>
 </ul>
-<pre><code>pip install -r requirements.txt
-</code></pre><ul>
-<li><p>在如下59和64行输入你的账号和密码：<br><img src="https://github.com/15331094/sysu_login/blob/master/screenshots/input.png?raw=true" alt="输入账号密码"></p>
-</li>
-<li><p>输入一下命令运行代码：</p>
-<p> python login.py</p>
 </li>
 </ul>
-<p>运行之后打印不少内容：<br>第一个是一个byte,内容就是下载下来的验证码：<br><img src="https://github.com/15331094/sysu_login/blob/master/screenshots/icode.png?raw=true" alt="验证码"><br>第二个是登陆后的页面：<br><img src="https://github.com/15331094/sysu_login/blob/master/screenshots/after_login.png?raw=true" alt="登陆之后"><br>第三个是我的选课结果：<br><img src="https://github.com/15331094/sysu_login/blob/master/screenshots/my_lesson.png?raw=true" alt="选课结果"></p>
+</li>
+<li>test.py</li>
+</ul>
+<p>在out_module这个包中的out.py中调用in_module的in.py只需要在out.py中<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> out_module.in_module <span class="keyword">import</span> <span class="keyword">in</span></span><br></pre></td></tr></table></figure></p>
 <hr>
-<p>最后可以发现本地生成了一个after_login.html的html文件，打开之后发现你的选课结果被下载下来了：<br><img src="https://github.com/15331094/sysu_login/blob/master/screenshots/lession.png?raw=true" alt="选课结果"></p>
-<h2 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h2><ul>
-<li>icode模块负责图片去噪和识别验证码</li>
-<li>entryption模块负责加密密码</li>
-<li>login模块负责登陆和抓取一些页面</li>
+<h2 id="平行调用"><a href="#平行调用" class="headerlink" title="平行调用"></a>平行调用</h2><p>平行调用就是两个包在路径上市并列的，从一个包中调用另一个包中的模块或者函数，如下就是在m1.py中调用m2.py或者m2.py中的函数或者变量</p>
+<ul>
+<li>module1<ul>
+<li>__init__.py</li>
+<li>m1.py</li>
 </ul>
+</li>
+<li>module2<ul>
+<li>__init__.py</li>
+<li>m2.py</li>
+</ul>
+</li>
+</ul>
+<p>谷歌搜到的方法是往sys.path中添加被调用包处在的路径，类似如下<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line">sys.path.append(<span class="string">"G:\\大三下\\test\\test_module"</span>)</span><br></pre></td></tr></table></figure></p>
+<p>这样可以解决问题，但是代码看起来不是很好看，可移植性也不高，毕竟如果需要部署的话也要修改这个路径值。所以我给出了一个稍微好一点的几角方法<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> pathlib</span><br><span class="line">BASE_DIR = pathlib.Path(__file__).parent.parent</span><br><span class="line">models_path = BASE_DIR / <span class="string">"module2"</span></span><br><span class="line">sys.path.append(str(models_path))</span><br><span class="line"><span class="keyword">import</span> m2</span><br></pre></td></tr></table></figure></p>
+<p>注意pathlib.Path(__file__).parent.parent返回值是一个WindowsPath对象实例，如果是往sys.path中直接添加是没有效果的，所以要用str转为字符串。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/" data-id="cjhmtykb6000828o0czihiqcx" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjhmtykb2000428o0doaezadj" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/requests/">requests</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/package/">package</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
 
     </footer>
   </div>
@@ -130,19 +138,10 @@
     
 <nav id="article-nav">
   
-    <a href="/2018/05/15/软件生命周期/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          软件生命周期
-        
-      </div>
-    </a>
   
-  
-    <a href="/2018/05/15/上传和展示pdf以及markdown/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2018/05/26/使用异步ORM-aiomysql-sa/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">上传和展示pdf以及markdown</div>
+      <div class="article-nav-title">使用异步ORM aiomysql.sa</div>
     </a>
   
 </nav>
