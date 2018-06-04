@@ -62,6 +62,83 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-sqlalchemy级联" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/15/sqlalchemy级联/" class="article-date">
+  <time datetime="2018-05-15T14:37:01.000Z" itemprop="datePublished">2018-05-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/15/sqlalchemy级联/">sqlalchemy级联</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="relationship"><a href="#relationship" class="headerlink" title="relationship"></a>relationship</h2><p>relationship是sqlalchemy中的用于创建两个对象之间的关系的一个对象，跟原本的mysql没有太大关系，但是relationship一定要建立在具有外键关系的两个对象上</p>
+<p>例如<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">"user"</span></span><br><span class="line">    id = Column(Integer, primary_key = <span class="keyword">True</span>)</span><br><span class="line">    name = Column(String(<span class="number">20</span>))</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">"article"</span></span><br><span class="line">    id = Column(Integer, primary_key = <span class="keyword">True</span>)</span><br><span class="line">    user_id = Column(Integer, ForeignKey(<span class="string">"user.id"</span>))</span><br><span class="line">    user = relationship(<span class="string">"User"</span>, order_by = <span class="string">"Article.id"</span>, backref = backref(<span class="string">"article"</span>), cascade = <span class="string">"save-update, merge, delete"</span>)</span><br></pre></td></tr></table></figure></p>
+<p>user和article之间是一对多的关系，由于article具有</p>
+<pre><code>user = relationship(&quot;User&quot;, order_by = &quot;Article.id&quot;, backref = backref(&quot;article&quot;), cascade = &quot;save-update, merge, delete&quot;)
+</code></pre><p>字段，所以article具有user属性，也即article.user可以获取article对应的user</p>
+<p>同时因为</p>
+<pre><code>backref = backref(&quot;article&quot;)
+</code></pre><p>使得user具有article属性，由外键关系知道user和article为一对多关系，所以，user.article类型为[]。</p>
+<p>backref和back_populates<br>stackoverflow上对两者的解释</p>
+<blockquote>
+<p>If you use backref you don’t need to declare the relationship on the second table</p>
+</blockquote>
+<p>就是使用backref就不用再两个具有外键的类上都声明relationship。</p>
+<p>backref<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Parent</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">'parent'</span></span><br><span class="line">    id = Column(Integer, primary_key=<span class="keyword">True</span>)</span><br><span class="line">    children = relationship(<span class="string">"Child"</span>, backref=<span class="string">"parent"</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Child</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">'child'</span></span><br><span class="line">    id = Column(Integer, primary_key=<span class="keyword">True</span>)</span><br><span class="line">    parent_id = Column(Integer, ForeignKey(<span class="string">'parent.id'</span>))</span><br></pre></td></tr></table></figure></p>
+<p>back_populates<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Parent</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">'parent'</span></span><br><span class="line">    id = Column(Integer, primary_key=<span class="keyword">True</span>)</span><br><span class="line">    children = relationship(<span class="string">"Child"</span>, back_populates=<span class="string">"parent"</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Child</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">'child'</span></span><br><span class="line">    id = Column(Integer, primary_key=<span class="keyword">True</span>)</span><br><span class="line">    parent_id = Column(Integer, ForeignKey(<span class="string">'parent.id'</span>))</span><br><span class="line">    parent = relationship(<span class="string">"Parent"</span>, back_populates=<span class="string">"children"</span>)</span><br></pre></td></tr></table></figure></p>
+<p>上面两者是等价的</p>
+<hr>
+<h2 id="cascade级联"><a href="#cascade级联" class="headerlink" title="cascade级联"></a>cascade级联</h2><p>例子中</p>
+<pre><code>cascade = &quot;save-update, merge, delete&quot;
+</code></pre><p>属性用来表示这两个关联起来的对象的增删的时候之间的关系</p>
+<p><strong>cascade默认值为save-update, merge</strong></p>
+<p><strong>为了表达更清晰</strong>，声明了relationship属性的类我们称之为<strong>子类</strong>，没有声明的我们称之为<strong>父类</strong>，使用上面的user和article例子<br><img src="http://static.zybuluo.com/gzm1997/09845m65v996usjz8kr4dc9n/image_1cdi1seaqu2sntue61gq51la29.png" alt="image_1cdi1seaqu2sntue61gq51la29.png-6.8kB"></p>
+<p>1.save-update</p>
+<ul>
+<li>当user被add到session中的时候，两个article也自动被add到session中了</li>
+<li>当article1被添加到session中时，user自动被添加进session，同时article2也会自动被添加进去</li>
+</ul>
+<p>2.delete</p>
+<ul>
+<li>当删除子对象时，父对象也一起被删除，如果子对象有指向父对象的外键且这个外键指向这个被删除的父对象，那么这个外键设置为null</li>
+<li>当删除父对象时，子对象没有删除，如果子对象有指向父对象的外键且这个外键指向这个被删除的父对象，那么外键设置为null</li>
+</ul>
+<p>3.delete-orphan</p>
+<blockquote>
+<p>delete-orphan实在delete的基础上，加上当子对象被解除跟父对象的关系的时候就会被标志为删除</p>
+</blockquote>
+<p>4.其他还有merge，refresh-expire，expunge那些不常用的就不要求理解了</p>
+<hr>
+<h2 id="测试代码"><a href="#测试代码" class="headerlink" title="测试代码"></a>测试代码</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sqlalchemy <span class="keyword">import</span> Column, String, Integer, ForeignKey, create_engine</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.orm <span class="keyword">import</span> sessionmaker, relationship, backref</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.ext.declarative <span class="keyword">import</span> declarative_base</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Base = declarative_base()</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">"user"</span></span><br><span class="line">    id = Column(Integer, primary_key = <span class="keyword">True</span>)</span><br><span class="line">    name = Column(String(<span class="number">20</span>))</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Article</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">"article"</span></span><br><span class="line">    id = Column(Integer, primary_key = <span class="keyword">True</span>)</span><br><span class="line">    user_id = Column(Integer, ForeignKey(<span class="string">"user.id"</span>))</span><br><span class="line">    user = relationship(<span class="string">"User"</span>, order_by = <span class="string">"Article.id"</span>, backref = backref(<span class="string">"article"</span>), cascade = <span class="string">"save-update, merge, delete"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">engine = create_engine(<span class="string">'mysql+mysqlconnector://root:Gzm20125@localhost:3306/test'</span>)</span><br><span class="line">DBSession = sessionmaker(bind = engine)</span><br><span class="line"></span><br><span class="line">Base.metadata.drop_all(engine)</span><br><span class="line">Base.metadata.create_all(engine)</span><br><span class="line"><span class="comment"># 创建session对象:</span></span><br><span class="line"></span><br><span class="line">session = DBSession()</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/05/15/sqlalchemy级联/" data-id="cjhzvr2ud0007k0o0hh6yovqu" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-多维数组最短路径问题" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/05/06/多维数组最短路径问题/" class="article-date">
@@ -96,7 +173,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/06/多维数组最短路径问题/" data-id="cjhmtzj0y000fa8o00jjy9su1" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/06/多维数组最短路径问题/" data-id="cjhzvr2ur000fk0o0jiyk8sya" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/算法/">算法</a></li></ul>
@@ -192,7 +269,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/" data-id="cjhmtzj0m0003a8o0qn5hw8qd" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/" data-id="cjhzvr2u10003k0o0lueavw1e" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li></ul>
@@ -260,7 +337,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/06/mysql的charset和collate/" data-id="cjhmtzj0o0004a8o0307w1xno" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/06/mysql的charset和collate/" data-id="cjhzvr2ua0006k0o0euor8o59" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
@@ -290,7 +367,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -300,7 +377,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/sqlalchemy/" style="font-size: 15px;">sqlalchemy</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/sqlalchemy/" style="font-size: 15px;">sqlalchemy</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -309,7 +386,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
     </div>
   </div>
 
@@ -320,6 +397,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2018/06/04/java基础知识/">java基础知识</a>
+          </li>
         
           <li>
             <a href="/2018/05/26/python包调用问题/">python包调用问题</a>
@@ -335,10 +416,6 @@
         
           <li>
             <a href="/2018/05/22/自制简易图片云盘/">自制简易图片云盘</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/16/sqlalchemy一些常见概念/">sqlalchemy一些常见概念</a>
           </li>
         
       </ul>
