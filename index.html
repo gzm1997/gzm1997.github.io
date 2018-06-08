@@ -62,6 +62,154 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-nginx-supervisor部署aiohttp" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/08/nginx-supervisor部署aiohttp/" class="article-date">
+  <time datetime="2018-06-08T07:18:32.000Z" itemprop="datePublished">2018-06-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/08/nginx-supervisor部署aiohttp/">nginx+supervisor部署aiohttp</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>服务器上的部署问题一直很让我头疼 因为我一直是一个在windows平台上开发的 但是vps一直都是选择ubuntu16.04居多 因为在windos系统上 权限是一个总是不是被注意的事情 但是在ubuntu系统上部署web后端的时候 权限问题尤为重要</p>
+</blockquote>
+<hr>
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>为什么选择nginx+supervisor这样的组合来部署 因为</p>
+<p>优点</p>
+<ul>
+<li>nginx是一个完美的前端服务器 可以防止基于畸形的http协议的攻击等等</li>
+<li>使用nginx运行几个aiohttp实例可以使用CPU多核</li>
+<li>nginx对static静态文件的支持比aiohttp的内置的静态文件支持更快</li>
+<li>supervisor主要是为了系统崩溃或者重启之后重新运行web app实例 怎么kill也kill不掉</li>
+</ul>
+<p>缺点</p>
+<ul>
+<li>配置比其他组合方式麻烦一点</li>
+</ul>
+<p><a href="https://aiohttp.readthedocs.io/en/stable/deployment.html#nginx-supervisord" target="_blank" rel="noopener">参考链接</a></p>
+<p>由于选择使用nginx+superviosr的组合方式部署aiohttp 所以要先下载nginx和supervisor 这个没什么问题 自行谷歌即可 但是要注意点</p>
+<blockquote>
+<p>因为aiohttp是只可以支持python3.5.3+的 但是好巧不巧ubuntu16.04的自带python版本是python3.5.2 这下有点蛋疼 我给的建议是保留python3.5 另外安装python3.6</p>
+<p>因为ubuntu系统以及很多像sublime等软件都是依赖py2或者py3.5的 一旦卸载或者修改了/use/bin/python的链接<br>会导致一系列版本不兼容的问题 我试过最严重的是卸载了python3.5 并且修改默认python版本为3.6 系统崩溃<br>折腾了很久最后只能重装系统</p>
+<p>为什么我要说这个呢 因为supervisor依赖于ubuntu的py2的<br>所以最好不要卸载任何版本python和修改系统默认的python版本 最好就另行安装python3.6 终端中使用python3.6调用即可</p>
+</blockquote>
+<p>项目代码放置于/var/www/aio_ooad下<br><img src="http://static.zybuluo.com/gzm1997/0wr0fcj2lo4yhzqwxxtaybpo/image_1cff1giub10gmo07k6b16gjv339.png" alt="image_1cff1giub10gmo07k6b16gjv339.png-71.6kB"></p>
+<hr>
+<h2 id="nginx配置"><a href="#nginx配置" class="headerlink" title="nginx配置"></a>nginx配置</h2><ul>
+<li>nginx配置文件 /etc/nginx/nginx.conf</li>
+<li>nginx日志文件 <ul>
+<li>/var/log/nginx/access.log</li>
+<li>/var/log/nginx/error.log</li>
+</ul>
+</li>
+</ul>
+<p>/etc/nginx/nginx.conf<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">  server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    client_max_body_size <span class="number">4</span>G;</span><br><span class="line"></span><br><span class="line">    server_name localhost;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">      proxy_set_header Host $http_host;</span><br><span class="line">      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">      proxy_redirect off;</span><br><span class="line">      proxy_buffering off;</span><br><span class="line">      proxy_pass http:<span class="comment">//aiohttp;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    location /<span class="keyword">static</span> &#123;</span><br><span class="line">      # path for static files</span><br><span class="line">      root /var/www/aio_ooad/<span class="keyword">static</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line">  upstream aiohttp &#123;</span><br><span class="line">    # fail_timeout=0 means we always retry an upstream even if it failed</span><br><span class="line">    # to return a good HTTP response</span><br><span class="line"></span><br><span class="line">    # Unix domain servers</span><br><span class="line">    server unix:/var/www/aio_ooad/example_1.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">    server unix:/var/www/aio_ooad/example_2.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">    server unix:/var/www/aio_ooad/example_3.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">    server unix:/var/www/aio_ooad/example_4.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    # Unix domain sockets are used in this example due to their high performance,</span><br><span class="line">    # but TCP/IP sockets could be used instead:</span><br><span class="line">    # server 127.0.0.1:8081 fail_timeout=0;</span><br><span class="line">    # server 127.0.0.1:8082 fail_timeout=0;</span><br><span class="line">    # server 127.0.0.1:8083 fail_timeout=0;</span><br><span class="line">    # server 127.0.0.1:8084 fail_timeout=0;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面大部分内容都是常规的</p>
+<p>指明静态文件路径 nginx提供静态文件的支持是很快的 这是选择nginx部署的原因之一<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">location /<span class="keyword">static</span> &#123;</span><br><span class="line">  # path for static files</span><br><span class="line">  root /var/www/aio_ooad/<span class="keyword">static</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>选择使用unix domian sockets文件的方式设置upstream 下面的注释也说到也可以使用TCP/IP sockets的方式 但是unix domain socket效果更好 一共配置了四个sockets文件 意味着后台一共有四个web app实例可以供nginx轮询选择<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">upstream aiohttp &#123;</span><br><span class="line">  # fail_timeout=0 means we always retry an upstream even if it failed</span><br><span class="line">  # to return a good HTTP response</span><br><span class="line"></span><br><span class="line">  # Unix domain servers</span><br><span class="line">  server unix:/var/www/aio_ooad/example_1.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">  server unix:/var/www/aio_ooad/example_2.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">  server unix:/var/www/aio_ooad/example_3.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">  server unix:/var/www/aio_ooad/example_4.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  # Unix domain sockets are used in this example due to their high performance,</span><br><span class="line">  # but TCP/IP sockets could be used instead:</span><br><span class="line">  # server 127.0.0.1:8081 fail_timeout=0;</span><br><span class="line">  # server 127.0.0.1:8082 fail_timeout=0;</span><br><span class="line">  # server 127.0.0.1:8083 fail_timeout=0;</span><br><span class="line">  # server 127.0.0.1:8084 fail_timeout=0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="supervisor配置"><a href="#supervisor配置" class="headerlink" title="supervisor配置"></a>supervisor配置</h2><ul>
+<li>supervisor默认配置文件 /etc/supervisor/supervisord.conf</li>
+<li>部署项目的配置文件 /etc/supervisor/conf.d/example.ini</li>
+</ul>
+<p>修改/etc/supervisor/supervisord.conf 最后一行处为<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[include]</span><br><span class="line">files = conf.d<span class="comment">/*.ini    ;</span></span><br></pre></td></tr></table></figure></p>
+<p>/etc/supervisor/conf.d/example.ini<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[program:aiohttp]</span><br><span class="line">numprocs = <span class="number">4</span></span><br><span class="line">numprocs_start = <span class="number">1</span></span><br><span class="line">process_name = example_%(process_num)s</span><br><span class="line"></span><br><span class="line">; Unix socket paths are specified by command line.</span><br><span class="line">command=python3.6 /var/www/aio_ooad/test_main.py --path=/var/www/aio_ooad/example_%(process_num)s.sock --port=<span class="number">808</span>%(process_num)s</span><br><span class="line"></span><br><span class="line">; We can just as easily pass TCP port numbers:</span><br><span class="line">; command=/path/to/aiohttp_example.py --port=<span class="number">808</span>%(process_num)s</span><br><span class="line"></span><br><span class="line">user=www-data</span><br><span class="line">autostart=<span class="keyword">true</span></span><br><span class="line">autorestart=<span class="keyword">true</span></span><br></pre></td></tr></table></figure></p>
+<pre><code>numprocs = 4
+numprocs_start = 1
+process_name = example_%(process_num)s
+</code></pre><p>一共四个进程 进程号从1到4 进程名字由进程号决定 则为example_1 example_2 example_3 example_4</p>
+<pre><code>command=python3.6 /var/www/aio_ooad/test_main.py --path=/var/www/aio_ooad/example_%(process_num)s.sock --port=808%(process_num)s
+user=www-data
+</code></pre><p>后台运行此命令 也即是运行web app所在的py文件 执行用户为www-data</p>
+<p>这里坑就比较多了</p>
+<p>1.python模块问题<br>因为supervisor是由root用户运行的 所以在supervisor里面后台执行python命令也是在root用户下执行的</p>
+<p>正如我开始所说 我一直依赖都是windows系统下进行开发的 对权限的意识不是很足</p>
+<p>下面我们来看看一个模块安装问题<br>因为我是使用普通用户gzm进行安装aiohttp模块的 但是在部署之后日志显示没有安装aiohttp模块</p>
+<p>让我们在普通用户gzm下打开python3终端 查看模块安装目录<br><img src="http://static.zybuluo.com/gzm1997/61hncydvbdnd2cwdkcofcks8/image_1cff2k7ie1nqkpra1a7t1pp81e0q2m.png" alt="image_1cff2k7ie1nqkpra1a7t1pp81e0q2m.png-40kB"><br>我们会发现里面有个路径为</p>
+<pre><code>/home/gzm/.local/lib/python3.6/site-packages
+</code></pre><p>进入之后发现aiohttp正是安装在这个路径下面<br><img src="http://static.zybuluo.com/gzm1997/npxy5oetqeztqsxq16xr4t4b/image_1cff2pkee1quh1kbssklugl167p33.png" alt="image_1cff2pkee1quh1kbssklugl167p33.png-66kB"></p>
+<p>然后让我们切换为root用户 查看模块安装路径 发现没有/home/gzm/.local/lib/python3.6/site-packages 这个路径 这就解释了为什么即使我真的在gzm这个用户下安装了aiohttp等模块 但是运行supervisor还是会在日志中报错没有此模块 所以正确的方式是切换到root安装需要的模块<br><img src="http://static.zybuluo.com/gzm1997/clvu614mas8hh45xfdoxsgh3/image_1cff2sipucq2gtm1qid5141fvd4g.png" alt="image_1cff2sipucq2gtm1qid5141fvd4g.png-40.1kB"></p>
+<p>还有一个问题是</p>
+<pre><code>--path=/var/www/aio_ooad/example_%(process_num)s.sock
+</code></pre><p>意味着www-data用户需要在/var/www/aio_ooad目录下创建四个.socket文件 以支持nginx 所以/var/www/aio_ooad这个文件需要把所有权改为www-data 不然会在日志中报错permission denied</p>
+<pre><code>sudo chown -R www-data:www-data /var/www/aio_ooad/
+</code></pre><hr>
+<h2 id="nginx-supervisor重启命令"><a href="#nginx-supervisor重启命令" class="headerlink" title="nginx supervisor重启命令"></a>nginx supervisor重启命令</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo /etc/init.d/nginx restart</span><br><span class="line">sudo supervisorctl reload</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cji5n4dc300062ko09jx1kfe0" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deploy/">deploy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ubuntu/">ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java-socket编程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/08/java-socket编程/" class="article-date">
+  <time datetime="2018-06-08T07:14:26.000Z" itemprop="datePublished">2018-06-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/08/java-socket编程/">java socket编程</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>java的socket编程跟python的很像 而且也很方便 简单记录一下 同时server那边的accept也是阻塞的</p>
+</blockquote>
+<p>connect函数可以在初始化一个socket对象之后 一般客户端可以用来链接服务端 但是如果在socket构造函数那里传入serverName和port 也是可以在初始化的时候进行连接的</p>
+<p>服务端<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.DataInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.DataOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.net.ServerSocket;</span><br><span class="line"><span class="keyword">import</span> java.net.Socket;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JServer</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> ServerSocket server;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">JServer</span><span class="params">(<span class="keyword">int</span> port)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        server = <span class="keyword">new</span> ServerSocket(port);</span><br><span class="line">        server.setSoTimeout(<span class="number">10000</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">"等待客户端连接"</span>);</span><br><span class="line">                Socket s = server.accept();</span><br><span class="line">                System.out.println(<span class="string">"远程连接地址 "</span> + s.getRemoteSocketAddress());</span><br><span class="line">                DataInputStream in = <span class="keyword">new</span> DataInputStream(s.getInputStream());</span><br><span class="line">                System.out.println(<span class="string">"接受数据"</span> + in.readUTF());</span><br><span class="line">                DataOutputStream out = <span class="keyword">new</span> DataOutputStream(s.getOutputStream());</span><br><span class="line">                out.writeUTF(<span class="string">"我接收到了 拜拜"</span>);</span><br><span class="line">                s.close();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException i) &#123;</span><br><span class="line">                i.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        JServer JS = <span class="keyword">new</span> JServer(<span class="number">5000</span>);</span><br><span class="line">        JS.run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>客户端<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.DataInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.DataOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.net.Socket;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JClient</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Socket client;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">JClient</span><span class="params">(String serverName, <span class="keyword">int</span> port)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        client = <span class="keyword">new</span> Socket(serverName, port);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">"现在开始连接服务端"</span>);</span><br><span class="line">            DataOutputStream out = <span class="keyword">new</span> DataOutputStream(client.getOutputStream());</span><br><span class="line">            out.writeUTF(<span class="string">"我是客户端 服务端你那边接收到我发的信息了没"</span>);</span><br><span class="line">            DataInputStream in = <span class="keyword">new</span> DataInputStream(client.getInputStream());</span><br><span class="line">            System.out.println(<span class="string">"从服务端接受到 "</span> + in.readUTF());</span><br><span class="line">            client.close();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException i) &#123;</span><br><span class="line">            i.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        JClient client = <span class="keyword">new</span> JClient(<span class="string">"127.0.0.1"</span>, <span class="number">5000</span>);</span><br><span class="line">        client.run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>结果<br><img src="http://static.zybuluo.com/gzm1997/wqhihdmobujgo1q0qhkowxzu/image_1cf7fbt5l1flia2gpmn1bp1328p.png" alt="image_1cf7fbt5l1flia2gpmn1bp1328p.png-192.9kB"><br><img src="http://static.zybuluo.com/gzm1997/n2xnec3oqf70wxtjzugqpfjs/image_1cf7fcgan62o1ict1n4lvbbda16.png" alt="image_1cf7fcgan62o1ict1n4lvbbda16.png-160.3kB"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cji5n4dbg00002ko0z33hp8rb" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/socket/">socket</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-java基础知识" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/06/04/java基础知识/" class="article-date">
@@ -296,7 +444,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjhzvr2r60000k0o0nyb420o2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cji5n4dc9000d2ko0ssseupu7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -370,7 +518,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjhzvr2u60004k0o08v1enp3r" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cji5n4dc400082ko0x1p1sjnd" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/package/">package</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
@@ -441,7 +589,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cjhzvr2uo000ck0o048up73ez" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cji5n4dcf000k2ko01ltb9d9g" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ORM/">ORM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
@@ -503,7 +651,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cjhzvr2uq000ek0o02xek6gb6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cji5n4dc100052ko016ippc4o" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/backend/">backend</a></li></ul>
@@ -578,7 +726,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/22/自制简易图片云盘/" data-id="cjhzvr2vv0019k0o0tjng7k0s" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/22/自制简易图片云盘/" data-id="cji5n4dep001n2ko0iyo7xhyi" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/git/">git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/image/">image</a></li></ul>
@@ -631,7 +779,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/16/sqlalchemy一些常见概念/" data-id="cjhzvr2w9001hk0o0bikt4ya3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/16/sqlalchemy一些常见概念/" data-id="cji5n4dcb000f2ko0vtn39vge" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li></ul>
@@ -749,7 +897,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cjhzvr2vs0017k0o0w0ye455h" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cji5n4dcn000s2ko010ujzaz3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
@@ -809,241 +957,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/" data-id="cjhzvr2ul000bk0o073wa21y9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/" data-id="cji5n4dc8000c2ko0d9jmwld0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/requests/">requests</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-上传和展示pdf以及markdown" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/15/上传和展示pdf以及markdown/" class="article-date">
-  <time datetime="2018-05-15T14:57:44.000Z" itemprop="datePublished">2018-05-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/15/上传和展示pdf以及markdown/">上传和展示pdf以及markdown</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <hr>
-<h2 id="demo"><a href="#demo" class="headerlink" title="demo"></a>demo</h2><p><a href="http://138.68.235.123/upload" target="_blank" rel="noopener">查看地址</a></p>
-<p><a href="http://138.68.235.123/show?file_name=readme.pdf" target="_blank" rel="noopener">pdf版本readme地址</a></p>
-<hr>
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这个是开学前跟别人赌气写下的一个很小的web app，功能是上传pdf文件，然后获得这个文件在线浏览的url，需求很简单。之前为了方便只是把上传到服务器的文件存在flask static文件夹下，会有不便于管理等等问题。这个周末做了如下改进：使用mysql进行存储文件，进行模块的细化。</p>
-<p align="right">郭柱明 2018/3/25</p>
-
-
-<hr>
-<h2 id="可行性分析"><a href="#可行性分析" class="headerlink" title="可行性分析"></a>可行性分析</h2><blockquote>
-<p>从需求上而言，这个web app仅仅有上传，展示两个功能。<br>我一个人可以进行开发，但是在人力物力上已经绰绰有余。<br>在app的服务器部署上，我有一个digital ocean vps可以用来部署，所以部署上也没有太大问题。</p>
-</blockquote>
-<hr>
-<h2 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h2><ol>
-<li>上传pdf文件</li>
-<li>获得在线浏览此pdf文件的url</li>
-<li>打开这个url可以进行文件的预览</li>
-</ol>
-<hr>
-<h2 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h2><p>###大概设计###</p>
-<p><img src="http://static.zybuluo.com/gzm1997/5de0ll4jozkxxzntxo20ni2x/struction.png" alt="struction.png-12.1kB"></p>
-<p>整个结构呈现cs结构，server我使用nginx，server使用wsgi接口调用flask app</p>
-<p>###详细设计###</p>
-<ul>
-<li>包-pdf(整个web app打包为一个包)<ul>
-<li>db.py模块(定义一个包含数据库链接的类以及初始化数据库的函数)</li>
-<li>f.py模块(定义File类)</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h2><blockquote>
-<p>编码情况详细见<a href="https://github.com/gzm1997/pdf" target="_blank" rel="noopener">github</a></p>
-</blockquote>
-<hr>
-<h2 id="测试与运行"><a href="#测试与运行" class="headerlink" title="测试与运行"></a>测试与运行</h2><p><img src="http://static.zybuluo.com/gzm1997/v93gqdz11aenv30kisr64r41/pdf.gif" alt="pdf.gif-631.7kB"></p>
-<hr>
-<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><blockquote>
-<p>部署有个问题：无法从事先设置的环境变量中加载出mysql的账号和密码，在服务器上调试没问题，但是一旦部署上去就会在这部分出问题，无奈下只能在代码使用mysql的账号密码，有一定的安全风险。</p>
-</blockquote>
-<hr>
-<h2 id="后期改进"><a href="#后期改进" class="headerlink" title="后期改进"></a>后期改进</h2><blockquote>
-<p>增加了上传和预览markdown文件的功能，具有改进为博客系统的潜质</p>
-</blockquote>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/上传和展示pdf以及markdown/" data-id="cjhzvr2ug0008k0o07hvc3gs5" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask/">flask</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-暗网爬虫" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/15/暗网爬虫/" class="article-date">
-  <time datetime="2018-05-15T14:54:11.000Z" itemprop="datePublished">2018-05-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/15/暗网爬虫/">暗网爬虫</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>暗网蜘蛛，本项目<a href="https://github.com/15331094/shadow_spider" target="_blank" rel="noopener">github地址</a></p>
-<hr>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/spider.jpg?raw=true" alt="shadow_spider"></p>
-<hr>
-<p>暗网</p>
-<blockquote>
-<p>暗网（英语：Darknet或Dark Web）通称只能用特殊软件、特殊授权、或对电脑做特殊设置才能连上的网络，使用一般的浏览器和搜索引擎找不到暗网的内容</p>
-</blockquote>
-<hr>
-<h2 id="在python上进入暗网"><a href="#在python上进入暗网" class="headerlink" title="在python上进入暗网"></a>在python上进入暗网</h2><hr>
-<p>在python中进入暗网需要配置tor代理，因为本人使用的win10，所以主要讲在win10下配置tor代理</p>
-<hr>
-<p><strong>下载准备</strong>：（除了下载给出的下载链接，本人此项目github也提供相关资源下载 <a href="https://github.com/15331094/shadow_spider/tree/master/resources" target="_blank" rel="noopener">下载链接</a>）</p>
-<ol>
-<li><p>首先下载tor expert bundle<br>官方下载<a href="https://www.torproject.org/download/download" target="_blank" rel="noopener">链接</a><br>本人提供的百度云<a href="http://pan.baidu.com/s/1eRNpqa2" target="_blank" rel="noopener">链接</a>，密码: fsp8<br>下载解压</p>
-</li>
-<li><p>下载到的tor expert bundle没有图形界面，使用起来不方便，因此需要下载Vidalia配合使用<br>本人提供的百度云<a href="http://pan.baidu.com/s/1bOdr6e" target="_blank" rel="noopener">链接</a>，密码: kknf</p>
-</li>
-<li><p>cow下载，百度云<a href="http://pan.baidu.com/s/1c1QHf1m" target="_blank" rel="noopener">连接</a>，密码: c4kx。<br>由于tor使用的协议是socks5，由于需要python的<strong>requests</strong>和<strong>selenium</strong>两个模块进行get， post请求。但是经过本人尝试，requests对socks5协议代理支持是很不良好的，使用requests加上socks5协议代理去get类似于 <a href="https://api.ipify.org/?format=json" target="_blank" rel="noopener">https://api.ipify.org/?format=json</a> 这样查询ip的url是没有问题的，但是去get其他url或者暗网的url马上会出现莫名其妙的错误。所以需要使用cow把tor的socks5协议转为http协议</p>
-</li>
-</ol>
-<hr>
-<p><strong>配置</strong></p>
-<hr>
-<p>我们要配置上面下载到的工具，使得我们的代理路线如下：<br><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/net.png?raw=true" alt="net"><br>1,解压下载下来的tor expert bundle</p>
-<p>2,开启你的vpn，本人使用的green vpn，socks5协议，监听1080端口</p>
-<p>3,安装vidalia，安装后如图所示：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/vidalia.png?raw=true" alt="vidalia"></p>
-<p>然后以<strong>管理员身份</strong>运行Start Vidalia.exe</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/vidalia%20run.png?raw=true" alt="vidalia run"></p>
-<p>点击设定，在常规那里选中vidalia启动时运行tor软件，并在下面的路径中找到解压tor expert bundle后得到的tor.exe</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/setting1.png?raw=true" alt="setting1"></p>
-<p>点击网络，选中我使用代理服务器连接网络，由于本人使用的green vpn是监听本地的1080端口，所以地址写为：127.0.0.1，端口写为：1080（貌似shadowsocks等vpn也是监听本地1080端口）</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/setting2.png?raw=true" alt="setting2"></p>
-<p>点击高级，在tor配置文件下选中vidalia安装后得到的Data/Tor/torrc文件，在数据目录那里选中Data文件夹（貌似我是多余地自己另外创建了一个Data文件夹给它，但是并不影响，有一个Data文件夹给vidalia存储数据就可以了）</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/setting3.png?raw=true" alt="setting3"></p>
-<p>点击确认</p>
-<p>点击启动tor</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/run.png?raw=true" alt="run"></p>
-<p>稍等片刻，显示连接tor网络成功！</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/connect.png?raw=true" alt="connect"></p>
-<p>因为需要在requests模块上使用tor代理而requests模块对socks5支持非常不良好，所以我们需要配置cow把socks5转为http<br>打开解压后的cow目录：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/cow.png?raw=true" alt="cow"></p>
-<p>修改rc.txt内容为如下：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/rc.png?raw=true" alt="rc"></p>
-<p>点击运行cow.exe或者点击cow-hide.exe后台运行</p>
-<hr>
-<p><strong>在python中使用tor代理</strong></p>
-<hr>
-<p>再次重申上面配置好的代理结构：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/net.png?raw=true" alt="net"></p>
-<p>能否正常使用tor代理一个很好的检验方法就是能否<strong>进入暗网</strong>，这是一个收集了很多暗网url的网站：<a href="https://onionlinks.org/" target="_blank" rel="noopener">https://onionlinks.org/</a></p>
-<p>我给出一个暗网url:<strong><a href="http://hcutffpecnc44vef.onion/" target="_blank" rel="noopener">http://hcutffpecnc44vef.onion/</a></strong><br>这是一个暗网的金融网站，普通的上网方式是打不开的，作为一个大哥哥，真心建议18-的小朋友还是不要去看暗网一些其他内容，为了你的身心健康。那下面的测试就是在python中进入这个暗网url为检验标准。</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/cash%20machine.png?raw=true" alt="cash machine"></p>
-<p><em>在requests中进入暗网</em>：<br>新建一个test.py,输入以下内容：</p>
-<pre><code>import requests
-proxies = {&apos;http&apos;: &apos;http://127.0.0.1:7777&apos;, &apos;https&apos;: &apos;http://127.0.0.1:7777&apos;}
-s = requests.Session()
-r = s.get(&quot;http://hcutffpecnc44vef.onion/&quot;, proxies = proxies)
-print(r.text)
-f = open(&quot;onion.html&quot;, &quot;wb&quot;)
-f.write(r.content)
-f.close()
-</code></pre><p>运行，发现可以打印这个暗网网页的内容出来了：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/run%20test.png?raw=true" alt="run test"></p>
-<p>打开test.py同一目录下，生成了一个onion.html的文件，点开，发现把内容也下载下来了：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/get.png?raw=true" alt="get"></p>
-<p><em>在python的selenium模块的模拟浏览器phantomjs中进入暗网</em><br>selenium有三种，chrome，firefox，phantomjs，前两种有图形界面，第三种没有图形界面，所以我选中phantomjs</p>
-<p>phantomjs下载：<br>本人github上的下载<a href="https://github.com/15331094/shadow_spider/blob/master/resources/phantomjs-2.1.1-windows.zip" target="_blank" rel="noopener">下载链接</a><br>本人百度云<a href="http://pan.baidu.com/s/1eSxNa86" target="_blank" rel="noopener">下载链接</a>，密码: pj81</p>
-<p>这次我们选择另一个暗网url:<a href="http://zqktlwi4fecvo6ri.onion/wiki/index.php/Main_Page" target="_blank" rel="noopener">http://zqktlwi4fecvo6ri.onion/wiki/index.php/Main_Page</a><br>这是一个暗网wiki，上面有很多分类好的暗网url,各位要谨慎点开那些url，因为不少内容不健康的。<br>下载phantomjs解压，新建一个test2.py文件(下面的executable_path是上面下载解压phantomjs得到的phantomjs.exe运行文件的路径)</p>
-<pre><code>from selenium import webdriver
-
-executable_path = &quot;C:/Users/Administrator/Downloads/phantomjs-2.1.1-windows/phantomjs-2.1.1-windows/bin/phantomjs.exe&quot;
-service_args = [&apos;--proxy=127.0.0.1:7777&apos;, &apos;--proxy-type=http&apos;]
-
-driver = webdriver.PhantomJS(executable_path = executable_path, service_args = service_args)
-
-driver.get(&quot;http://zqktlwi4fecvo6ri.onion/wiki/index.php/Main_Page&quot;)
-
-print(driver.page_source)
-
-f = open(&quot;onion.html&quot;, &quot;wb&quot;)
-f.write(driver.page_source.encode(&quot;utf-8&quot;))
-f.close()
-</code></pre><p>结果也可行：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/run%20test2.png?raw=true" alt="run test2"><br><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/wiki.png?raw=true" alt="wiki"></p>
-<hr>
-<h2 id="本人的shadow-spider项目（未完待续）"><a href="#本人的shadow-spider项目（未完待续）" class="headerlink" title="本人的shadow_spider项目（未完待续）"></a>本人的shadow_spider项目（未完待续）</h2><hr>
-<p>项目<a href="https://github.com/15331094/shadow_spider" target="_blank" rel="noopener">github地址</a><br>本项目目的在于最大程度还原暗网上网页的内容，这就意味着需要：</p>
-<p>注意要点：</p>
-<ul>
-<li>下载html</li>
-<li>在下载html之前必须加载javascript。因为javascript里面会有ajax，如果把javascript下载下来，而不是加载完javascript再下载html，那么下载到本地ajax向tor网络（暗网）中的服务器发送网络请求，这是行不通的。所以必须加载完javascript再下载html（网上有人说暗网上的网页都没有javascript，但是经本人尝试，暗网上的网页是有javascript的）。而python里加载javascript一个很好的工具就是上面的selenium</li>
-<li>下载css和图片等静态资源，需要使用requests模块，不能使用selenium。selenium下载图片和css等资源是很蛋疼的。因为这些模拟浏览器要下载资源就必须做到模仿我们在真的浏览器上那样右键另存为等操作，而这时候会弹出下载确认的弹窗，而selenium中的chrome和firefox是需要手动点击代码运行过程中弹出来的确认保存弹窗的，而phantomjs没有图形界面，所以就根本下载不图片和css等资源。</li>
-</ul>
-<p>代码细节不详细说了，在我的<a href="https://github.com/15331094/shadow_spider" target="_blank" rel="noopener">github</a>中下载到本地，输入：</p>
-<pre><code>pip install -r requirements.txt
-</code></pre><p>安装需要的响应模块</p>
-<p>运行main.py文件，输入一个暗网url:</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/run%20main.png?raw=true" alt="run main"></p>
-<p>下载到本地的结果：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/result.png?raw=true" alt="result"></p>
-<p>下面是一些暗网网页真实模样和我还原的样子：<br>真实1：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/real1.png?raw=true" alt="real1"></p>
-<p>还原1：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/imitate1.png?raw=true" alt="imitate1"></p>
-<p>真实2：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/real2.png?raw=true" alt="real2"></p>
-<p>还原2：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/imitate2.png?raw=true" alt="imitate2"></p>
-<p>此项目shadow_spider未完待续，等到暑假回考虑添加服务端。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/暗网爬虫/" data-id="cjhzvr2vq0016k0o0q91uksko" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deep-web/">deep web</a></li></ul>
 
     </footer>
   </div>
@@ -1070,7 +987,7 @@ f.close()
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -1080,7 +997,7 @@ f.close()
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/sqlalchemy/" style="font-size: 15px;">sqlalchemy</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 15px;">sqlalchemy</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -1102,6 +1019,14 @@ f.close()
       <ul>
         
           <li>
+            <a href="/2018/06/08/nginx-supervisor部署aiohttp/">nginx+supervisor部署aiohttp</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/08/java-socket编程/">java socket编程</a>
+          </li>
+        
+          <li>
             <a href="/2018/06/04/java基础知识/">java基础知识</a>
           </li>
         
@@ -1111,14 +1036,6 @@ f.close()
         
           <li>
             <a href="/2018/05/26/使用异步ORM-aiomysql-sa/">使用异步ORM aiomysql.sa</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/26/aiohttp基本使用/">aiohttp基本使用</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/22/自制简易图片云盘/">自制简易图片云盘</a>
           </li>
         
       </ul>
