@@ -19,7 +19,7 @@
 <meta property="og:image" content="http://static.zybuluo.com/gzm1997/61hncydvbdnd2cwdkcofcks8/image_1cff2k7ie1nqkpra1a7t1pp81e0q2m.png">
 <meta property="og:image" content="http://static.zybuluo.com/gzm1997/npxy5oetqeztqsxq16xr4t4b/image_1cff2pkee1quh1kbssklugl167p33.png">
 <meta property="og:image" content="http://static.zybuluo.com/gzm1997/clvu614mas8hh45xfdoxsgh3/image_1cff2sipucq2gtm1qid5141fvd4g.png">
-<meta property="og:updated_time" content="2018-06-08T07:31:08.313Z">
+<meta property="og:updated_time" content="2018-06-08T08:15:24.013Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="nginx+supervisor部署aiohttp">
 <meta name="twitter:description" content="前言 服务器上的部署问题一直很让我头疼 因为我一直是一个在windows平台上开发的 但是vps一直都是选择ubuntu16.04居多 因为在windos系统上 权限是一个总是不是被注意的事情 但是在ubuntu系统上部署web后端的时候 权限问题尤为重要   部署为什么选择nginx+supervisor这样的组合来部署 因为 优点  nginx是一个完美的前端服务器 可以防止基于畸形的http">
@@ -156,12 +156,14 @@ user=www-data
 </code></pre><p>意味着www-data用户需要在/var/www/aio_ooad目录下创建四个.socket文件 以支持nginx 所以/var/www/aio_ooad这个文件需要把所有权改为www-data 不然会在日志中报错permission denied</p>
 <pre><code>sudo chown -R www-data:www-data /var/www/aio_ooad/
 </code></pre><hr>
+<h2 id="web-app所在py"><a href="#web-app所在py" class="headerlink" title="web app所在py"></a>web app所在py</h2><p>test_main.py<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> aiohttp_polls <span class="keyword">import</span> main</span><br><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"></span><br><span class="line">parser = argparse.ArgumentParser(description=<span class="string">"aiohttp server example"</span>)</span><br><span class="line">parser.add_argument(<span class="string">'--path'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'--port'</span>)</span><br><span class="line"></span><br><span class="line">app = main.app</span><br><span class="line">args = parser.parse_args()</span><br><span class="line">web.run_app(app, host=<span class="string">"0.0.0.0"</span>, port=args.port, path=args.path)</span><br></pre></td></tr></table></figure></p>
+<hr>
 <h2 id="nginx-supervisor重启命令"><a href="#nginx-supervisor重启命令" class="headerlink" title="nginx supervisor重启命令"></a>nginx supervisor重启命令</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo /etc/init.d/nginx restart</span><br><span class="line">sudo supervisorctl reload</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cji5njk6600079so02zgxuh1m" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cji5p4j7f0008rwo02og0wl0s" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deploy/">deploy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ubuntu/">ubuntu</a></li></ul>
