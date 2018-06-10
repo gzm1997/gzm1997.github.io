@@ -8,7 +8,7 @@
   <title>nginx+supervisor部署aiohttp | gzm&#39;s blogs</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="前言 服务器上的部署问题一直很让我头疼 因为我一直是一个在windows平台上开发的 但是vps一直都是选择ubuntu16.04居多 因为在windos系统上 权限是一个总是不是被注意的事情 但是在ubuntu系统上部署web后端的时候 权限问题尤为重要   部署为什么选择nginx+supervisor这样的组合来部署 因为 优点  nginx是一个完美的前端服务器 可以防止基于畸形的http">
-<meta name="keywords" content="deploy,ubuntu,aiohttp">
+<meta name="keywords" content="aiohttp,deploy,ubuntu">
 <meta property="og:type" content="article">
 <meta property="og:title" content="nginx+supervisor部署aiohttp">
 <meta property="og:url" content="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/index.html">
@@ -163,7 +163,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cji5p4j7f0008rwo02og0wl0s" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cji8ftjm30009rko0zts10a81" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deploy/">deploy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ubuntu/">ubuntu</a></li></ul>
@@ -173,6 +173,15 @@ user=www-data
   
     
 <nav id="article-nav">
+  
+    <a href="/2018/06/10/aiohttp的跨域问题/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          aiohttp的跨域问题
+        
+      </div>
+    </a>
   
   
     <a href="/2018/06/08/java-socket编程/" id="article-nav-older" class="article-nav-link-wrap">
@@ -196,7 +205,7 @@ user=www-data
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -206,7 +215,7 @@ user=www-data
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 10px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 15px;">sqlalchemy</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 15px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 15px;">sqlalchemy</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -228,6 +237,10 @@ user=www-data
       <ul>
         
           <li>
+            <a href="/2018/06/10/aiohttp的跨域问题/">aiohttp的跨域问题</a>
+          </li>
+        
+          <li>
             <a href="/2018/06/08/nginx-supervisor部署aiohttp/">nginx+supervisor部署aiohttp</a>
           </li>
         
@@ -241,10 +254,6 @@ user=www-data
         
           <li>
             <a href="/2018/05/26/python包调用问题/">python包调用问题</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/26/使用异步ORM-aiomysql-sa/">使用异步ORM aiomysql.sa</a>
           </li>
         
       </ul>

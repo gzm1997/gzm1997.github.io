@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>aiohttp的跨域问题 | gzm&#39;s blogs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="跨域以前使用flask框架的时候一直都是没有前后端分离 现在使用aiohttp框架 并且前端使用vue 前后端分离 因此出现了跨域的问题 不同浏览器对跨域的支持也是不一样的 支持跨域的浏览器主要有  Chrome 3+ Firefox 3.5+ Opera 12+ Safari 4+ Internet Explorer 8+  标准的跨域请求默认是不发送任何的cookies的 如果需要把cooki">
+<meta name="keywords" content="aiohttp,cors">
+<meta property="og:type" content="article">
+<meta property="og:title" content="aiohttp的跨域问题">
+<meta property="og:url" content="http://yoursite.com/2018/06/10/aiohttp的跨域问题/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="跨域以前使用flask框架的时候一直都是没有前后端分离 现在使用aiohttp框架 并且前端使用vue 前后端分离 因此出现了跨域的问题 不同浏览器对跨域的支持也是不一样的 支持跨域的浏览器主要有  Chrome 3+ Firefox 3.5+ Opera 12+ Safari 4+ Internet Explorer 8+  标准的跨域请求默认是不发送任何的cookies的 如果需要把cooki">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/hc326fdj136namfjcbsu0vbv/image_1cfk1f1dvn7bpjdc6k3q61gc3m.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/z1x5btxclnhr8q4cnimb385l/image_1cfjvf6ui2ohpq1fbh19kjftm9.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/r0c7dc5v5mqrrb4jjm4vneod/image_1cfk4pnuuoi31aan1rmn1nr58s91g.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/aqsy4jbobs9al3xulxm13sy6/image_1cfk4ucj71ao11suj1r13j0taer1t.png">
+<meta property="og:updated_time" content="2018-06-10T06:18:14.427Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="aiohttp的跨域问题">
+<meta name="twitter:description" content="跨域以前使用flask框架的时候一直都是没有前后端分离 现在使用aiohttp框架 并且前端使用vue 前后端分离 因此出现了跨域的问题 不同浏览器对跨域的支持也是不一样的 支持跨域的浏览器主要有  Chrome 3+ Firefox 3.5+ Opera 12+ Safari 4+ Internet Explorer 8+  标准的跨域请求默认是不发送任何的cookies的 如果需要把cooki">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/hc326fdj136namfjcbsu0vbv/image_1cfk1f1dvn7bpjdc6k3q61gc3m.png">
+  
+    <link rel="alternate" href="/atom.xml" title="gzm&#39;s blogs" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">gzm&#39;s blogs</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-aiohttp的跨域问题" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/10/aiohttp的跨域问题/" class="article-date">
+  <time datetime="2018-06-10T06:17:44.000Z" itemprop="datePublished">2018-06-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      aiohttp的跨域问题
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="跨域"><a href="#跨域" class="headerlink" title="跨域"></a>跨域</h2><p>以前使用flask框架的时候一直都是没有前后端分离 现在使用aiohttp框架 并且前端使用vue 前后端分离 因此出现了跨域的问题</p>
+<p>不同浏览器对跨域的支持也是不一样的 支持跨域的浏览器主要有</p>
+<ul>
+<li>Chrome 3+</li>
+<li>Firefox 3.5+</li>
+<li>Opera 12+</li>
+<li>Safari 4+</li>
+<li>Internet Explorer 8+</li>
+</ul>
+<p>标准的跨域请求默认是不发送任何的cookies的 如果需要把cookies作为请求的一部分 需要将请求 比如js底层的XMLHttpRequest请求的withCredentials属性设置为true</p>
+<pre><code>xhr.withCredentials = true;
+</code></pre><p>相应的服务端那边需要设置Access-Control-Allow-Credentials为true来允许cookies的传送</p>
+<pre><code>Access-Control-Allow-Credentials: true
+</code></pre><p>withCredentials属性将让request包含来自远程域的任何cookies 同时它也设置任何来自远程域的cookies 要注意这些cookies还遵循同域标准的 因此你的javascrpt代码不能访问来自document.cookie或者responset header的cookies 这些cookies只可以被远程域控制</p>
+<p>除了javascrip代码需要根据浏览器对cors支持程度不一样需要恰当的作出跨域请求 例如如下代码<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Create the XHR object.</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createCORSRequest</span>(<span class="params">method, url</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> xhr = <span class="keyword">new</span> XMLHttpRequest();</span><br><span class="line">  <span class="keyword">if</span> (<span class="string">"withCredentials"</span> <span class="keyword">in</span> xhr) &#123;</span><br><span class="line">    <span class="comment">// XHR for Chrome/Firefox/Opera/Safari.</span></span><br><span class="line">    xhr.open(method, url, <span class="literal">true</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> XDomainRequest != <span class="string">"undefined"</span>) &#123;</span><br><span class="line">    <span class="comment">// XDomainRequest for IE.</span></span><br><span class="line">    xhr = <span class="keyword">new</span> XDomainRequest();</span><br><span class="line">    xhr.open(method, url);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// CORS not supported.</span></span><br><span class="line">    xhr = <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> xhr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Helper method to parse the title tag from the response.</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getTitle</span>(<span class="params">text</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> text.match(<span class="string">'&lt;title&gt;(.*)?&lt;/title&gt;'</span>)[<span class="number">1</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Make the actual CORS request.</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeCorsRequest</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// This is a sample server that supports CORS.</span></span><br><span class="line">  <span class="keyword">var</span> url = <span class="string">'http://html5rocks-cors.s3-website-us-east-1.amazonaws.com/index.html'</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> xhr = createCORSRequest(<span class="string">'GET'</span>, url);</span><br><span class="line">  <span class="keyword">if</span> (!xhr) &#123;</span><br><span class="line">    alert(<span class="string">'CORS not supported'</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Response handlers.</span></span><br><span class="line">  xhr.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> text = xhr.responseText;</span><br><span class="line">    <span class="keyword">var</span> title = getTitle(text);</span><br><span class="line">    alert(<span class="string">'Response from CORS request to '</span> + url + <span class="string">': '</span> + title);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  xhr.onerror = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    alert(<span class="string">'Woops, there was an error making the request.'</span>);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  xhr.send();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>服务端也需要一定的cors支持<br>在客户端和服务端之间的传输 一般客户端需要作出一些附加的headers和附加的请求 这些请求一般是隐藏的 但是可以抓包发现<br><img src="http://static.zybuluo.com/gzm1997/hc326fdj136namfjcbsu0vbv/image_1cfk1f1dvn7bpjdc6k3q61gc3m.png" alt="image_1cfk1f1dvn7bpjdc6k3q61gc3m.png-29.4kB"></p>
+<p>跨域请求分类</p>
+<ol>
+<li>简单跨域请求</li>
+<li>不简单跨域请求</li>
+</ol>
+<p>处理简单跨域请求</p>
+<ul>
+<li>HTTP方法是下面其中一种<ul>
+<li>HEAD</li>
+<li>GET</li>
+<li>POST</li>
+</ul>
+</li>
+<li>HTTP头部是<ul>
+<li>Accept</li>
+<li>Accept-Language</li>
+<li>Content-Language</li>
+<li>Last-Event-ID</li>
+<li>Content-Type, 但是仅仅当值为</li>
+<li>application/x-www-form-urlencoded</li>
+<li>multipart/form-data</li>
+<li>text/plain</li>
+</ul>
+</li>
+</ul>
+<p>简单跨域请求这样命名的原因是因为他们可以让浏览器不做处跨域请求也可以访问到 比如JOPN请求或者html的表单form 这些情况不存在跨域的问题</p>
+<p><a href="https://www.cnblogs.com/dowinning/archive/2012/04/19/json-jsonp-jquery.html" target="_blank" rel="noopener">JSONP是什么</a></p>
+<p>一个有效的服务器response<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Access-Control-Allow-Origin: http://api.bob.com</span><br><span class="line">Access-Control-Allow-Credentials: true</span><br><span class="line">Access-Control-Expose-Headers: FooBar</span><br><span class="line">Content-Type: text/html; charset=utf-8</span><br></pre></td></tr></table></figure></p>
+<p>其中以下是跨域请求必须的</p>
+<ul>
+<li>Access-Control-Allow-Origin</li>
+</ul>
+<p>Access-Control-Allow-Origin这个属性必须在server response的headers中 这个属性用来说明哪个域可以访问你的数据 如果缺少会导致跨域的失败 如果像让所有的域可以访问你的数据 那么可以使用* </p>
+<p>Access-Control-Allow-Credentials默认来说 cookies是不可以包含在跨域请求中 使用这个属性说明cookies可以包含在跨域请求头部中 这个属性跟上面说到的withCredentials协同工作的(withCredentials是js客户端这边设置的 Access-Control-Allow-Credentials是服务端这边设置的)</p>
+<p>Access-Control-Expose-Headers  在js的XMLHttpRequest 2对象中可以使用getResponseHeader()的方法来获取一个response的header 在跨域请求中 getResponseHeader()方法只可以获取简单的response header 简单的response header被定义为如下</p>
+<ul>
+<li>Cache-Control</li>
+<li>Content-Language</li>
+<li>Content-Type</li>
+<li>Expires</li>
+<li>Last-Modified</li>
+<li>Pragma</li>
+</ul>
+<p>如果像客户端可以获取其他的headers就需要使用Access-Control-Expose-Headers这个属性了</p>
+<p>处理不简单跨域请求<br>不简单跨域请求在客户端看起来跟简单跨域请求差不多 但是它在有运行两个附加的请求</p>
+<ol>
+<li>首先客户端会发送一个preflight request 这个请求用于获取服务端的允许来发送真正的请求</li>
+<li>获取允许之后 客户端发送真正的请求</li>
+<li>因为preflight request是可以被缓存的 所以不需要每次请求都发送一次preflight request</li>
+</ol>
+<hr>
+<h2 id="跨域例子"><a href="#跨域例子" class="headerlink" title="跨域例子"></a>跨域例子</h2><p>有以下api</p>
+<pre><code>http://localhost:8080/api/product/1
+</code></pre><p>以上api可以获取以下json个格式对象<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="string">"id"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="string">"name"</span>: <span class="string">"pork"</span>,</span><br><span class="line">    <span class="string">"picture"</span>: <span class="string">"https://demo.pork.png"</span>,</span><br><span class="line">    <span class="string">"price"</span>: <span class="number">53</span>,</span><br><span class="line">    <span class="string">"description"</span>: <span class="string">"this is a pork"</span>,</span><br><span class="line">    <span class="string">"rating"</span>: <span class="number">0.8</span>,</span><br><span class="line">    <span class="string">"amount"</span>: <span class="number">100</span>,</span><br><span class="line">    <span class="string">"likes"</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">"tag_id"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="string">"sales_permonth"</span>: <span class="number">382</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在一个html的script中使用jquery的$.get访问上面的api 因为需要从不同域名或者不同端口下加载资源 所以浏览器出于安全考虑会阻止这个api的访问 值得一提的是postman并不是严格按照这个标准的</p>
+<p>测试跨域的html<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">title</span>&gt;</span>cors_test<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span> <span class="attr">src</span>=<span class="string">"http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">		$(<span class="built_in">document</span>).ready(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">			$(<span class="string">"#submit"</span>).click(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">				$.get(<span class="string">"http://localhost:8080/api/product/1"</span>, <span class="function"><span class="keyword">function</span>(<span class="params">data, status</span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">					alert(<span class="string">"data:"</span> + data + <span class="string">"\nStatus:"</span> + status);</span></span><br><span class="line"><span class="undefined">				&#125;);</span></span><br><span class="line"><span class="undefined">			&#125;);</span></span><br><span class="line"><span class="undefined">		&#125;);</span></span><br><span class="line"><span class="undefined">	</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">button</span> <span class="attr">id</span>=<span class="string">"submit"</span>&gt;</span>submit<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>结果 出现跨域请求被禁止的报错<br><img src="http://static.zybuluo.com/gzm1997/z1x5btxclnhr8q4cnimb385l/image_1cfjvf6ui2ohpq1fbh19kjftm9.png" alt="image_1cfjvf6ui2ohpq1fbh19kjftm9.png-78.9kB"></p>
+<hr>
+<h2 id="aiohttp的跨域问题解决"><a href="#aiohttp的跨域问题解决" class="headerlink" title="aiohttp的跨域问题解决"></a>aiohttp的跨域问题解决</h2><p>因为aiohttp框架本身是不支持跨域的 所以我们需要使用一个拓展包<strong>aiohtto_cors</strong></p>
+<p>pip安装</p>
+<pre><code>pip install aiohttp_cors
+</code></pre><p>具体使用方法请看<a href="https://github.com/aio-libs/aiohttp-cors#usage" target="_blank" rel="noopener">aiohttp_cors</a></p>
+<p>我系统分析与设计项目选择<a href="https://github.com/gzm1997/ooad/blob/master/aiohttp_polls/routes.py" target="_blank" rel="noopener">解决详情</a><br><img src="http://static.zybuluo.com/gzm1997/r0c7dc5v5mqrrb4jjm4vneod/image_1cfk4pnuuoi31aan1rmn1nr58s91g.png" alt="image_1cfk4pnuuoi31aan1rmn1nr58s91g.png-85.8kB"></p>
+<p>结果 跨域请求成功<br><img src="http://static.zybuluo.com/gzm1997/aqsy4jbobs9al3xulxm13sy6/image_1cfk4ucj71ao11suj1r13j0taer1t.png" alt="image_1cfk4ucj71ao11suj1r13j0taer1t.png-82.1kB"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/10/aiohttp的跨域问题/" data-id="cji8ftjit0000rko0c0rpplri" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cors/">cors</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/06/08/nginx-supervisor部署aiohttp/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">nginx+supervisor部署aiohttp</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 15px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 15px;">sqlalchemy</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/06/10/aiohttp的跨域问题/">aiohttp的跨域问题</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/08/nginx-supervisor部署aiohttp/">nginx+supervisor部署aiohttp</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/08/java-socket编程/">java socket编程</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/04/java基础知识/">java基础知识</a>
+          </li>
+        
+          <li>
+            <a href="/2018/05/26/python包调用问题/">python包调用问题</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 gzm1997<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
