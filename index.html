@@ -62,6 +62,87 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-aiohttp-session" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/13/aiohttp-session/" class="article-date">
+  <time datetime="2018-06-13T02:50:05.000Z" itemprop="datePublished">2018-06-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/13/aiohttp-session/">aiohttp session</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="cookie和session"><a href="#cookie和session" class="headerlink" title="cookie和session"></a>cookie和session</h2><p>服务端和客户端之间的联系一般是根据http协议来进行的 但是http协议是无状态的 无状态会有状态的概念大概如下</p>
+<p>有状态</p>
+<ol>
+<li>甲：你吃午饭了吗</li>
+<li>乙：吃了</li>
+<li>甲：吃了什么菜</li>
+<li>乙：吃了鸡蛋</li>
+</ol>
+<p>无状态</p>
+<ol>
+<li>甲：你吃午饭了吗</li>
+<li>乙：吃了</li>
+<li>甲：吃了什么菜</li>
+<li>乙：你说什么时候吃什么菜 早饭？午饭？还是晚饭</li>
+</ol>
+<p>因此服务端和客户端之间需要一种机制来记录用户的状态 这种机制在客户端那边是cookies 在服务端那边是session<br>cookies可以存储在磁盘 内存里面 session可以存储在内存 缓存 redis甚至磁盘中</p>
+<hr>
+<h2 id="aiohttp-session"><a href="#aiohttp-session" class="headerlink" title="aiohttp session"></a>aiohttp session</h2><p>flask框架具有内置的session机制 我以前用起来觉得非常方便以至于我觉得这个不重要 aiohttp不具有内置的session机制 但是具有第三方模块支持 aiohttp_session</p>
+<p>安装这个第三方模块真的挺费事 因为依赖模块实在太多了 而且aiohttp_session是依赖redis作为缓存的 还需要安装redis和一些相关模块</p>
+<p>dependencies</p>
+<ul>
+<li>python3.5.3+</li>
+<li>cryptography </li>
+<li>aioredis</li>
+</ul>
+<p>安装模块</p>
+<ul>
+<li>pip3 install cryptography(必要时进行upgrade 可能版本太低)</li>
+<li>pip3 install aiohttp_session[secure]</li>
+<li>pip3 install aiohttp_session<a href="需要安装redis libhiredis-dev hiredis libssl-dev">aioredis</a></li>
+<li>pip3 install aiohttp_session[aiomcache]</li>
+<li><p>pip3 install aiohttp_sessionsss</p>
+<p>上面的安装问题真的太多 谷歌好几次才解决</p>
+</li>
+</ul>
+<hr>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>使用上跟flask的session大同小异 但是需要在init app阶段将session安装到app上 设定一个32位bytes作为加密密钥 跟flask session的secret key类似</p>
+<p>session是一个dict like的对象</p>
+<p>设定session<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"><span class="keyword">from</span> aiohttp_session <span class="keyword">import</span> get_session</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">login</span><span class="params">(request)</span>:</span></span><br><span class="line">    engine = <span class="keyword">await</span> aio_engine.init_engine()</span><br><span class="line">    data = <span class="keyword">await</span> request.json()</span><br><span class="line">    print(<span class="string">"data"</span>, data)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"name"</span> <span class="keyword">not</span> <span class="keyword">in</span> data <span class="keyword">or</span> <span class="string">"psw"</span> <span class="keyword">not</span> <span class="keyword">in</span> data:</span><br><span class="line">        <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">            <span class="string">"status"</span>: <span class="keyword">False</span></span><br><span class="line">        &#125;)</span><br><span class="line">    name = data[<span class="string">"name"</span>]</span><br><span class="line">    psw = data[<span class="string">"psw"</span>]</span><br><span class="line">    verify = <span class="keyword">await</span> keeper.verify(engine, name = name, psw = psw)</span><br><span class="line">    <span class="keyword">if</span> verify:</span><br><span class="line">        session = <span class="keyword">await</span> get_session(request)</span><br><span class="line">        session[<span class="string">"ooad"</span>] = name</span><br><span class="line">        session[<span class="string">"login"</span>] = psw</span><br><span class="line">        session[<span class="string">"time"</span>] = str(datetime.datetime.now())</span><br><span class="line">        <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">            <span class="string">"status"</span>: <span class="keyword">True</span></span><br><span class="line">        &#125;)</span><br><span class="line">    <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">        <span class="string">"status"</span>: <span class="keyword">False</span></span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure></p>
+<p>检查是否含有具体session字段值<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"><span class="keyword">from</span> aiohttp_session <span class="keyword">import</span> get_session</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">need_cookies_page</span><span class="params">(request)</span>:</span></span><br><span class="line">    engine = <span class="keyword">await</span> aio_engine.init_engine()</span><br><span class="line">    session = <span class="keyword">await</span> get_session(request)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"ooad"</span> <span class="keyword">not</span> <span class="keyword">in</span> session <span class="keyword">or</span> <span class="string">"login"</span> <span class="keyword">not</span> <span class="keyword">in</span> session <span class="keyword">or</span> <span class="string">"time"</span> <span class="keyword">not</span> <span class="keyword">in</span> session:</span><br><span class="line">        <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">            <span class="string">"status"</span>: <span class="keyword">False</span></span><br><span class="line">        &#125;)</span><br><span class="line">    name = session[<span class="string">"ooad"</span>]</span><br><span class="line">    psw = session[<span class="string">"login"</span>]</span><br><span class="line">    r = <span class="keyword">await</span> keeper.verify(engine, name = name, psw = psw)</span><br><span class="line">    <span class="keyword">if</span> r:</span><br><span class="line">        <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">            <span class="string">"status"</span>: <span class="keyword">True</span></span><br><span class="line">        &#125;)</span><br><span class="line">    <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">        <span class="string">"status"</span>: <span class="keyword">False</span></span><br><span class="line">    &#125;)</span><br><span class="line">`</span><br></pre></td></tr></table></figure></p>
+<p>setup app<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setup(app, EncryptedCookieStorage(<span class="string">b'Thirty  two  length  bytes  key.'</span>))</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h2><p>login result<br><img src="http://static.zybuluo.com/gzm1997/jkg1fhumdt69h3ycqy4jn5um/image_1cfrgldqfjrht9n1gva149ocj423.png" alt="image_1cfrgldqfjrht9n1gva149ocj423.png-72.7kB"><br>login cookies<br><img src="http://static.zybuluo.com/gzm1997/wopqky454vfub9ksx4zwrxuy/image_1cfrgm0d8nov172b2mj10ta4g62g.png" alt="image_1cfrgm0d8nov172b2mj10ta4g62g.png-46.1kB"><br>cookies check<br><img src="http://static.zybuluo.com/gzm1997/rez3qy3mv69mkbvfsf9956v8/image_1cfrgn8mh1vf717qu1elcqdv8ur2t.png" alt="image_1cfrgn8mh1vf717qu1elcqdv8ur2t.png-43.3kB"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/13/aiohttp-session/" data-id="cjiciqb0x0000ggo00q6ccgus" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-aiohttp的跨域问题" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/06/10/aiohttp的跨域问题/" class="article-date">
@@ -169,7 +250,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/10/aiohttp的跨域问题/" data-id="cji8ghcgv0003f8o0pnbkgj6x" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/10/aiohttp的跨域问题/" data-id="cjiciqb180003ggo0u1i6c5w3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cors/">cors</a></li></ul>
@@ -274,7 +355,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cji8ghch20008f8o0o544k7i5" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cjiciqb1h000aggo03gj47j2p" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deploy/">deploy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ubuntu/">ubuntu</a></li></ul>
@@ -319,7 +400,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cji8ghcgx0004f8o00p3y0ds2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cjiciqb1c0005ggo02bfv955k" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/socket/">socket</a></li></ul>
@@ -565,7 +646,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cji8ghcgy0005f8o0icq1hgn2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjiciqb1e0008ggo0l27vm0v9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -639,7 +720,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cji8ghch3000af8o0icq6wagt" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjiciqb1j000cggo01lm34lrl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/package/">package</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
@@ -710,7 +791,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cji8ghchg000kf8o04upzuzul" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cjiciqb1t000nggo0wwtcmtqq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ORM/">ORM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
@@ -772,7 +853,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cji8ghcgj0000f8o04xjah0p3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cjiciqb140001ggo0pd65p4q4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/backend/">backend</a></li></ul>
@@ -847,7 +928,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/22/自制简易图片云盘/" data-id="cji8ghchl000pf8o0dswyb0jo" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/22/自制简易图片云盘/" data-id="cjiciqb1w000sggo0qmsj7oeh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/git/">git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/image/">image</a></li></ul>
@@ -900,128 +981,10 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/16/sqlalchemy一些常见概念/" data-id="cji8ghch4000bf8o04ntmsqru" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/16/sqlalchemy一些常见概念/" data-id="cjiciqb1k000fggo0uonde6w8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-软件生命周期" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/15/软件生命周期/" class="article-date">
-  <time datetime="2018-05-15T15:02:50.000Z" itemprop="datePublished">2018-05-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/15/软件生命周期/">软件生命周期</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
-<p>这几天我都在深深地反思，发现自己的确是一个很功利的人，从框架的工具化就可以看出来。越是患得患失就越容易失去。我觉得我这段时间可以多写点代码，并且这不能很以往一样，一个劲地写，应该从工程上开始考量所有问题。</p>
-</blockquote>
-<hr>
-<h2 id="软件生命周期6大阶段"><a href="#软件生命周期6大阶段" class="headerlink" title="软件生命周期6大阶段"></a>软件生命周期6大阶段</h2><ol>
-<li>可行性分析和计划阶段<ul>
-<li>确定软件开发的总体目标，给出功能，性能，可靠性，接口等方面的要求，进行可行性分析</li>
-<li>估计可利用的资源(硬件，软件，人力等)，成本，效益，开发进度，进行投资收益分析，制定开发计划</li>
-<li>提交可行性分析报告，开发计划等文档</li>
-</ul>
-</li>
-<li>需求分析阶段<ul>
-<li>分析用户提出的要求，给出需求详细定义，确定软件系统的各项功能，性能需求和设计约束，确定对文档的编制的要求</li>
-<li>提交软件需求说明，软件规格说明，数据要求说明等文档和初步用户手册</li>
-</ul>
-</li>
-<li>设计阶段<ul>
-<li>概要设计：将各项需求转换为软件的体系结构。软件的每一组成部分都是意义明确的模块，每个模块和某些需求相对应</li>
-<li>详细设计：对没一个模块要完成的工作进行具体的描述，提供源编程编写的直接依据</li>
-<li>提交结构设计说明，详细设计说明和测试计划初稿等文稿</li>
-</ul>
-</li>
-<li>实现阶段<ul>
-<li>实现源码编码，编译，和排错调试，得到没有语法错误的程序清单。程序结构良好，清晰易读，且与设计想一致</li>
-<li>编写进度日报，周报，和月报</li>
-<li>提交用户手册，操作手册等面向用户的文档的编写工作</li>
-<li>编写测试计划</li>
-</ul>
-</li>
-<li>测试阶段<ul>
-<li>全面测试目标软件系统，并检查审阅已编制的文档，提交测试分析报告。逐项评价所生产的程序、文档以及开发工作本身，提交项目开发总结报告</li>
-<li>在整个开发过程中 (即前五个阶段中)，开发集体需要按月编写<br>开发进度月报。</li>
-</ul>
-</li>
-<li>运行与维护阶段<ul>
-<li>软件提交给用户后，在运行使用中得到持续维护，根据用户新<br>提出的需求进行必要而且可能的扩充、删改、更新和升级。</li>
-<li>软件维护包括改正性维护 (发现错误)、适应性维护 (适应运行<br>环境变化) 和完善性维护 (增强功能)。</li>
-</ul>
-</li>
-</ol>
-<hr>
-<h2 id="常见软件生命周期模型"><a href="#常见软件生命周期模型" class="headerlink" title="常见软件生命周期模型"></a>常见软件生命周期模型</h2><blockquote>
-<p>软件开发过程一般应该采用某种类型的软件生命周期模型，按<br>照一定的开发方法，使用相应的工具系统实现。</p>
-</blockquote>
-<p>常见模型</p>
-<ul>
-<li>瀑布模型 (Waterfall Model)</li>
-<li>V-W 模型 (V Model and W Model)</li>
-<li>快速应用开发模型 (RAD Model)</li>
-<li>原型模型 (Prototype Model)</li>
-<li>增量/演化/迭代模型 (Incremental Model)</li>
-<li>螺旋模型 (Spiral Model)</li>
-<li>喷泉模型 (Fountain Model, Object-Oriented Model)</li>
-<li>基于构件的开发模型 (CBSD Model)</li>
-<li>Rational 统一过程模型 (RUP Model)</li>
-<li>*敏捷开发模型与极限编程 (Agile Modeling and XP)</li>
-</ul>
-<hr>
-<h2 id="瀑布模型"><a href="#瀑布模型" class="headerlink" title="瀑布模型"></a>瀑布模型</h2><p><img src="http://static.zybuluo.com/gzm1997/ovwgmbl03ugmj2l9sm1p0jfy/image_1c8ias8gck9c5rmro9cihae89.png" alt="image_1c8ias8gck9c5rmro9cihae89.png-96.4kB"></p>
-<p>特征</p>
-<ul>
-<li>每一阶段工作对象来自于上一阶段的输出</li>
-<li>根据本阶段的活动规程执行相应的任务</li>
-<li>本阶段产生相关软件工件，作为下一阶段活动的输入</li>
-<li>对本阶段的活动情况进行评审</li>
-</ul>
-<p>优点</p>
-<ul>
-<li>降低软件开发的复杂程度，提高软件开发过程的透明性，提高软件开发过程的可管理性</li>
-<li>推迟软件实现，强调在软件实现前必须进行分析和设计工作</li>
-<li>以项目的阶段评审和文档控制为手段有效地对整个开发过程进行指导，保证了阶段之间的正确衔接，能够及时发现并纠正开发过程中存在的缺陷，使产品达到预期的质量要求</li>
-</ul>
-<p>缺点</p>
-<ul>
-<li>强调过程活动的线性顺序</li>
-<li>缺乏灵活性，特别是无法解决软件需求不明确或不准确的问题</li>
-<li>风险控制能力较弱</li>
-<li>瀑布模型中的软件活动是文档驱动的，当阶段之间规定过多的文档时，会极大地增加系统的工作量</li>
-<li>管理人员如果仅仅以文档的完成情况来评估项目完成进度，往往会产生错误的结论</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cji8ghchn000sf8o0ykriqyu0" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
 
     </footer>
   </div>
@@ -1048,7 +1011,7 @@ user=www-data
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -1058,7 +1021,7 @@ user=www-data
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 16.67px;">aiohttp</a> <a href="/tags/async/" style="font-size: 13.33px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 13.33px;">java</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 13.33px;">sqlalchemy</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 20px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/session/" style="font-size: 10px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 15px;">sqlalchemy</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -1080,6 +1043,10 @@ user=www-data
       <ul>
         
           <li>
+            <a href="/2018/06/13/aiohttp-session/">aiohttp session</a>
+          </li>
+        
+          <li>
             <a href="/2018/06/10/aiohttp的跨域问题/">aiohttp的跨域问题</a>
           </li>
         
@@ -1093,10 +1060,6 @@ user=www-data
         
           <li>
             <a href="/2018/06/04/java基础知识/">java基础知识</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/26/python包调用问题/">python包调用问题</a>
           </li>
         
       </ul>
