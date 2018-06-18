@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>session和cookies关系和原理 | gzm&#39;s blogs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前言前几天思考了一下session跟cookies的关系和原理 发现以前对session跟cookies的理解一直都有误 以前我一直以为session是存在服务端 cookies存在客户端 他们的键值对是一一对应关系的 后来想了想 这其实是不完全对的  session和cookies的位置之前我们说到我们需要一种跟踪和认证客户端的机制 这种机制在客户端处表现为cookies   cookies可以">
+<meta name="keywords" content="session,cookies">
+<meta property="og:type" content="article">
+<meta property="og:title" content="session和cookies关系和原理">
+<meta property="og:url" content="http://yoursite.com/2018/06/18/session和cookies关系和原理/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="前言前几天思考了一下session跟cookies的关系和原理 发现以前对session跟cookies的理解一直都有误 以前我一直以为session是存在服务端 cookies存在客户端 他们的键值对是一一对应关系的 后来想了想 这其实是不完全对的  session和cookies的位置之前我们说到我们需要一种跟踪和认证客户端的机制 这种机制在客户端处表现为cookies   cookies可以">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/nvgdlijlkc9glc7fg8a94fo0/image_1cg8recrtgbg1m201gvdvu29q39.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/1uh5o4j1ooowupuxpxdmtugx/image_1cg8s7r6mdbe7mf1pd51kqu2vv1g.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/yv98wb0592tikqvoxft3ca9j/image_1cg8rn4b81fcg80l1epc1h181corm.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/yv98wb0592tikqvoxft3ca9j/image_1cg8rn4b81fcg80l1epc1h181corm.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/r7322ipu855h7ukdmmkszcml/image_1cg8u36631o2ft241indpi019qj2a.png">
+<meta property="og:updated_time" content="2018-06-18T07:59:09.757Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="session和cookies关系和原理">
+<meta name="twitter:description" content="前言前几天思考了一下session跟cookies的关系和原理 发现以前对session跟cookies的理解一直都有误 以前我一直以为session是存在服务端 cookies存在客户端 他们的键值对是一一对应关系的 后来想了想 这其实是不完全对的  session和cookies的位置之前我们说到我们需要一种跟踪和认证客户端的机制 这种机制在客户端处表现为cookies   cookies可以">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/nvgdlijlkc9glc7fg8a94fo0/image_1cg8recrtgbg1m201gvdvu29q39.png">
+  
+    <link rel="alternate" href="/atom.xml" title="gzm&#39;s blogs" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">gzm&#39;s blogs</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-session和cookies关系和原理" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/18/session和cookies关系和原理/" class="article-date">
+  <time datetime="2018-06-18T07:58:19.000Z" itemprop="datePublished">2018-06-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      session和cookies关系和原理
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>前几天思考了一下session跟cookies的关系和原理 发现以前对session跟cookies的理解一直都有误 以前我一直以为session是存在服务端 cookies存在客户端 他们的键值对是一一对应关系的 后来想了想 这其实是不完全对的</p>
+<hr>
+<h2 id="session和cookies的位置"><a href="#session和cookies的位置" class="headerlink" title="session和cookies的位置"></a>session和cookies的位置</h2><p>之前我们说到我们需要一种跟踪和认证客户端的机制 这种机制在客户端处表现为cookies </p>
+<blockquote>
+<p>cookies可以保存在浏览器缓存 磁盘中等等</p>
+</blockquote>
+<p>这种机制在服务端表现为session </p>
+<blockquote>
+<p>session可以保存在内存 缓存 memcache redis或者磁盘中等等 </p>
+</blockquote>
+<p>这些都是没问题的</p>
+<hr>
+<h2 id="cookies和session的对应关系"><a href="#cookies和session的对应关系" class="headerlink" title="cookies和session的对应关系"></a>cookies和session的对应关系</h2><p>cookies和session上的键值对其实不是一一对应关系的 甚至可以说关系不大<br>我们使用java的servlet来举例子 就可以比较清楚的说明他们的关系</p>
+<p>在我们服务端这边cookies和session不是一回事 而且它们都可以被我们服务端分别进行操作</p>
+<hr>
+<h2 id="设置cookies"><a href="#设置cookies" class="headerlink" title="设置cookies"></a>设置cookies</h2><p>在java servlet中 给http response增加一个键值对 {“login”； “mylogin”}<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line"><span class="comment">//            add cookies</span></span><br><span class="line">    Cookie login = <span class="keyword">new</span> Cookie(<span class="string">"login"</span>, <span class="string">"mylogin"</span>);</span><br><span class="line">    resp.addCookie(login);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>客户端那边的效果 成功设置这个键值对到cookies中<br><img src="http://static.zybuluo.com/gzm1997/nvgdlijlkc9glc7fg8a94fo0/image_1cg8recrtgbg1m201gvdvu29q39.png" alt="image_1cg8recrtgbg1m201gvdvu29q39.png-3.3kB"></p>
+<p>cookies原理<br><img src="http://static.zybuluo.com/gzm1997/1uh5o4j1ooowupuxpxdmtugx/image_1cg8s7r6mdbe7mf1pd51kqu2vv1g.png" alt="image_1cg8s7r6mdbe7mf1pd51kqu2vv1g.png-18.1kB"></p>
+<hr>
+<h2 id="设置session"><a href="#设置session" class="headerlink" title="设置session"></a>设置session</h2><p>然后我给session对象设置一个键值对 在java servlet中给session设置键值对叫做setAttribute 设置键值对{“login”: “this is my login session”}<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line"><span class="comment">//            add session attribute</span></span><br><span class="line">            HttpSession session = req.getSession();</span><br><span class="line">            session.setAttribute(<span class="string">"login"</span>, <span class="string">"this is my login session"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后我们在客户端的http response的cookies中发现新增了以下这个键值对<br><img src="http://static.zybuluo.com/gzm1997/yv98wb0592tikqvoxft3ca9j/image_1cg8rn4b81fcg80l1epc1h181corm.png" alt="image_1cg8rn4b81fcg80l1epc1h181corm.png-4.8kB"></p>
+<p><strong>只是新建了一个key为jsessionid的键值对 跟我们设置的session attribute毫无关系</strong></p>
+<p>其实事实是<br>服务端这边是很节省资源的 它不是建立TCP连接之后就直接给客户端简历一个session 而是执行到如下语句<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HttpSession session = req.getSession();</span><br></pre></td></tr></table></figure></p>
+<p>这时候才给客户端新建一个session对象 这个session对象含有一个<strong>attribute map</strong>一个映射表来存储我们给session设置的一些键值对 当我们set attribute之后 这些键值对存在attribute map之中 并且会<strong>http response新建一个特别的键值对</strong></p>
+<p>这个键值对就是我们上面看到的那个跟我们设置的session attribute毫无关系的cookies键值对</p>
+<p><img src="http://static.zybuluo.com/gzm1997/yv98wb0592tikqvoxft3ca9j/image_1cg8rn4b81fcg80l1epc1h181corm.png" alt="image_1cg8rn4b81fcg80l1epc1h181corm.png-4.8kB"><br>这个jsessionid的cookies值顾名思义就是在cookies中用来标记这个客户端属于哪个session的唯一属性</p>
+<blockquote>
+<p>所以说我们设置的所有session attribute都是存在服务端的本地的  给客户端那边传送过去关于session那部分的内容仅仅只是一个用来标识客户端所属session的session id 而session的所有内容都是存在服务端本地 之后对于每次客户端的请求 服务端都可以根据它请求头的session id这个cookie值(名字因所用框架有别 上面使用servlet 是jsessionid)来证明它是那个session的 然后根据这个session id在内存缓存memcache或者redis中找到这个session 继而找到这个session用来存键值对(就是attributes)的attribute map 从而找到我们在session中设置的内容</p>
+</blockquote>
+<p>所以说cookies和session的内容 本质上除了需要在cookies上设置一个session id的cookies值来标记客户端所属session 其他基本毫无关系的 更不存在以前理解的一一对应关系</p>
+<p>session原理<br><img src="http://static.zybuluo.com/gzm1997/r7322ipu855h7ukdmmkszcml/image_1cg8u36631o2ft241indpi019qj2a.png" alt="image_1cg8u36631o2ft241indpi019qj2a.png-39.6kB"></p>
+<p>综上所述</p>
+<ul>
+<li>cookies是一种存储在客户端的 对客户端进行跟踪和认证的机制</li>
+<li>session是一种存储在服务端的 对客户端进行跟踪和认证的机制 session的设置需要给cookies设置一个特殊的sessionid字段值</li>
+<li>对于服务端开发者来说 这两种机制都是可选的 并且是可以<strong>结合使用</strong>的 但是<strong>他们之间不是一回事</strong></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/18/session和cookies关系和原理/" data-id="cjijyy3d80007w8o0alxwckct" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cookies/">cookies</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/06/16/servlet登录demo/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">servlet登录demo</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 20px;">aiohttp</a> <a href="/tags/async/" style="font-size: 13.33px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 16.67px;">java</a> <a href="/tags/mysql/" style="font-size: 20px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 13.33px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 13.33px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/06/18/session和cookies关系和原理/">session和cookies关系和原理</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/16/servlet登录demo/">servlet登录demo</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/13/aiohttp-session/">aiohttp session</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/10/aiohttp的跨域问题/">aiohttp的跨域问题</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/08/nginx-supervisor部署aiohttp/">nginx+supervisor部署aiohttp</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 gzm1997<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
