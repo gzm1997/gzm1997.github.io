@@ -107,7 +107,7 @@
 <p>然后我们在客户端的http response的cookies中发现新增了以下这个键值对<br><img src="http://static.zybuluo.com/gzm1997/yv98wb0592tikqvoxft3ca9j/image_1cg8rn4b81fcg80l1epc1h181corm.png" alt="image_1cg8rn4b81fcg80l1epc1h181corm.png-4.8kB"></p>
 <p><strong>只是新建了一个key为jsessionid的键值对 跟我们设置的session attribute毫无关系</strong></p>
 <p>其实事实是<br>服务端这边是很节省资源的 它不是建立TCP连接之后就直接给客户端简历一个session 而是执行到如下语句<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HttpSession session = req.getSession();</span><br></pre></td></tr></table></figure></p>
-<p>这时候才给客户端新建一个session对象 这个session对象含有一个<strong>attribute map</strong>一个映射表来存储我们给session设置的一些键值对 当我们set attribute之后 这些键值对存在attribute map之中 并且会<strong>http response新建一个特别的键值对</strong></p>
+<p>这时候才给客户端新建一个session对象(如果没有session则新建一个session 如果有则返回) 这个session对象含有一个<strong>attribute map</strong>一个映射表来存储我们给session设置的一些键值对 当我们set attribute之后 这些键值对存在attribute map之中 并且会<strong>http response新建一个特别的键值对</strong></p>
 <p>这个键值对就是我们上面看到的那个跟我们设置的session attribute毫无关系的cookies键值对</p>
 <p><img src="http://static.zybuluo.com/gzm1997/yv98wb0592tikqvoxft3ca9j/image_1cg8rn4b81fcg80l1epc1h181corm.png" alt="image_1cg8rn4b81fcg80l1epc1h181corm.png-4.8kB"><br>这个jsessionid的cookies值顾名思义就是在cookies中用来标记这个客户端属于哪个session的唯一属性</p>
 <blockquote>
@@ -125,7 +125,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/18/session和cookies关系和原理/" data-id="cjijyy3d80007w8o0alxwckct" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/18/session和cookies关系和原理/" data-id="cjijzevk0000grwo048088mm9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cookies/">cookies</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li></ul>
@@ -197,7 +197,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/16/servlet登录demo/" data-id="cjijyy3d60006w8o0uowd8lhz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/16/servlet登录demo/" data-id="cjijzevjx000frwo0s5wvrssk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/servlet/">servlet</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tomcat/">tomcat</a></li></ul>
@@ -293,7 +293,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/13/aiohttp-session/" data-id="cjijyy3cy0003w8o0nvsexc4e" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/13/aiohttp-session/" data-id="cjijzevj60000rwo0lnw3jxuj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li></ul>
@@ -412,7 +412,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/10/aiohttp的跨域问题/" data-id="cjijyy3dp000nw8o090euovr6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/10/aiohttp的跨域问题/" data-id="cjijzevje0001rwo0gdks748n" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cors/">cors</a></li></ul>
@@ -517,7 +517,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cjijyy3dx000vw8o0mio5chqf" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cjijzevjo0007rwo0kmo36g4q" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deploy/">deploy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ubuntu/">ubuntu</a></li></ul>
@@ -562,7 +562,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cjijyy3d20004w8o0mc0xx93i" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cjijzevjm0005rwo08uhu9un8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/socket/">socket</a></li></ul>
@@ -808,7 +808,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjijyy3dz000xw8o024rxi1ia" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjijzevjq0008rwo0sjce4rx2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -882,7 +882,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjijyy3dg000dw8o0fsaocdy8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjijzevjv000crwo0qbyrurny" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/package/">package</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
@@ -953,7 +953,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cjijyy3dn000lw8o0twkhuxqx" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cjijzevk9000qrwo02i8lc0az" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ORM/">ORM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
@@ -1015,7 +1015,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cjijyy3dc000aw8o0nwf0es3d" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cjijzevjj0003rwo0fkfbekrx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/backend/">backend</a></li></ul>
