@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="aiohttp,deploy,ubuntu," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言 服务器上的部署问题一直很让我头疼 因为我一直是一个在windows平台上开发的 但是vps一直都是选择ubuntu16.04居多 因为在windos系统上 权限是一个总是不是被注意的事情 但是在ubuntu系统上部署web后端的时候 权限问题尤为重要   部署为什么选择nginx+supervisor这样的组合来部署 因为 优点  nginx是一个完美的前端服务器 可以防止基于畸形的http">
+<meta name="keywords" content="aiohttp,deploy,ubuntu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nginx+supervisor部署aiohttp">
+<meta property="og:url" content="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="前言 服务器上的部署问题一直很让我头疼 因为我一直是一个在windows平台上开发的 但是vps一直都是选择ubuntu16.04居多 因为在windos系统上 权限是一个总是不是被注意的事情 但是在ubuntu系统上部署web后端的时候 权限问题尤为重要   部署为什么选择nginx+supervisor这样的组合来部署 因为 优点  nginx是一个完美的前端服务器 可以防止基于畸形的http">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/0wr0fcj2lo4yhzqwxxtaybpo/image_1cff1giub10gmo07k6b16gjv339.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/61hncydvbdnd2cwdkcofcks8/image_1cff2k7ie1nqkpra1a7t1pp81e0q2m.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/npxy5oetqeztqsxq16xr4t4b/image_1cff2pkee1quh1kbssklugl167p33.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/clvu614mas8hh45xfdoxsgh3/image_1cff2sipucq2gtm1qid5141fvd4g.png">
+<meta property="og:updated_time" content="2018-06-08T08:15:24.013Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="nginx+supervisor部署aiohttp">
+<meta name="twitter:description" content="前言 服务器上的部署问题一直很让我头疼 因为我一直是一个在windows平台上开发的 但是vps一直都是选择ubuntu16.04居多 因为在windos系统上 权限是一个总是不是被注意的事情 但是在ubuntu系统上部署web后端的时候 权限问题尤为重要   部署为什么选择nginx+supervisor这样的组合来部署 因为 优点  nginx是一个完美的前端服务器 可以防止基于畸形的http">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/0wr0fcj2lo4yhzqwxxtaybpo/image_1cff1giub10gmo07k6b16gjv339.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/"/>
+
+
+
+
+
+  <title>nginx+supervisor部署aiohttp | gzm's blogs</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">gzm's blogs</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gzm1997">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gzm's blogs">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">nginx+supervisor部署aiohttp</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-06-08T15:18:32+08:00">
+                2018-06-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>服务器上的部署问题一直很让我头疼 因为我一直是一个在windows平台上开发的 但是vps一直都是选择ubuntu16.04居多 因为在windos系统上 权限是一个总是不是被注意的事情 但是在ubuntu系统上部署web后端的时候 权限问题尤为重要</p>
+</blockquote>
+<hr>
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>为什么选择nginx+supervisor这样的组合来部署 因为</p>
+<p>优点</p>
+<ul>
+<li>nginx是一个完美的前端服务器 可以防止基于畸形的http协议的攻击等等</li>
+<li>使用nginx运行几个aiohttp实例可以使用CPU多核</li>
+<li>nginx对static静态文件的支持比aiohttp的内置的静态文件支持更快</li>
+<li>supervisor主要是为了系统崩溃或者重启之后重新运行web app实例 怎么kill也kill不掉</li>
+</ul>
+<p>缺点</p>
+<ul>
+<li>配置比其他组合方式麻烦一点</li>
+</ul>
+<p><a href="https://aiohttp.readthedocs.io/en/stable/deployment.html#nginx-supervisord" target="_blank" rel="noopener">参考链接</a></p>
+<p>由于选择使用nginx+superviosr的组合方式部署aiohttp 所以要先下载nginx和supervisor 这个没什么问题 自行谷歌即可 但是要注意点</p>
+<blockquote>
+<p>因为aiohttp是只可以支持python3.5.3+的 但是好巧不巧ubuntu16.04的自带python版本是python3.5.2 这下有点蛋疼 我给的建议是保留python3.5 另外安装python3.6</p>
+<p>因为ubuntu系统以及很多像sublime等软件都是依赖py2或者py3.5的 一旦卸载或者修改了/use/bin/python的链接<br>会导致一系列版本不兼容的问题 我试过最严重的是卸载了python3.5 并且修改默认python版本为3.6 系统崩溃<br>折腾了很久最后只能重装系统</p>
+<p>为什么我要说这个呢 因为supervisor依赖于ubuntu的py2的<br>所以最好不要卸载任何版本python和修改系统默认的python版本 最好就另行安装python3.6 终端中使用python3.6调用即可</p>
+</blockquote>
+<p>项目代码放置于/var/www/aio_ooad下<br><img src="http://static.zybuluo.com/gzm1997/0wr0fcj2lo4yhzqwxxtaybpo/image_1cff1giub10gmo07k6b16gjv339.png" alt="image_1cff1giub10gmo07k6b16gjv339.png-71.6kB"></p>
+<hr>
+<h2 id="nginx配置"><a href="#nginx配置" class="headerlink" title="nginx配置"></a>nginx配置</h2><ul>
+<li>nginx配置文件 /etc/nginx/nginx.conf</li>
+<li>nginx日志文件 <ul>
+<li>/var/log/nginx/access.log</li>
+<li>/var/log/nginx/error.log</li>
+</ul>
+</li>
+</ul>
+<p>/etc/nginx/nginx.conf<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">  server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    client_max_body_size <span class="number">4</span>G;</span><br><span class="line"></span><br><span class="line">    server_name localhost;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">      proxy_set_header Host $http_host;</span><br><span class="line">      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">      proxy_redirect off;</span><br><span class="line">      proxy_buffering off;</span><br><span class="line">      proxy_pass http:<span class="comment">//aiohttp;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    location /<span class="keyword">static</span> &#123;</span><br><span class="line">      # path for static files</span><br><span class="line">      root /var/www/aio_ooad/<span class="keyword">static</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line">  upstream aiohttp &#123;</span><br><span class="line">    # fail_timeout=0 means we always retry an upstream even if it failed</span><br><span class="line">    # to return a good HTTP response</span><br><span class="line"></span><br><span class="line">    # Unix domain servers</span><br><span class="line">    server unix:/var/www/aio_ooad/example_1.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">    server unix:/var/www/aio_ooad/example_2.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">    server unix:/var/www/aio_ooad/example_3.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">    server unix:/var/www/aio_ooad/example_4.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    # Unix domain sockets are used in this example due to their high performance,</span><br><span class="line">    # but TCP/IP sockets could be used instead:</span><br><span class="line">    # server 127.0.0.1:8081 fail_timeout=0;</span><br><span class="line">    # server 127.0.0.1:8082 fail_timeout=0;</span><br><span class="line">    # server 127.0.0.1:8083 fail_timeout=0;</span><br><span class="line">    # server 127.0.0.1:8084 fail_timeout=0;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面大部分内容都是常规的</p>
+<p>指明静态文件路径 nginx提供静态文件的支持是很快的 这是选择nginx部署的原因之一<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">location /<span class="keyword">static</span> &#123;</span><br><span class="line">  # path for static files</span><br><span class="line">  root /var/www/aio_ooad/<span class="keyword">static</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>选择使用unix domian sockets文件的方式设置upstream 下面的注释也说到也可以使用TCP/IP sockets的方式 但是unix domain socket效果更好 一共配置了四个sockets文件 意味着后台一共有四个web app实例可以供nginx轮询选择<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">upstream aiohttp &#123;</span><br><span class="line">  # fail_timeout=0 means we always retry an upstream even if it failed</span><br><span class="line">  # to return a good HTTP response</span><br><span class="line"></span><br><span class="line">  # Unix domain servers</span><br><span class="line">  server unix:/var/www/aio_ooad/example_1.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">  server unix:/var/www/aio_ooad/example_2.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">  server unix:/var/www/aio_ooad/example_3.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">  server unix:/var/www/aio_ooad/example_4.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  # Unix domain sockets are used in this example due to their high performance,</span><br><span class="line">  # but TCP/IP sockets could be used instead:</span><br><span class="line">  # server 127.0.0.1:8081 fail_timeout=0;</span><br><span class="line">  # server 127.0.0.1:8082 fail_timeout=0;</span><br><span class="line">  # server 127.0.0.1:8083 fail_timeout=0;</span><br><span class="line">  # server 127.0.0.1:8084 fail_timeout=0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="supervisor配置"><a href="#supervisor配置" class="headerlink" title="supervisor配置"></a>supervisor配置</h2><ul>
+<li>supervisor默认配置文件 /etc/supervisor/supervisord.conf</li>
+<li>部署项目的配置文件 /etc/supervisor/conf.d/example.ini</li>
+</ul>
+<p>修改/etc/supervisor/supervisord.conf 最后一行处为<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[include]</span><br><span class="line">files = conf.d<span class="comment">/*.ini    ;</span></span><br></pre></td></tr></table></figure></p>
+<p>/etc/supervisor/conf.d/example.ini<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[program:aiohttp]</span><br><span class="line">numprocs = <span class="number">4</span></span><br><span class="line">numprocs_start = <span class="number">1</span></span><br><span class="line">process_name = example_%(process_num)s</span><br><span class="line"></span><br><span class="line">; Unix socket paths are specified by command line.</span><br><span class="line">command=python3.6 /var/www/aio_ooad/test_main.py --path=/var/www/aio_ooad/example_%(process_num)s.sock --port=<span class="number">808</span>%(process_num)s</span><br><span class="line"></span><br><span class="line">; We can just as easily pass TCP port numbers:</span><br><span class="line">; command=/path/to/aiohttp_example.py --port=<span class="number">808</span>%(process_num)s</span><br><span class="line"></span><br><span class="line">user=www-data</span><br><span class="line">autostart=<span class="keyword">true</span></span><br><span class="line">autorestart=<span class="keyword">true</span></span><br></pre></td></tr></table></figure></p>
+<pre><code>numprocs = 4
+numprocs_start = 1
+process_name = example_%(process_num)s
+</code></pre><p>一共四个进程 进程号从1到4 进程名字由进程号决定 则为example_1 example_2 example_3 example_4</p>
+<pre><code>command=python3.6 /var/www/aio_ooad/test_main.py --path=/var/www/aio_ooad/example_%(process_num)s.sock --port=808%(process_num)s
+user=www-data
+</code></pre><p>后台运行此命令 也即是运行web app所在的py文件 执行用户为www-data</p>
+<p>这里坑就比较多了</p>
+<p>1.python模块问题<br>因为supervisor是由root用户运行的 所以在supervisor里面后台执行python命令也是在root用户下执行的</p>
+<p>正如我开始所说 我一直依赖都是windows系统下进行开发的 对权限的意识不是很足</p>
+<p>下面我们来看看一个模块安装问题<br>因为我是使用普通用户gzm进行安装aiohttp模块的 但是在部署之后日志显示没有安装aiohttp模块</p>
+<p>让我们在普通用户gzm下打开python3终端 查看模块安装目录<br><img src="http://static.zybuluo.com/gzm1997/61hncydvbdnd2cwdkcofcks8/image_1cff2k7ie1nqkpra1a7t1pp81e0q2m.png" alt="image_1cff2k7ie1nqkpra1a7t1pp81e0q2m.png-40kB"><br>我们会发现里面有个路径为</p>
+<pre><code>/home/gzm/.local/lib/python3.6/site-packages
+</code></pre><p>进入之后发现aiohttp正是安装在这个路径下面<br><img src="http://static.zybuluo.com/gzm1997/npxy5oetqeztqsxq16xr4t4b/image_1cff2pkee1quh1kbssklugl167p33.png" alt="image_1cff2pkee1quh1kbssklugl167p33.png-66kB"></p>
+<p>然后让我们切换为root用户 查看模块安装路径 发现没有/home/gzm/.local/lib/python3.6/site-packages 这个路径 这就解释了为什么即使我真的在gzm这个用户下安装了aiohttp等模块 但是运行supervisor还是会在日志中报错没有此模块 所以正确的方式是切换到root安装需要的模块<br><img src="http://static.zybuluo.com/gzm1997/clvu614mas8hh45xfdoxsgh3/image_1cff2sipucq2gtm1qid5141fvd4g.png" alt="image_1cff2sipucq2gtm1qid5141fvd4g.png-40.1kB"></p>
+<p>还有一个问题是</p>
+<pre><code>--path=/var/www/aio_ooad/example_%(process_num)s.sock
+</code></pre><p>意味着www-data用户需要在/var/www/aio_ooad目录下创建四个.socket文件 以支持nginx 所以/var/www/aio_ooad这个文件需要把所有权改为www-data 不然会在日志中报错permission denied</p>
+<pre><code>sudo chown -R www-data:www-data /var/www/aio_ooad/
+</code></pre><hr>
+<h2 id="web-app所在py"><a href="#web-app所在py" class="headerlink" title="web app所在py"></a>web app所在py</h2><p>test_main.py<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> aiohttp_polls <span class="keyword">import</span> main</span><br><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"></span><br><span class="line">parser = argparse.ArgumentParser(description=<span class="string">"aiohttp server example"</span>)</span><br><span class="line">parser.add_argument(<span class="string">'--path'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'--port'</span>)</span><br><span class="line"></span><br><span class="line">app = main.app</span><br><span class="line">args = parser.parse_args()</span><br><span class="line">web.run_app(app, host=<span class="string">"0.0.0.0"</span>, port=args.port, path=args.path)</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="nginx-supervisor重启命令"><a href="#nginx-supervisor重启命令" class="headerlink" title="nginx supervisor重启命令"></a>nginx supervisor重启命令</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo /etc/init.d/nginx restart</span><br><span class="line">sudo supervisorctl reload</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/aiohttp/" rel="tag"># aiohttp</a>
+          
+            <a href="/tags/deploy/" rel="tag"># deploy</a>
+          
+            <a href="/tags/ubuntu/" rel="tag"># ubuntu</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/08/java-socket编程/" rel="next" title="java socket编程">
+                <i class="fa fa-chevron-left"></i> java socket编程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/10/aiohttp的跨域问题/" rel="prev" title="aiohttp的跨域问题">
+                aiohttp的跨域问题 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">gzm1997</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#部署"><span class="nav-number">2.</span> <span class="nav-text">部署</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nginx配置"><span class="nav-number">3.</span> <span class="nav-text">nginx配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#supervisor配置"><span class="nav-number">4.</span> <span class="nav-text">supervisor配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#web-app所在py"><span class="nav-number">5.</span> <span class="nav-text">web app所在py</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nginx-supervisor重启命令"><span class="nav-number">6.</span> <span class="nav-text">nginx supervisor重启命令</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gzm1997</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

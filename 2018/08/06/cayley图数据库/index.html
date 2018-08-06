@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="cayley,database,go," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="郭柱明  图数据库背景在此之前已经简单记录了一下图数据的背景和发展现状 图数据引擎那部分现在还是知之甚少 还没深入去了解图数据库背景  cayley优点 go语言实现 运行简单(三四条命令) 支持http接口以及REPL交互式 支持多种语言进行查询 Gizmo MQL GraphQL   支持多种后端存储 KVs: Bolt, LevelDB NoSQL: MongoDB, ElasticSear">
+<meta name="keywords" content="cayley,database,go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cayley图数据库">
+<meta property="og:url" content="http://yoursite.com/2018/08/06/cayley图数据库/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="郭柱明  图数据库背景在此之前已经简单记录了一下图数据的背景和发展现状 图数据引擎那部分现在还是知之甚少 还没深入去了解图数据库背景  cayley优点 go语言实现 运行简单(三四条命令) 支持http接口以及REPL交互式 支持多种语言进行查询 Gizmo MQL GraphQL   支持多种后端存储 KVs: Bolt, LevelDB NoSQL: MongoDB, ElasticSear">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/q1yl1m5vzoguov27qs6hs6b9/image_1ci3f3d0g1hg21bt411nh4f04r09.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/2acyhi8sr9f25j6bsflqpupi/image_1ci24pfveosv1hudifc10ivmcl9.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/so7d700kq18p8v7cjyc79qz3/image_1ci3gj9n4178dooh1a7g166fsbbm.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/k9kmpu8jatkj257p10tiitp0/image_1ci8s50oq9jqrrt82c1hqk19nq19.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/5y9xdob80nzpbnfblk941vxl/image_1ci99nqqkm61l077bd12fj1ng1m.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/28tmug1wnryl7t4j540ja2pu/image_1ci9habhi1iob1b5094s14k518t52j.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/clywp0fgdwenshe2fbbw8c4a/image_1ci3jdcegdal17q8tga180t8at13.png">
+<meta property="og:updated_time" content="2018-08-06T08:14:18.179Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="cayley图数据库">
+<meta name="twitter:description" content="郭柱明  图数据库背景在此之前已经简单记录了一下图数据的背景和发展现状 图数据引擎那部分现在还是知之甚少 还没深入去了解图数据库背景  cayley优点 go语言实现 运行简单(三四条命令) 支持http接口以及REPL交互式 支持多种语言进行查询 Gizmo MQL GraphQL   支持多种后端存储 KVs: Bolt, LevelDB NoSQL: MongoDB, ElasticSear">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/q1yl1m5vzoguov27qs6hs6b9/image_1ci3f3d0g1hg21bt411nh4f04r09.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/08/06/cayley图数据库/"/>
+
+
+
+
+
+  <title>cayley图数据库 | gzm's blogs</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">gzm's blogs</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/06/cayley图数据库/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gzm1997">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gzm's blogs">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">cayley图数据库</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-08-06T16:13:38+08:00">
+                2018-08-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>郭柱明</p>
+<hr>
+<h2 id="图数据库背景"><a href="#图数据库背景" class="headerlink" title="图数据库背景"></a>图数据库背景</h2><p>在此之前已经简单记录了一下图数据的背景和发展现状 图数据引擎那部分现在还是知之甚少 还没深入去了解<br><a href="https://www.zybuluo.com/gzm1997/note/1207854" target="_blank" rel="noopener">图数据库背景</a></p>
+<hr>
+<h2 id="cayley优点"><a href="#cayley优点" class="headerlink" title="cayley优点"></a>cayley优点</h2><ul>
+<li>go语言实现</li>
+<li>运行简单(三四条命令)</li>
+<li>支持http接口以及REPL交互式</li>
+<li>支持多种语言进行查询<ul>
+<li>Gizmo</li>
+<li>MQL</li>
+<li>GraphQL</li>
+</ul>
+</li>
+<li>支持多种后端存储<ul>
+<li>KVs: Bolt, LevelDB</li>
+<li>NoSQL: MongoDB, ElasticSearch, CouchDB/PouchDB</li>
+<li>SQL: PostgreSQL, CockroachDB, MySQL</li>
+<li>n-memory, ephemeral</li>
+</ul>
+</li>
+<li>模块化编程 容易拓展</li>
+<li>良好的测试覆盖</li>
+<li>速度快</li>
+<li>免费</li>
+</ul>
+<hr>
+<h2 id="运行和应用"><a href="#运行和应用" class="headerlink" title="运行和应用"></a>运行和应用</h2><p>这里真的要非常注意 因为cayley提供的官方文档相当有限 会导致很多新手搞不清到底怎么使用这个图数据</p>
+<p>cayley使用两种方式</p>
+<ul>
+<li>作为应用运行使用</li>
+<li>作为第三方库运行使用</li>
+</ul>
+<hr>
+<h2 id="作为应用运行使用"><a href="#作为应用运行使用" class="headerlink" title="作为应用运行使用"></a>作为应用运行使用</h2><p>下面是官方文档中作为应用进行运行使用的部分<br><a href="https://github.com/cayleygraph/cayley/blob/master/docs/Quickstart-As-Application.md" target="_blank" rel="noopener">参考链接</a></p>
+<ol>
+<li>下载二进制文件解压或者下载源码进行编译</li>
+<li>配置</li>
+<li>导入数据</li>
+<li>运行</li>
+</ol>
+<p>运行使用一下命令</p>
+<pre><code>./cayley http --config=cayley.yml --host=0.0.0.0:64210
+</code></pre><p>或者在Linux系统下后台运行</p>
+<pre><code>./cayley http --config=cayley.yml --host=0.0.0.0:64210 &amp;
+</code></pre><p>可以看到已经在后台运行 监听64210端口<br><img src="http://static.zybuluo.com/gzm1997/q1yl1m5vzoguov27qs6hs6b9/image_1ci3f3d0g1hg21bt411nh4f04r09.png" alt="image_1ci3f3d0g1hg21bt411nh4f04r09.png-26.4kB"></p>
+<p>上面这种运行方式是使用一个go原生<strong>net/http</strong>架起一个web服务器 以方便开放人员作为管理员可以在web界面上使用UI进行数据库的增删查找 如下<br><img src="http://static.zybuluo.com/gzm1997/2acyhi8sr9f25j6bsflqpupi/image_1ci24pfveosv1hudifc10ivmcl9.png" alt="image_1ci24pfveosv1hudifc10ivmcl9.png-149.3kB"></p>
+<p><strong>但是 对于这个http接口 官方并没有提供进一步的封装</strong> 意味着如果你要使用这种方式运行cayley 并且在你的项目中连接这个数据库 那么你是需要自己拼凑我们用来增删查找的Gizmo语句(如果选择使用Gizmo) 类似以下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">g.V().Has(&quot;&lt;name&gt;&quot;,&quot;Casablanca&quot;)</span><br><span class="line">  .Out(&quot;&lt;/film/film/starring&gt;&quot;).Out(&quot;&lt;/film/performance/actor&gt;&quot;)</span><br><span class="line">  .Out(&quot;&lt;name&gt;&quot;).All()</span><br></pre></td></tr></table></figure></p>
+<p>然后post给服务端上的cayley</p>
+<p>这就意味着你需要进一步封装这个http接口 就跟写一个爬虫一样 虽然在Python上已经有人做好了这部分工作<br><a href="https://github.com/ziyasal/pyley" target="_blank" rel="noopener">pyley</a>一个封装了cayley http接口的客户端</p>
+<p>但是go语言我目前还没发现有类似的 官方亦然</p>
+<hr>
+<h2 id="作为第三方库运行使用"><a href="#作为第三方库运行使用" class="headerlink" title="作为第三方库运行使用"></a>作为第三方库运行使用</h2><p>我个人推荐将cayley作为第三方库来进行运行 一个是go get安装cayley第三方库的时候就顺带安装了cayley 因为cayley本身就是go编写的 但是这方面的使用官方文档上简直坑得不行 仅仅提供了几个hello world 对刚接触的开发者来说真的非常不友好</p>
+<p>官方提供的几个<a href="https://github.com/cayleygraph/cayley/tree/master/examples" target="_blank" rel="noopener">example</a></p>
+<p><strong>hello_world</strong>和<strong>transaction</strong>都是使用</p>
+<pre><code>cayley.NewMemoryGraph()
+</code></pre><p>这个api使用内存作为临时的存储位置进行存储的</p>
+<p><strong>hello_bolt</strong>和<strong>hello_schema</strong>都是使用一个叫bolt的键值对数据库进行存储的 这个需要一个路径来存存储着数据的文件 </p>
+<p>除此之外 官方文档就没提供太多 实际在go语言中链接cayley的方式了</p>
+<p>但是我们小组的领导决定使用mongodb作为backend进行存储 上面的例子都没有太大的实际应用意义</p>
+<p>我参照了bolt作为backend的例子修改了一下 获得了使用mongodb作为backend的方法</p>
+<p>注释已经将每一部分讲的很清楚了 所以就不说其他什么了</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"context"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"github.com/cayleygraph/cayley"</span></span><br><span class="line">	<span class="string">"github.com/cayleygraph/cayley/graph"</span></span><br><span class="line">	<span class="comment">//下面这个import必不可少 因为在这个import这个库的时候 它的init函数会注册这个类型的数据库 允许使用这个数据库进行存储</span></span><br><span class="line">	_ <span class="string">"github.com/cayleygraph/cayley/graph/nosql/mongo"</span></span><br><span class="line">	<span class="string">"github.com/cayleygraph/cayley/quad"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 初始化数据库</span></span><br><span class="line">	err := graph.InitQuadStore(<span class="string">"mongo"</span>, <span class="string">"mongodb://120.92.100.60:27017"</span>, <span class="literal">nil</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//打开和使用数据库</span></span><br><span class="line">	store, err := cayley.NewGraph(<span class="string">"mongo"</span>, <span class="string">"mongodb://120.92.100.60:27017"</span>, <span class="literal">nil</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatalln(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//给数据库添加一个quad实例 phrase of the day is of course Hello BoltDB! demo graph</span></span><br><span class="line">	<span class="comment">//主语 phrase of the day</span></span><br><span class="line">	<span class="comment">//谓语 is of course</span></span><br><span class="line">	<span class="comment">//宾语 Hello BoltDB!</span></span><br><span class="line">	<span class="comment">//标签 demo graph</span></span><br><span class="line">	store.AddQuad(quad.Make(<span class="string">"phrase of the day"</span>, <span class="string">"is of course"</span>, <span class="string">"Hello BoltDB!"</span>, <span class="string">"demo graph"</span>))</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 创建一个用于查找的path</span></span><br><span class="line">	p := cayley.StartPath(store, quad.String(<span class="string">"phrase of the day"</span>)).Out(quad.String(<span class="string">"is of course"</span>))</span><br><span class="line"></span><br><span class="line">	<span class="comment">//下面的查询是跟hello world里面是差不多的 但是更先进一点</span></span><br><span class="line">	<span class="comment">//获取这个path的迭代器 并且优化它</span></span><br><span class="line">	it, _ := p.BuildIterator().Optimize()</span><br><span class="line"></span><br><span class="line">	<span class="comment">//在quad层面进行优化 之后这个迭代器就被指定了backend的迭代器取代了</span></span><br><span class="line">	it, _ = store.OptimizeIterator(it)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 关闭迭代器</span></span><br><span class="line">	<span class="keyword">defer</span> it.Close()</span><br><span class="line"></span><br><span class="line">	ctx := context.TODO()</span><br><span class="line">	<span class="comment">// 当path上还有下一个</span></span><br><span class="line">	<span class="keyword">for</span> it.Next(ctx) &#123;</span><br><span class="line">		token := it.Result()                <span class="comment">// 获取节点的一个引用</span></span><br><span class="line">		value := store.NameOf(token)        <span class="comment">// 获取节点的值</span></span><br><span class="line">		nativeValue := quad.NativeOf(value) <span class="comment">// 将上面获取的节点的值转化为正常的数</span></span><br><span class="line">		fmt.Println(nativeValue)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err := it.Err(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatalln(err)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出<br><img src="http://static.zybuluo.com/gzm1997/so7d700kq18p8v7cjyc79qz3/image_1ci3gj9n4178dooh1a7g166fsbbm.png" alt="image_1ci3gj9n4178dooh1a7g166fsbbm.png-24.1kB"></p>
+<hr>
+<p>事务</p>
+<ol>
+<li>初始化数据库获取一个handle</li>
+<li>获取一个事务</li>
+<li>添加多个四元组到事务中</li>
+<li>将事务添加到handle中</li>
+<li>查询跟之前没什么区别</li>
+</ol>
+<p><img src="http://static.zybuluo.com/gzm1997/k9kmpu8jatkj257p10tiitp0/image_1ci8s50oq9jqrrt82c1hqk19nq19.png" alt="image_1ci8s50oq9jqrrt82c1hqk19nq19.png-107.8kB"></p>
+<hr>
+<p>数据结构与api</p>
+<p>1.添加四元组的方式<br><img src="http://static.zybuluo.com/gzm1997/5y9xdob80nzpbnfblk941vxl/image_1ci99nqqkm61l077bd12fj1ng1m.png" alt="image_1ci99nqqkm61l077bd12fj1ng1m.png-113.8kB"></p>
+<p>2.更新或者删除四元组<br>cayley的设计中是没有更新四元组这个api 如果想要更新一个四元组只能先删除这个四元组 然后再重新添加一条新的四元组</p>
+<p><img src="http://static.zybuluo.com/gzm1997/28tmug1wnryl7t4j540ja2pu/image_1ci9habhi1iob1b5094s14k518t52j.png" alt="image_1ci9habhi1iob1b5094s14k518t52j.png-105kB"></p>
+<hr>
+<h2 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h2><h2 id=""><a href="#" class="headerlink" title=""></a><img src="http://static.zybuluo.com/gzm1997/clywp0fgdwenshe2fbbw8c4a/image_1ci3jdcegdal17q8tga180t8at13.png" alt="image_1ci3jdcegdal17q8tga180t8at13.png-135.6kB"></h2><h2 id="cayley-api"><a href="#cayley-api" class="headerlink" title="cayley api"></a>cayley api</h2><p>四元组 含有主谓宾标签<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Quad</span><span class="params">(subject, predicate, object, label <span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">quad</span>.<span class="title">Quad</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> quad.Make(subject, predicate, object, label)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>三元组 含有主谓宾 没有标签(标签为nil)<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Triple</span><span class="params">(subject, predicate, object <span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">quad</span>.<span class="title">Quad</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> Quad(subject, predicate, object, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>处理器handle<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Handle = graph.Handle</span><br></pre></td></tr></table></figure></p>
+<p>一个handle的结构是<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Handle <span class="keyword">struct</span> &#123;</span><br><span class="line">    QuadStore</span><br><span class="line">    QuadWriter</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>包含一个匿名的四元组存储成员 一个匿名的四元组写入成员</p>
+<p>新建一个处理器<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewGraph</span><span class="params">(name, dbpath <span class="keyword">string</span>, opts graph.Options)</span> <span class="params">(*Handle, error)</span></span></span><br></pre></td></tr></table></figure></p>
+<p>返回一个handle</p>
+<p>新建一个内存存储的处理器<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewMemoryGraph</span><span class="params">()</span> <span class="params">(*Handle, error)</span></span></span><br></pre></td></tr></table></figure></p>
+<p>从它的具体实现 可以知道这基于<strong>memstore</strong>内存进行存储的处理器<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewMemoryGraph</span><span class="params">()</span> <span class="params">(*Handle, error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> NewGraph(<span class="string">"memstore"</span>, <span class="string">""</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>迭代器<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Iterator = graph.Iterator</span><br></pre></td></tr></table></figure></p>
+<p>query path<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Path = path.Path</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="Gizmo"><a href="#Gizmo" class="headerlink" title="Gizmo"></a>Gizmo</h2><p>因为我们上面都是使用Gizmo作为查询语言进行查询的 所以很有必要记录一下Gizmo的基本语法</p>
+<p>基本语句太多了 所以只简要记录一下常用的语句</p>
+<p>1.<br>    graph.M()<br>是</p>
+<pre><code>graph.Morphism()
+</code></pre><p>的缩写 Morphism创建一条路径 这样允许Gizmo的路径可以被复用<br>类似如下</p>
+<pre><code>var shorterPath = graph.Morphism().Out(&quot;foo&quot;).Out(&quot;bar&quot;)
+</code></pre><hr>
+<p>2.</p>
+<pre><code>graph.V(*)
+</code></pre><p>是</p>
+<pre><code>graph.Vertex([nodeId],[nodeId]...)
+</code></pre><p>的缩写 这个语句返回一个根据给定的点作为始点的query path 没有nodeID的话以为着所有的点</p>
+<hr>
+<p>3.<br>Path object .Morphism()和.Vertex()和这个函数都可以创建一个query path对象</p>
+<hr>
+<p>4.</p>
+<pre><code>path.And(path)
+</code></pre><p>是</p>
+<pre><code>path.Intersect(path)
+</code></pre><p>的缩写 就是逻辑与的意思<br>例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g.V(&quot;&lt;charlie&gt;&quot;).Out(&quot;&lt;follows&gt;&quot;).And(g.V(&quot;&lt;dani&gt;&quot;).Out(&quot;&lt;follows&gt;&quot;)).All()</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>5.</p>
+<pre><code>path.As(tags)
+</code></pre><p>是</p>
+<pre><code>path.Tag(tags)
+</code></pre><p>的缩写<br>Tag保存一个list的nodes存到给定的tag 主要是为了保存我们的工作或者为了了解一个path是怎样到达终点的 我们需要这个tag来进行标志一下</p>
+<hr>
+<p>6.</p>
+<pre><code>path.Back(tag)
+</code></pre><p>跟tag来后退到tag上面去</p>
+<hr>
+<p>7.</p>
+<pre><code>path.Both([predicatePath], [tags])
+</code></pre><p>获取同时进来和出去的节点<br>例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g.V(&quot;&lt;fred&gt;&quot;).Both(&quot;&lt;follows&gt;&quot;).All()</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>8.</p>
+<pre><code>path.Count()
+</code></pre><p>返回结果的数量</p>
+<hr>
+<p>9.</p>
+<pre><code>path.Difference(path)
+</code></pre><p>是</p>
+<pre><code>path.Except(path)
+</code></pre><p>的别名<br>Except移除当前path上匹配了这个query path删的所有paths</p>
+<hr>
+<p>10.</p>
+<pre><code>path.Follow(path)
+</code></pre><p>是一种使用.Morphism()准备好的query path的方式</p>
+<hr>
+<p>11.</p>
+<pre><code>path.ForEach(callback) or (limit, callback)
+</code></pre><p>遍历query path</p>
+<hr>
+<p>12.</p>
+<pre><code>path.Has(predicate, object)
+</code></pre><p>一般应用于所有节点或者一个堆节点按照某个谓语进行查询 例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g.V().Has(&quot;&lt;follows&gt;&quot;, &quot;&lt;bob&gt;&quot;).All()</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>13.</p>
+<pre><code>path.In([predicatePath], [tags])
+</code></pre><p>in就比较直观了 就是按照这个谓语进来到这个节点</p>
+<pre><code>path.Out([predicatePath], [tags])
+</code></pre><p>类似 就是按照这个谓语出来这个节点</p>
+<hr>
+<p>14.</p>
+<pre><code>path.Or(path)
+</code></pre><p>是</p>
+<pre><code>path.Union(path)
+</code></pre><p>别名<br>这个也比较直观 就是逻辑或</p>
+<hr>
+<p>15.</p>
+<pre><code>path.Save(predicate, tag)
+</code></pre><p>保存所有使用这个谓语进入这个tag的节点 并且不遍历</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/cayley/" rel="tag"># cayley</a>
+          
+            <a href="/tags/database/" rel="tag"># database</a>
+          
+            <a href="/tags/go/" rel="tag"># go</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/06/图数据库/" rel="next" title="图数据库">
+                <i class="fa fa-chevron-left"></i> 图数据库
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/06/dgraph图数据库/" rel="prev" title="dgraph图数据库">
+                dgraph图数据库 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">gzm1997</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#图数据库背景"><span class="nav-number">1.</span> <span class="nav-text">图数据库背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cayley优点"><span class="nav-number">2.</span> <span class="nav-text">cayley优点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#运行和应用"><span class="nav-number">3.</span> <span class="nav-text">运行和应用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#作为应用运行使用"><span class="nav-number">4.</span> <span class="nav-text">作为应用运行使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#作为第三方库运行使用"><span class="nav-number">5.</span> <span class="nav-text">作为第三方库运行使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据集"><span class="nav-number">6.</span> <span class="nav-text">数据集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">7.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cayley-api"><span class="nav-number">8.</span> <span class="nav-text">cayley api</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Gizmo"><span class="nav-number">9.</span> <span class="nav-text">Gizmo</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gzm1997</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

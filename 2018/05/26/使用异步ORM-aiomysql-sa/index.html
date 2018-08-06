@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="async,mysql,ORM," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言 因为系统分析与设计大作业的web框架我选择了使用aiohttp这个异步框架，所以ORM的选择上要做出改变。sqlalchemy是不支持异步IO的，所以用sqlalchemy搭配aiohttp并不可行，最终我选择了整合了sqlalchemy的aiomysql.sa，这是一个支持mysql的异步ORM。  相关的学习链接官方文档用法参考 从官方文档上我们可以看到  aiomysql的api接口跟">
+<meta name="keywords" content="async,mysql,ORM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用异步ORM aiomysql.sa">
+<meta property="og:url" content="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="前言 因为系统分析与设计大作业的web框架我选择了使用aiohttp这个异步框架，所以ORM的选择上要做出改变。sqlalchemy是不支持异步IO的，所以用sqlalchemy搭配aiohttp并不可行，最终我选择了整合了sqlalchemy的aiomysql.sa，这是一个支持mysql的异步ORM。  相关的学习链接官方文档用法参考 从官方文档上我们可以看到  aiomysql的api接口跟">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/qxak3ah9finr2ect9ah131ug/image_1ced39bc8n731hlgijuectil9.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/wau66y7hzv1p6u8bny2sxiu9/image_1ced3mktqg6t1hr35mg1p1qed0m.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/1ad8i0z2sc9pq3yiasaof0bo/image_1ced511agkr510uc104oevv1qr013.png">
+<meta property="og:updated_time" content="2018-05-26T02:47:05.554Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用异步ORM aiomysql.sa">
+<meta name="twitter:description" content="前言 因为系统分析与设计大作业的web框架我选择了使用aiohttp这个异步框架，所以ORM的选择上要做出改变。sqlalchemy是不支持异步IO的，所以用sqlalchemy搭配aiohttp并不可行，最终我选择了整合了sqlalchemy的aiomysql.sa，这是一个支持mysql的异步ORM。  相关的学习链接官方文档用法参考 从官方文档上我们可以看到  aiomysql的api接口跟">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/qxak3ah9finr2ect9ah131ug/image_1ced39bc8n731hlgijuectil9.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/"/>
+
+
+
+
+
+  <title>使用异步ORM aiomysql.sa | gzm's blogs</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">gzm's blogs</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gzm1997">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gzm's blogs">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用异步ORM aiomysql.sa</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-26T10:46:37+08:00">
+                2018-05-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>因为系统分析与设计大作业的web框架我选择了使用aiohttp这个异步框架，所以ORM的选择上要做出改变。sqlalchemy是不支持异步IO的，所以用sqlalchemy搭配aiohttp并不可行，最终我选择了整合了sqlalchemy的aiomysql.sa，这是一个支持mysql的异步ORM。</p>
+</blockquote>
+<p>相关的学习链接<br><a href="http://aiomysql.readthedocs.io/en/latest/sa.html" target="_blank" rel="noopener">官方文档</a><br><a href="https://github.com/aio-libs/aiomysql/blob/master/docs/sa.rst" target="_blank" rel="noopener">用法参考</a></p>
+<p>从官方文档上我们可以看到</p>
+<p><img src="http://static.zybuluo.com/gzm1997/qxak3ah9finr2ect9ah131ug/image_1ced39bc8n731hlgijuectil9.png" alt="image_1ced39bc8n731hlgijuectil9.png-12.2kB"></p>
+<p>aiomysql的api接口跟aiopg是非常类似的，可以在学习中参考一下aiopg，同时aiomysql.sa是整合了sqlalchemy的，也可以参考sqlalchemy的文档。为什么我要这么说呢，因为aiomysql.sa官方提供的文档描述相当有限，在学习过程中必须参考少之又少的资料，并且这些资料可能因为版本问题还不一定是对的。</p>
+<hr>
+<h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><p>python的异步io很多都是基于python的协程实现的，asyncio就是，同时aiomysql.sa也是底层由协程实现，所以我们是使用aiomysql.sa过程中，都需要定义各种操作为<strong>协程</strong>。</p>
+<p>1.初始化引擎</p>
+<p>初始化引擎跟mysql.connector很类似，但是返回一个engine实例<br><img src="http://static.zybuluo.com/gzm1997/wau66y7hzv1p6u8bny2sxiu9/image_1ced3mktqg6t1hr35mg1p1qed0m.png" alt="image_1ced3mktqg6t1hr35mg1p1qed0m.png-28.8kB"><br>例子<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">init_engine</span><span class="params">()</span>:</span></span><br><span class="line">    engine = <span class="keyword">await</span> aiomysql.sa.create_engine(user = config[<span class="string">"user"</span>], db = config[<span class="string">"database"</span>], host = config[<span class="string">"host"</span>], password = config[<span class="string">"password"</span>])</span><br><span class="line">    <span class="keyword">return</span> engine</span><br></pre></td></tr></table></figure></p>
+<p>2.引擎获取与事务<br>这部分我看了下文档和github上的用法参考，感觉都不怎么正确，可能因为版本问题，自己总结了如下<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">with</span> engine.acquire() <span class="keyword">as</span> conn:</span><br><span class="line">    trans = <span class="keyword">await</span> conn.begin()</span><br><span class="line">    <span class="keyword">await</span> conn.execute(food.insert().values(name = <span class="string">"test_food"</span>))</span><br><span class="line">    <span class="keyword">await</span> trans.commit()</span><br></pre></td></tr></table></figure></p>
+<p>引擎资源的获取需要engine.acquire()来获取，返回值为一个SAconnection实例，可以进行execute(query, *multiparams, **params)操作。</p>
+<p>最好在with语句里面使用acquire，这样可以自动释放engine资源。</p>
+<p>aiomysql.sa支持事务，它无论是insert delete还是select都需要事务的提交，没错你没看错，select它都必须你提交事务，不然会报错<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Failed to release a connection <span class="keyword">with</span> transaction started at <span class="string">'aiomysql'</span></span><br></pre></td></tr></table></figure></p>
+<p>同时这个报错有点意思，如果你没有主动提交事务，它这个报错一定会出现的，但是如果你之前的增删查着操作出现了错误，它会导致整个事务失败，最终这个事务没办法成功提交，也会报这个错误。<strong>也就是说如果出现这个错误，并一定就是你事务没有主动提交，而是有可能你的增删查着操作出现了错误导致事务的失败。</strong></p>
+<p>事务的获取和提交，事务的获取可以通过SAconnection.begin()获取这个事务<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trans = <span class="keyword">await</span> conn.begin()</span><br></pre></td></tr></table></figure></p>
+<p>事务提交<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">await</span> trans.commit()</span><br></pre></td></tr></table></figure></p>
+<p>嵌套事务<br>文档中这样描述嵌套事务</p>
+<blockquote>
+<p>Nested calls to begin() on the same SAConnection will return new Transaction objects that represent an emulated transaction within the scope of the enclosing transaction</p>
+</blockquote>
+<p>在同一个SAconnection中嵌套调用begin的话，会在外层事务中间返回一个模仿的事务对象</p>
+<p>嵌套事务的特点</p>
+<blockquote>
+<p>Calls to Transaction.commit() only have an effect when invoked via the outermost Transaction object, though the Transaction.rollback() method of any of the Transaction objects will roll back the transaction</p>
+</blockquote>
+<p>只有当最外层的事务被调用，那么事务才会被提交，例子如下<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">trans = <span class="keyword">yield</span> <span class="keyword">from</span> conn.begin()   <span class="comment"># outermost transaction</span></span><br><span class="line">trans2 = <span class="keyword">yield</span> <span class="keyword">from</span> conn.begin()  <span class="comment"># "inner"</span></span><br><span class="line"><span class="keyword">yield</span> <span class="keyword">from</span> trans2.commit()          <span class="comment"># does nothing</span></span><br><span class="line"><span class="keyword">yield</span> <span class="keyword">from</span> trans.commit()           <span class="comment"># actually commits</span></span><br></pre></td></tr></table></figure></p>
+<p>最后说一数据结构的声明，因为在sqlalchemy中我们一般比较习惯使用class User(Base)这样的方式来定义我们的数据库表结构，因为这符合我们面向对象编程的习惯，同时定义了这些class之后我们可以在稍后的增删查着操作中使用这些class。但是在aiomysql.sa中这样做并不好。官方文档中这样解释<br><img src="http://static.zybuluo.com/gzm1997/1ad8i0z2sc9pq3yiasaof0bo/image_1ced511agkr510uc104oevv1qr013.png" alt="image_1ced511agkr510uc104oevv1qr013.png-59.7kB"></p>
+<p>就是说Question.query.filter_by(question_text=’Why’).first()或者session.query(TableName).all()之类的查询并不支持异步，所以把表结构定义为class并没有什么帮助，正确的做法是定义为Table对象。</p>
+<p>关于class和Table对象的关系我之前<a href="https://gzm1997.github.io/2018/05/16/sqlalchemy%E4%B8%80%E4%BA%9B%E5%B8%B8%E8%A7%81%E6%A6%82%E5%BF%B5/" target="_blank" rel="noopener">一篇博客</a>有说过，就是创建一个class就会自动生成一个同名的Table对象，并且使用一个Mapper对象将这两个对象映射在一起。</p>
+<p>所以我们在aiomysql.sa中定义我们的数据库表结构大多形如下面<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">food = sa.Table(</span><br><span class="line">    <span class="string">"food"</span>,</span><br><span class="line">    meta,</span><br><span class="line">    sa.Column(<span class="string">"id"</span>, sa.Integer, primary_key = <span class="keyword">True</span>),</span><br><span class="line">    sa.Column(<span class="string">"name"</span>, sa.String(<span class="number">50</span>), unique = <span class="keyword">True</span>, nullable = <span class="keyword">False</span>),</span><br><span class="line">    sa.Column(<span class="string">"picture"</span>, sa.String(<span class="number">50</span>)),</span><br><span class="line">    sa.Column(<span class="string">"price"</span>, sa.Integer, nullable = <span class="keyword">False</span>),</span><br><span class="line">    sa.Column(<span class="string">"description"</span>, sa.String(<span class="number">50</span>)),</span><br><span class="line">    sa.Column(<span class="string">"rating"</span>, sa.Float),</span><br><span class="line">    sa.Column(<span class="string">"amount"</span>, sa.Integer, nullable = <span class="keyword">False</span>),</span><br><span class="line">    sa.Column(<span class="string">"likes"</span>, sa.Integer, default = <span class="number">0</span>),</span><br><span class="line">    sa.Column(<span class="string">"tag_id"</span>, sa.Integer, sa.ForeignKey(<span class="string">"tag.id"</span>), nullable = <span class="keyword">False</span>)</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>基本用法基本就是上面所说的了，具体可以参考一下<a href="https://github.com/gzm1997/aio_ooad" target="_blank" rel="noopener">我github上系统分析与设计的web后台</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/async/" rel="tag"># async</a>
+          
+            <a href="/tags/mysql/" rel="tag"># mysql</a>
+          
+            <a href="/tags/ORM/" rel="tag"># ORM</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/26/aiohttp基本使用/" rel="next" title="aiohttp基本使用">
+                <i class="fa fa-chevron-left"></i> aiohttp基本使用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/26/python包调用问题/" rel="prev" title="python包调用问题">
+                python包调用问题 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">gzm1997</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本用法"><span class="nav-number">2.</span> <span class="nav-text">基本用法</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gzm1997</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

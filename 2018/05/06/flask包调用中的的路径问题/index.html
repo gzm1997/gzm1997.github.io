@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="flask深入学习," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言 这篇短文写在我的腾讯一面搞砸之后，这次面试让我深刻认识到我一直是一个很功利的人。总结了一下一共有几个要点：  看需求办事，有什么需求谷歌什么，查看文档相关部分，而其他的部分置之不理，全然没有深入学习的决心 对一个框架没有深入了解，仅仅止步于工具化，也没有对框架有更深层的了解，这让我很惭愧 做事没有从工程层面来思考问题，仅仅从个人角度思考问题    flask包调用过程中的路径问题假设有如下情">
+<meta name="keywords" content="flask深入学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="flask包调用中的的路径问题">
+<meta property="og:url" content="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="前言 这篇短文写在我的腾讯一面搞砸之后，这次面试让我深刻认识到我一直是一个很功利的人。总结了一下一共有几个要点：  看需求办事，有什么需求谷歌什么，查看文档相关部分，而其他的部分置之不理，全然没有深入学习的决心 对一个框架没有深入了解，仅仅止步于工具化，也没有对框架有更深层的了解，这让我很惭愧 做事没有从工程层面来思考问题，仅仅从个人角度思考问题    flask包调用过程中的路径问题假设有如下情">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/pjq99hklds5g8hdm90oqgvk6/image_1c8h30e029l51fi92jdv9f1rbt9.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/ymyj8prm5y05y2psgjni1ct9/image_1c8h31ai6r1hidf187l10fo6q6m.png">
+<meta property="og:updated_time" content="2018-05-15T13:37:44.723Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="flask包调用中的的路径问题">
+<meta name="twitter:description" content="前言 这篇短文写在我的腾讯一面搞砸之后，这次面试让我深刻认识到我一直是一个很功利的人。总结了一下一共有几个要点：  看需求办事，有什么需求谷歌什么，查看文档相关部分，而其他的部分置之不理，全然没有深入学习的决心 对一个框架没有深入了解，仅仅止步于工具化，也没有对框架有更深层的了解，这让我很惭愧 做事没有从工程层面来思考问题，仅仅从个人角度思考问题    flask包调用过程中的路径问题假设有如下情">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/pjq99hklds5g8hdm90oqgvk6/image_1c8h30e029l51fi92jdv9f1rbt9.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/"/>
+
+
+
+
+
+  <title>flask包调用中的的路径问题 | gzm's blogs</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">gzm's blogs</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gzm1997">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gzm's blogs">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">flask包调用中的的路径问题</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-06T16:00:53+08:00">
+                2018-05-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>这篇短文写在我的腾讯一面搞砸之后，这次面试让我深刻认识到我一直是一个很功利的人。总结了一下一共有几个要点：</p>
+<ul>
+<li><strong>看需求办事</strong>，有什么需求谷歌什么，查看文档相关部分，而其他的部分置之不理，全然没有深入学习的决心</li>
+<li>对一个框架没有深入了解，仅仅止步于<strong>工具化</strong>，也没有对框架有更深层的了解，这让我很惭愧</li>
+<li>做事<strong>没有从工程层面</strong>来思考问题，仅仅从个人角度思考问题</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="flask包调用过程中的路径问题"><a href="#flask包调用过程中的路径问题" class="headerlink" title="flask包调用过程中的路径问题"></a>flask包调用过程中的路径问题</h2><p>假设有如下情况,my_app是封装为包的一个flask app，app声明在my_app/__init__.py文件中，h.py是包内的一个辅助模块，在run_app.py中调用my_app这个包的flask app进行运行</p>
+<ul>
+<li>my_app<ul>
+<li>static</li>
+<li>templates</li>
+<li>__init__.py</li>
+<li>h.py</li>
+</ul>
+</li>
+<li>run_app.py</li>
+</ul>
+<hr>
+<p>###在辅助模块h.py中加载static中的静态文件###<br>当情况是运行run_app.py，而h.py需要加载static中静态文件的时候，在h.py中使用的路径可以是两种情况：</p>
+<ul>
+<li>绝对路径</li>
+<li>相对路径 ./my_app/static/file_name</li>
+</ul>
+<blockquote>
+<p>注意包调用情况下，如果包内非__init__模块要加载static内静态文件，需要使用从包外路径开始定位</p>
+</blockquote>
+<hr>
+<p>###html内加载静态文件###<br>当情况是运行run_app.py，html内需要加载静态文件，路径必须是相对路径，形式为：/static/file_name</p>
+<hr>
+<p>###实例文件夹###<br>flask除了提供 app.static_folder和app.template_folder之外<br><img src="http://static.zybuluo.com/gzm1997/pjq99hklds5g8hdm90oqgvk6/image_1c8h30e029l51fi92jdv9f1rbt9.png" alt="image_1c8h30e029l51fi92jdv9f1rbt9.png-7.8kB"><br>flask还提供了instance_path<br><img src="http://static.zybuluo.com/gzm1997/ymyj8prm5y05y2psgjni1ct9/image_1c8h31ai6r1hidf187l10fo6q6m.png" alt="image_1c8h31ai6r1hidf187l10fo6q6m.png-4.3kB"><br>instance_path也可以用来存放静态文件，但是要注意的是instance_path所在的位置</p>
+<p>flask文档对instance_path位置的阐述如下：</p>
+<ul>
+<li>未安装的模块:</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/myapp.py</span><br><span class="line">/instance</span><br></pre></td></tr></table></figure>
+<ul>
+<li>未安装的包</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/myapp</span><br><span class="line">    /__init__.py</span><br><span class="line">/instance</span><br></pre></td></tr></table></figure>
+<ul>
+<li>已安装的包或模块:</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$PREFIX/lib/python2.X/site-packages/myapp</span><br><span class="line">$PREFIX/var/myapp-instance</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>$PREFIX 是你 Python 安装的前缀。这个前缀可以是 /usr 或者你的 virtualenv 的路径。你可以打印 sys.prefix 的值来查看前缀被设置成了什么</p>
+</blockquote>
+<p>所以上面已经阐述得很清楚了，在我们包调用的情况下，instance_path是跟my_app并列的位置上的，所以可以在my_app/__init__.py内的app使用app.instance_path来加载位于与my_app并列的instance中的静态文件，如下：</p>
+<ul>
+<li>instance<ul>
+<li>static_file_to_load</li>
+</ul>
+</li>
+<li>my_app</li>
+<li>run.py</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/flask深入学习/" rel="tag"># flask深入学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/06/mysql的charset和collate/" rel="next" title="mysql的charset和collate">
+                <i class="fa fa-chevron-left"></i> mysql的charset和collate
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/06/多维数组最短路径问题/" rel="prev" title="多维数组最短路径问题">
+                多维数组最短路径问题 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">gzm1997</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#flask包调用过程中的路径问题"><span class="nav-number">2.</span> <span class="nav-text">flask包调用过程中的路径问题</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gzm1997</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

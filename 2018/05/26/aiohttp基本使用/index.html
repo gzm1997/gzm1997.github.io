@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="aiohttp,async,backend," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言 这次系统分析与设计大作业我负责web后端开发工作，本来又想使用flask框架的，但是想想flask框架都有点审美疲劳了，而且flask框架是阻塞式框架，效率未免有点不高。所以这次我使用了异步web框架aiohttp，简单记录一下基本使用，至于框架原理之类后面再深入研究。  官方文档  hello world简单hello world代码123456789from aiohttp import">
+<meta name="keywords" content="aiohttp,async,backend">
+<meta property="og:type" content="article">
+<meta property="og:title" content="aiohttp基本使用">
+<meta property="og:url" content="http://yoursite.com/2018/05/26/aiohttp基本使用/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="前言 这次系统分析与设计大作业我负责web后端开发工作，本来又想使用flask框架的，但是想想flask框架都有点审美疲劳了，而且flask框架是阻塞式框架，效率未免有点不高。所以这次我使用了异步web框架aiohttp，简单记录一下基本使用，至于框架原理之类后面再深入研究。  官方文档  hello world简单hello world代码123456789from aiohttp import">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-06-10T06:26:03.950Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="aiohttp基本使用">
+<meta name="twitter:description" content="前言 这次系统分析与设计大作业我负责web后端开发工作，本来又想使用flask框架的，但是想想flask框架都有点审美疲劳了，而且flask框架是阻塞式框架，效率未免有点不高。所以这次我使用了异步web框架aiohttp，简单记录一下基本使用，至于框架原理之类后面再深入研究。  官方文档  hello world简单hello world代码123456789from aiohttp import">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/26/aiohttp基本使用/"/>
+
+
+
+
+
+  <title>aiohttp基本使用 | gzm's blogs</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">gzm's blogs</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/26/aiohttp基本使用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gzm1997">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gzm's blogs">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">aiohttp基本使用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-26T00:45:53+08:00">
+                2018-05-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>这次系统分析与设计大作业我负责web后端开发工作，本来又想使用flask框架的，但是想想flask框架都有点审美疲劳了，而且flask框架是阻塞式框架，效率未免有点不高。所以这次我使用了异步web框架aiohttp，简单记录一下基本使用，至于框架原理之类后面再深入研究。</p>
+</blockquote>
+<p><a href="https://demos.aiohttp.org/en/latest/preparations.html" target="_blank" rel="noopener">官方文档</a></p>
+<hr>
+<h2 id="hello-world"><a href="#hello-world" class="headerlink" title="hello world"></a>hello world</h2><p>简单hello world代码<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app = web.Application()</span><br><span class="line">    <span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">hello</span><span class="params">(request)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> web.Response(text = <span class="string">"hello"</span>)</span><br><span class="line"></span><br><span class="line">    app.router.add_get(<span class="string">"/"</span>, hello)</span><br><span class="line">    web.run_app(app, port = <span class="number">5000</span>)</span><br></pre></td></tr></table></figure></p>
+<p>在路由中添加视图函数<br>1.get</p>
+<p>url例子： /<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app.router.add_get(<span class="string">"/"</span>, hello)</span><br></pre></td></tr></table></figure></p>
+<p>url例子： /api/order/3<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app.router.add_get(<span class="string">"/api/order/&#123;id&#125;"</span>, reservation_view.get_order)</span><br></pre></td></tr></table></figure></p>
+<p>使用以下获取参数id<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id = int(request.match_info[<span class="string">'id'</span>])</span><br></pre></td></tr></table></figure></p>
+<p>url例子： /test?uuid=12<br>使用以下获取url参数<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uuid = request.rel_url.query[<span class="string">'uuid'</span>]</span><br></pre></td></tr></table></figure></p>
+<p>2.post</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app.router.add_post(<span class="string">"/api/order"</span>, reservation_view.create_order)</span><br></pre></td></tr></table></figure>
+<p>使用以下获取表单data<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">data = <span class="keyword">await</span> request.post()</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><blockquote>
+<p>在这次系分的后端开发过程中，遇到了一个我以前也遇到过的问题，但是我忘记了以前我是怎么解决的了。问题就是，当post的表单中有一个value值为一个list，那么服务端这边接受会这样？</p>
+</blockquote>
+<p>上面的问题就是服务端这边接受了这个字典之后，会发现这个list的value值已经变形了，具体情况如下：<br>发送表单<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    session = requests.Session()</span><br><span class="line">    data = &#123;</span><br><span class="line">        <span class="string">"table"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="string">"list"</span>: [&#123;<span class="string">'id'</span>: <span class="string">'1'</span>, <span class="string">'name'</span>: <span class="string">'pork'</span>, <span class="string">'count'</span>: <span class="number">1</span>, <span class="string">'price'</span>: <span class="number">20</span>&#125;, &#123;<span class="string">'id'</span>: <span class="string">'2'</span>, <span class="string">'name'</span>: <span class="string">'fish'</span>, <span class="string">'count'</span>: <span class="number">1</span>, <span class="string">'price'</span>: <span class="number">23</span>&#125;]</span><br><span class="line">    &#125;</span><br><span class="line">    print(<span class="string">"data"</span>, data)</span><br><span class="line">    r = session.post(<span class="string">"http://127.0.0.1:5000/api/order"</span>, data = data)</span><br><span class="line">    print(<span class="string">"r"</span>, r)</span><br></pre></td></tr></table></figure></p>
+<p>服务端接收为，很显然变形了<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;MultiDictProxy(<span class="string">'table'</span>: <span class="string">'1'</span>, <span class="string">'list'</span>: <span class="string">'id'</span>, <span class="string">'list'</span>: <span class="string">'name'</span>, <span class="string">'list'</span>: <span class="string">'count'</span>, <span class="string">'list'</span>: <span class="string">'price'</span>, <span class="string">'list'</span>: <span class="string">'id'</span>, <span class="string">'list'</span>: <span class="string">'name'</span>, <span class="string">'list'</span>: <span class="string">'count'</span>, <span class="string">'list'</span>: <span class="string">'price'</span>)&gt;</span><br></pre></td></tr></table></figure></p>
+<p>然后我想到的解决方法就是将list这个value转为string类型再post过来，很显然或者解决方法很简单，问题就在于怎么在服务端这边从新将这个string解释为list对象，并且回复里面的字典。谷歌之后发现这样使用python的ast模块解决这个问题非常的方便</p>
+<p>发送将list类型的value转为list之后的字典<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">data = &#123;</span><br><span class="line">    <span class="string">"table"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="string">"list"</span>: <span class="string">"[&#123;'id': '1', 'name': 'pork', 'count': 1, 'price': 20&#125;, &#123;'id': '2', 'name': 'fish', 'count': 1, 'price': 23&#125;]"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>服务端这边接受和解析<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">data = <span class="keyword">await</span> request.post()</span><br><span class="line">table_num = data[<span class="string">"table"</span>]</span><br><span class="line">food_list = ast.literal_eval(data[<span class="string">"list"</span>])</span><br></pre></td></tr></table></figure></p>
+<p>这样就完美解决这个问题了，可能还有其他不修改list类型更好的方法，但是我觉得就不深究了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/aiohttp/" rel="tag"># aiohttp</a>
+          
+            <a href="/tags/async/" rel="tag"># async</a>
+          
+            <a href="/tags/backend/" rel="tag"># backend</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/22/自制简易图片云盘/" rel="next" title="自制简易图片云盘">
+                <i class="fa fa-chevron-left"></i> 自制简易图片云盘
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/26/使用异步ORM-aiomysql-sa/" rel="prev" title="使用异步ORM aiomysql.sa">
+                使用异步ORM aiomysql.sa <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">gzm1997</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hello-world"><span class="nav-number">2.</span> <span class="nav-text">hello world</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">3.</span> <span class="nav-text">问题</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gzm1997</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
