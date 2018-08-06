@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>go注意要点 | gzm&#39;s blogs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="数组的声明当声明一个数组的时候 但是没有声明这个数组的大小 后续是可以自己通过append来往数组里加入新的元素的(其实那个就是切片slice) 1234567func main()  &amp;#123;	a := []int&amp;#123;10, 100, 200&amp;#125;	a = append(a, 12)	for i := 0; i &amp;lt; 4; i++&amp;#123;		fmt.Println(a[">
+<meta name="keywords" content="go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="go注意要点">
+<meta property="og:url" content="http://yoursite.com/2018/08/06/go注意要点/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="数组的声明当声明一个数组的时候 但是没有声明这个数组的大小 后续是可以自己通过append来往数组里加入新的元素的(其实那个就是切片slice) 1234567func main()  &amp;#123;	a := []int&amp;#123;10, 100, 200&amp;#125;	a = append(a, 12)	for i := 0; i &amp;lt; 4; i++&amp;#123;		fmt.Println(a[">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/qt2xts28f9tovml0ajf8wik0/image_1chqecnb4ur81770451lim1pvk16.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/a754rrupb5d39br9bgk2h2eo/image_1chqecvnngqeqmlvjnh7jut21j.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/rq7jojgl1zba9emukovhesa5/image_1chrrjj84tb4ebf9vu1cng1l4d9.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/zcgmxaml9qrt746xec11n2ep/image_1chrro3fqfiac827p1v3a1ejgm.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/qv43jeo893uwx1gqotylx4xz/image_1chuhkjdu1q171r73oem1jov1mla9.png">
+<meta property="og:updated_time" content="2018-08-06T08:17:37.343Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="go注意要点">
+<meta name="twitter:description" content="数组的声明当声明一个数组的时候 但是没有声明这个数组的大小 后续是可以自己通过append来往数组里加入新的元素的(其实那个就是切片slice) 1234567func main()  &amp;#123;	a := []int&amp;#123;10, 100, 200&amp;#125;	a = append(a, 12)	for i := 0; i &amp;lt; 4; i++&amp;#123;		fmt.Println(a[">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/qt2xts28f9tovml0ajf8wik0/image_1chqecnb4ur81770451lim1pvk16.png">
+  
+    <link rel="alternate" href="/atom.xml" title="gzm&#39;s blogs" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">gzm&#39;s blogs</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-go注意要点" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/06/go注意要点/" class="article-date">
+  <time datetime="2018-08-06T08:17:04.000Z" itemprop="datePublished">2018-08-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      go注意要点
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="数组的声明"><a href="#数组的声明" class="headerlink" title="数组的声明"></a>数组的声明</h2><p>当声明一个数组的时候 但是没有声明这个数组的大小 后续是可以自己通过append来往数组里加入新的元素的(其实那个就是切片slice)</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	a := []<span class="keyword">int</span>&#123;<span class="number">10</span>, <span class="number">100</span>, <span class="number">200</span>&#125;</span><br><span class="line">	a = <span class="built_in">append</span>(a, <span class="number">12</span>)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">4</span>; i++&#123;</span><br><span class="line">		fmt.Println(a[i])</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="结构体"><a href="#结构体" class="headerlink" title="结构体"></a>结构体</h2><p>go的结构体跟c的结构体基本一样 但是比较有意思的是 go的结构体指针调用这个结构体的元素跟这个结构体调用元素都是一样的 都是以.一点</p>
+<p>例子<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	<span class="keyword">type</span> test <span class="keyword">struct</span> &#123;</span><br><span class="line">		a <span class="keyword">int</span></span><br><span class="line">		b <span class="keyword">string</span></span><br><span class="line">	&#125;</span><br><span class="line">	v := test&#123;<span class="number">1</span>, <span class="string">"123"</span>&#125;</span><br><span class="line">	fmt.Println(v.a)</span><br><span class="line">	fmt.Println(v.b)</span><br><span class="line">	v.a = <span class="number">6</span></span><br><span class="line">	fmt.Println(v.a)</span><br><span class="line">	<span class="keyword">var</span> structP *test = &amp;v</span><br><span class="line">	fmt.Println(structP.a)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="切片"><a href="#切片" class="headerlink" title="切片"></a>切片</h2><p>go的切片跟Python的list切片一样 都是包含开始索引 但是不包含结束索引</p>
+<p>例子<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">t := []<span class="keyword">int</span>&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;</span><br><span class="line">t = t[<span class="number">1</span>: <span class="number">3</span>]</span><br><span class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(t); i++ &#123;</span><br><span class="line">	fmt.Println(t[i])</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>len()函数但会切片的长度 cap()函数返回为切片分配的空间大小<br>copy()函数可以复制一个切片</p>
+<hr>
+<h2 id="range"><a href="#range" class="headerlink" title="range"></a>range</h2><p>之前一直被这个range弄得云里雾里 用法如下<br>for i, j := range sliceObject</p>
+<p>i是下标 j是这个下标对应的元素</p>
+<hr>
+<h2 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h2><p>go语言跟Java的接口不一样 go的接口定义方式就比价特别 是使用type interface两个关键字来声明的</p>
+<p>接口一般都是搭配结构体来使用 一般都是一个结构体实现了这个接口的一些方法</p>
+<p>例子<br>声明一个接口<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Phone <span class="keyword">interface</span> &#123;</span><br><span class="line">	call()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>声明一个结构体<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> iphone <span class="keyword">struct</span> &#123;</span><br><span class="line">	name <span class="keyword">string</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这个结构体实现这个接口的一些函数(不用全部实现都可以 go的接口并不是implement整个接口 而是implement这个接口里的一些函数)</p>
+<p>实现这个接口的一个函数<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(_iphone iphone)</span> <span class="title">call</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"this is iphone call"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>调用<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	myIphone := iphone&#123;&#125;</span><br><span class="line">	myIphone.call()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>接口中的方法理所当然是可以有返回类型的 上面那个例子是void类型的返回值 下面的例子是string类型返回值</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Phone <span class="keyword">interface</span> &#123;</span><br><span class="line">	receive() <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> iphone <span class="keyword">struct</span> &#123;</span><br><span class="line">	name <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(_iphone iphone)</span> <span class="title">receive</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="string">"this is some call from other phone in this phone "</span> + _iphone.name</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="reflect反射"><a href="#reflect反射" class="headerlink" title="reflect反射"></a>reflect反射</h2><p>gp原因的反射是一种机制 可以在运行时更新变量和检查他们的值 调用他们的方法和他们支持的内在操作 而不需要在编译时就知道这些变量的具体类型</p>
+<hr>
+<h2 id="defer推迟"><a href="#defer推迟" class="headerlink" title="defer推迟"></a>defer推迟</h2><p>go这个defer关键字开始真的是看的我云里雾里 不知道用来干什么的 后来才知道这相当于一个延迟的”函数析构函数” 一般用来释放资源 关闭文件等等</p>
+<p>而panic是在运行时捕捉到的类似数组访问月结 空指针引用等等问题 panic一般都会引起程序中断 是很严重的 所以一般都是使用error这个</p>
+<p>panic引起程序中断之后 马上执行defer被延迟的函数来释放资源 以防因为程序中断而没有正确释放一些资源</p>
+<hr>
+<h2 id="json对象"><a href="#json对象" class="headerlink" title="json对象"></a>json对象</h2><p>讲go的结构体转为json对象的过程叫做编码 反过来叫解码</p>
+<p>编码和解码分别使用下面两个函数</p>
+<ul>
+<li>json.Marshal</li>
+<li>json.Unmarshal</li>
+</ul>
+<p>注意要点</p>
+<ul>
+<li>可以编码的结构体属性都是需要导出的 就是必须首字母是大写的</li>
+<li>编码之后的结果是[]uint8类型的 需要用fmt.Printf(“%s\n”, jData)这样的方法来进行打印 否则打印出来都是数字</li>
+</ul>
+<p>struct tag</p>
+<blockquote>
+<p>结构体的成员Tag可以是任意的字符串面值，但是通常是一系列用空格分隔的key:”value”键值对序列；因为值中含有双引号字符，因此成员Tag一般用原生字符串面值的形式书写。json开头键名对应的值用于控制encoding/json包的编码和解码的行为，并且encoding/…下面其它的包也遵循这个约定。</p>
+</blockquote>
+<p>比如下面有个</p>
+<pre><code>Login bool `json:&quot;login,omitempty&quot;`
+</code></pre><p>表示当结构体中的成员为空或者零值就不生成该结构体成员</p>
+<p>果然 看下面的例子 Login这个属性 我给它的struct tag设置了omitempty 而且被编码的实例这个属性是false 编码为json之后就没有这个属性 但是比较有意思的是<strong>解码之后还是会有这个属性的</strong><br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"encoding/json"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name <span class="keyword">string</span> <span class="string">`json:"my_name`</span></span><br><span class="line">	Login <span class="keyword">bool</span> <span class="string">`json:"login,omitempty"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	u := User&#123;<span class="string">"gzm"</span>, <span class="literal">false</span>&#125;</span><br><span class="line">	jData, err := json.Marshal(u)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		fmt.Println(<span class="string">"convert error"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(u)</span><br><span class="line">	fmt.Printf(<span class="string">"%s\n"</span>, jData)</span><br><span class="line">	nu := User&#123;&#125;</span><br><span class="line">		err = json.Unmarshal(jData, &amp;nu)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		fmt.Println(<span class="string">"disonvert error"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(nu)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>输出<br><img src="http://static.zybuluo.com/gzm1997/qt2xts28f9tovml0ajf8wik0/image_1chqecnb4ur81770451lim1pvk16.png" alt="image_1chqecnb4ur81770451lim1pvk16.png-6.7kB"></p>
+<p>有一个编码之后可读性很低的问题 因此可以用</p>
+<pre><code>json.MarshalIndent(u, &quot;&quot;, &quot;    &quot;)
+</code></pre><p>这个函数进行编码 第一个函数是结构体 第二个参数每一行输出的前缀 第三个参数是每一个级层的缩进</p>
+<p>输出<br><img src="http://static.zybuluo.com/gzm1997/a754rrupb5d39br9bgk2h2eo/image_1chqecvnngqeqmlvjnh7jut21j.png" alt="image_1chqecvnngqeqmlvjnh7jut21j.png-1.9kB"></p>
+<hr>
+<h2 id="byte和rune"><a href="#byte和rune" class="headerlink" title="byte和rune"></a>byte和rune</h2><p>其实byte和rune其实只是unint8和int32的别称</p>
+<blockquote>
+<p>byte用来强调数据是raw data，而不是数字；而rune用来表示Unicode的code point。</p>
+</blockquote>
+<hr>
+<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>方法是面向对象编程中对对象或者结构体进行参数的一种方式 避免了直接对对象或者结构体的成员进行操作</p>
+<p>go的结构体的方法声明和定义比较简单 只要在一个函数中有这个结构体作为参数传入 其后声明这个方法的名字和返回值类型 没有返回值类型则返回值类型为void</p>
+<p>声明一个结构体<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> MyUser <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name <span class="keyword">string</span></span><br><span class="line">	Login <span class="keyword">bool</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>声明这个结构体的一个方法 名字为show 返回值类型为string<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u MyUser)</span> <span class="title">show</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="string">"name "</span> + u.Name + <span class="string">" login "</span> + strconv.FormatBool(u.Login)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>调用这个方法<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	u := MyUser&#123;<span class="string">"gzm"</span>, <span class="literal">false</span>&#125;</span><br><span class="line">	fmt.Println(u.show())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>输出<br><img src="http://static.zybuluo.com/gzm1997/rq7jojgl1zba9emukovhesa5/image_1chrrjj84tb4ebf9vu1cng1l4d9.png" alt="image_1chrrjj84tb4ebf9vu1cng1l4d9.png-26.9kB"></p>
+<p>要注意这个方法的参数列表的位置 上面那个u MyUser并不是这个参数列表 这个参数只是将结构体传进来 真正在参数列表在方法名字的后面<br><img src="http://static.zybuluo.com/gzm1997/zcgmxaml9qrt746xec11n2ep/image_1chrro3fqfiac827p1v3a1ejgm.png" alt="image_1chrro3fqfiac827p1v3a1ejgm.png-14.1kB"></p>
+<p>接收器 具有方法的结构体也叫作接收器</p>
+<p>一般约定一个结构体或者类具有一个指针作为接收器的方法 但是go语言很人性化 传入结构体指针的方法 一般也可以直接使用这个结构体的变量去调用这个方法 编译器会隐式地转为指针类型</p>
+<hr>
+<h2 id="基本文件IO"><a href="#基本文件IO" class="headerlink" title="基本文件IO"></a>基本文件IO</h2><p>一般文件的读写都是使用<strong>ioutil</strong>这个自带的库 写进去的内容和读出来的结果一般都是[]byte</p>
+<p>讲byte数组写入文件<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">s := <span class="string">"lalla"</span></span><br><span class="line">b := []<span class="keyword">byte</span>(s)</span><br><span class="line">err := ioutil.WriteFile(<span class="string">"test.txt"</span>, b, <span class="number">0600</span>)</span><br></pre></td></tr></table></figure></p>
+<p>0600的意思是文件应该按照只有当前用户可以读写的权限进行创建这个文件</p>
+<p>从文件中读内容为[]byte<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">rb, e := ioutil.ReadFile(<span class="string">"test.txt"</span>)</span><br><span class="line"><span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"read file error"</span>)</span><br><span class="line">&#125;</span><br><span class="line">fmt.Println(<span class="string">"file content"</span>, <span class="keyword">string</span>(rb))</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="import"><a href="#import" class="headerlink" title="import _"></a>import _</h2><p>之前这里一直想不明白为什么会有些import前面带有一个下划线的 </p>
+<blockquote>
+<p>import后面跟着一个_下划线意味着我们不需要import这个包的其他内容 我们只需要它执行这个包里面的init函数 所以这个下划线只是起到一个初始化的作用</p>
+</blockquote>
+<hr>
+<h2 id="go执行方式"><a href="#go执行方式" class="headerlink" title="go执行方式"></a>go执行方式</h2><p><img src="http://static.zybuluo.com/gzm1997/qv43jeo893uwx1gqotylx4xz/image_1chuhkjdu1q171r73oem1jov1mla9.png" alt="image_1chuhkjdu1q171r73oem1jov1mla9.png-93.6kB"></p>
+<ol>
+<li>深度优先执行import</li>
+<li>执行const</li>
+<li>执行var</li>
+<li>自行init函数</li>
+</ol>
+<p>有点出乎意料 init函数竟然是在最后执行的</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/06/go注意要点/" data-id="cjki09w8u000hp0o0w0mbnlpj" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/08/06/go多线程/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          go多线程
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/08/06/mongodb入门/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">mongodb入门</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 10px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/08/06/mux学习/">mux学习</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/06/go-web/">go web</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/06/go多线程/">go多线程</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/06/go注意要点/">go注意要点</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/06/mongodb入门/">mongodb入门</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 gzm1997<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
