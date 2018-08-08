@@ -229,6 +229,145 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/06/beego入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gzm1997">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gzm's blogs">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/08/06/beego入门/" itemprop="url">beego入门</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-08-06T16:10:12+08:00">
+                2018-08-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="入门部分"><a href="#入门部分" class="headerlink" title="入门部分"></a>入门部分</h2><p>beego跟一般Python框架不怎样一样 它有controler控制器的概念 </p>
+<ul>
+<li><strong>每个url对应一个controller</strong></li>
+<li>controller可以从beego.Controller中继承过来</li>
+<li>beego.Controller已经具有get post delete put等方法</li>
+<li>我们要注册视图函数的一般做法就是<strong>重写</strong>这些方法 来定义我们自己的视图函数</li>
+</ul>
+<p>hello world<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"github.com/astaxie/beego"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//定义一个controller 继承beego.Controller</span></span><br><span class="line"><span class="keyword">type</span> MainController <span class="keyword">struct</span> &#123;</span><br><span class="line">	beego.Controller</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//重写get函数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *MainController)</span> <span class="title">Get</span><span class="params">()</span></span> &#123;</span><br><span class="line">	c.Ctx.WriteString(<span class="string">"lalalala"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	<span class="comment">//注册路由</span></span><br><span class="line">	beego.Router(<span class="string">"/"</span>, &amp;MainController&#123;&#125;)</span><br><span class="line">	<span class="comment">//运行web app</span></span><br><span class="line">	beego.Run()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="beego安装工具bee"><a href="#beego安装工具bee" class="headerlink" title="beego安装工具bee"></a>beego安装工具bee</h2><p>跟其他web 框架一样 beego也是可以初始化一个后端应用的文件目录结构来方便开发者进行开发的</p>
+<p>创建一个新的beego项目</p>
+<pre><code>bee new newProjectName
+</code></pre><p>目录结构如下<br><img src="http://static.zybuluo.com/gzm1997/kjjv441biwigye0xb0iqvoe5/image_1chuh0ikb124h12l81s1fum41o5pp.png" alt="image_1chuh0ikb124h12l81s1fum41o5pp.png-29.7kB"></p>
+<p>可以看到是包含static和views目录的 意味着这包含着前端部分的内容</p>
+<p>创建一个api应用</p>
+<pre><code>bee api apiProjectName
+</code></pre><p>目录结构如下 可以看到是没有静态文件和模板文件目录了<br><img src="http://static.zybuluo.com/gzm1997/uaj4ubkkbao9s1lwprki0yur/image_1chuh6345r681h5r1i261bl0hi7p.png" alt="image_1chuh6345r681h5r1i261bl0hi7p.png-22.3kB"></p>
+<p>进入项目的根目录下运行</p>
+<pre><code>bee run
+</code></pre><p>进行热编译 我也不知道热变异是什么</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/18/session和cookies关系和原理/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1848,154 +1987,11 @@ user=www-data
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/26/aiohttp基本使用/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="gzm1997">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gzm's blogs">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/26/aiohttp基本使用/" itemprop="url">aiohttp基本使用</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-26T00:45:53+08:00">
-                2018-05-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
-<p>这次系统分析与设计大作业我负责web后端开发工作，本来又想使用flask框架的，但是想想flask框架都有点审美疲劳了，而且flask框架是阻塞式框架，效率未免有点不高。所以这次我使用了异步web框架aiohttp，简单记录一下基本使用，至于框架原理之类后面再深入研究。</p>
-</blockquote>
-<p><a href="https://demos.aiohttp.org/en/latest/preparations.html" target="_blank" rel="noopener">官方文档</a></p>
-<hr>
-<h2 id="hello-world"><a href="#hello-world" class="headerlink" title="hello world"></a>hello world</h2><p>简单hello world代码<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app = web.Application()</span><br><span class="line">    <span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">hello</span><span class="params">(request)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> web.Response(text = <span class="string">"hello"</span>)</span><br><span class="line"></span><br><span class="line">    app.router.add_get(<span class="string">"/"</span>, hello)</span><br><span class="line">    web.run_app(app, port = <span class="number">5000</span>)</span><br></pre></td></tr></table></figure></p>
-<p>在路由中添加视图函数<br>1.get</p>
-<p>url例子： /<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app.router.add_get(<span class="string">"/"</span>, hello)</span><br></pre></td></tr></table></figure></p>
-<p>url例子： /api/order/3<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app.router.add_get(<span class="string">"/api/order/&#123;id&#125;"</span>, reservation_view.get_order)</span><br></pre></td></tr></table></figure></p>
-<p>使用以下获取参数id<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id = int(request.match_info[<span class="string">'id'</span>])</span><br></pre></td></tr></table></figure></p>
-<p>url例子： /test?uuid=12<br>使用以下获取url参数<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uuid = request.rel_url.query[<span class="string">'uuid'</span>]</span><br></pre></td></tr></table></figure></p>
-<p>2.post</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app.router.add_post(<span class="string">"/api/order"</span>, reservation_view.create_order)</span><br></pre></td></tr></table></figure>
-<p>使用以下获取表单data<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">data = <span class="keyword">await</span> request.post()</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><blockquote>
-<p>在这次系分的后端开发过程中，遇到了一个我以前也遇到过的问题，但是我忘记了以前我是怎么解决的了。问题就是，当post的表单中有一个value值为一个list，那么服务端这边接受会这样？</p>
-</blockquote>
-<p>上面的问题就是服务端这边接受了这个字典之后，会发现这个list的value值已经变形了，具体情况如下：<br>发送表单<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    session = requests.Session()</span><br><span class="line">    data = &#123;</span><br><span class="line">        <span class="string">"table"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="string">"list"</span>: [&#123;<span class="string">'id'</span>: <span class="string">'1'</span>, <span class="string">'name'</span>: <span class="string">'pork'</span>, <span class="string">'count'</span>: <span class="number">1</span>, <span class="string">'price'</span>: <span class="number">20</span>&#125;, &#123;<span class="string">'id'</span>: <span class="string">'2'</span>, <span class="string">'name'</span>: <span class="string">'fish'</span>, <span class="string">'count'</span>: <span class="number">1</span>, <span class="string">'price'</span>: <span class="number">23</span>&#125;]</span><br><span class="line">    &#125;</span><br><span class="line">    print(<span class="string">"data"</span>, data)</span><br><span class="line">    r = session.post(<span class="string">"http://127.0.0.1:5000/api/order"</span>, data = data)</span><br><span class="line">    print(<span class="string">"r"</span>, r)</span><br></pre></td></tr></table></figure></p>
-<p>服务端接收为，很显然变形了<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;MultiDictProxy(<span class="string">'table'</span>: <span class="string">'1'</span>, <span class="string">'list'</span>: <span class="string">'id'</span>, <span class="string">'list'</span>: <span class="string">'name'</span>, <span class="string">'list'</span>: <span class="string">'count'</span>, <span class="string">'list'</span>: <span class="string">'price'</span>, <span class="string">'list'</span>: <span class="string">'id'</span>, <span class="string">'list'</span>: <span class="string">'name'</span>, <span class="string">'list'</span>: <span class="string">'count'</span>, <span class="string">'list'</span>: <span class="string">'price'</span>)&gt;</span><br></pre></td></tr></table></figure></p>
-<p>然后我想到的解决方法就是将list这个value转为string类型再post过来，很显然或者解决方法很简单，问题就在于怎么在服务端这边从新将这个string解释为list对象，并且回复里面的字典。谷歌之后发现这样使用python的ast模块解决这个问题非常的方便</p>
-<p>发送将list类型的value转为list之后的字典<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">data = &#123;</span><br><span class="line">    <span class="string">"table"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="string">"list"</span>: <span class="string">"[&#123;'id': '1', 'name': 'pork', 'count': 1, 'price': 20&#125;, &#123;'id': '2', 'name': 'fish', 'count': 1, 'price': 23&#125;]"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>服务端这边接受和解析<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">data = <span class="keyword">await</span> request.post()</span><br><span class="line">table_num = data[<span class="string">"table"</span>]</span><br><span class="line">food_list = ast.literal_eval(data[<span class="string">"list"</span>])</span><br></pre></td></tr></table></figure></p>
-<p>这样就完美解决这个问题了，可能还有其他不修改list类型更好的方法，但是我觉得就不深究了。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -2041,7 +2037,7 @@ user=www-data
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-count">31</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -2054,7 +2050,7 @@ user=www-data
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-count">36</span>
                   <span class="site-state-item-name">tags</span>
                 
               </div>

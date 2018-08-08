@@ -229,6 +229,198 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/08/使用rabbitMQ作为缓存队列/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gzm1997">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gzm's blogs">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/08/08/使用rabbitMQ作为缓存队列/" itemprop="url">使用rabbitMQ作为缓存队列</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-08-08T17:50:59+08:00">
+                2018-08-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="高并发请求情况"><a href="#高并发请求情况" class="headerlink" title="高并发请求情况"></a>高并发请求情况</h2><p>我们在服务端开发过程中 往往会遇到需要处理高并发请求 并且将post过来的数据存进数据库的情况 这种情况一般会对我们的两部分造成很大压力</p>
+<ol>
+<li>nginx等服务器</li>
+<li>数据库连接</li>
+</ol>
+<p>因为当并发量很大的时候 nginx等服务器会因为负载均衡受不了那么大的压力会崩掉 一般这样的话</p>
+<blockquote>
+<p>用Unix socket或者tcp socket的方式增多几个web app实例以供nginx进行轮训 或者配置一下nginx的最大连接数 这样一般可以有效解决nginx服务器的问题</p>
+</blockquote>
+<p>但是数据库的操作这边是无论如何也是需要一点时间的 如果并发量很大 那么久比较难解决 一般来说mongodb是可以通过在公有的连接池里面拷贝出一个新的session 但是这样的效果也是有限的 而比较有效的方法是</p>
+<blockquote>
+<p>使用<strong>消息队列</strong>暂时存储来不及处理的数据 等服务端缓过来之后再冲消息队列里面获取数据 进行数据库操作</p>
+</blockquote>
+<hr>
+<h2 id="rabbitMQ"><a href="#rabbitMQ" class="headerlink" title="rabbitMQ"></a>rabbitMQ</h2><p>rabbitMQ就是一个缓存队列 下面是一个缓存队列的基本结构</p>
+<p><img src="http://static.zybuluo.com/gzm1997/dwrbzl5k4m7bfsny7b1bc1n9/image_1ckc8btt31eftpo66tvgja139e9.png" alt="image_1ckc8btt31eftpo66tvgja139e9.png-73kB"></p>
+<p>交换区 bindingKey跟queue构成channel</p>
+<p>1.生产者<br>第一部分是生产者并，生产者不知道到底有什么队列可以存东西 只是一个单纯的搬运工 将打上了bindingKey的信息转发给第二部分exchange交换区</p>
+<p>2.交换区<br>第二部分是交换区 交换区位于生产者和队列之间 所有的消息都是由交换区转发给队列的 转发给队列之间需要进行<strong>QueueBind队列绑定</strong> 类似下面<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">err = ch.QueueBind(</span><br><span class="line">    <span class="comment">//用来接收信息的queue的名字</span></span><br><span class="line">	q.Name,</span><br><span class="line">	<span class="comment">//bingdingKey是什么</span></span><br><span class="line">	b.String(),</span><br><span class="line">	<span class="comment">//交换区是什么</span></span><br><span class="line">	EXCHANGE,</span><br><span class="line">	<span class="literal">false</span>,</span><br><span class="line">	<span class="literal">nil</span>)</span><br></pre></td></tr></table></figure></p>
+<p>简而言之 队列绑定就是当接收方声明一个队列作为接收队列的时候 用来说明 打上了什么样的bingdingKey的信息应该从交换区那边转发给给我这个队列里面 然后随后我自己会从这个队列里面拿出这些信息</p>
+<p>3.队列<br>第三部分是队列 就是作为存储的空间 所有有待被接收方接收的信息都存储在这些队列里面 当一个信息被接收方接收成功之后 队列会删除这个信息以释放内存 如果接收方没有成功接收 <strong>那么这个信息会在队列里面重新排队 如果刚好有空闲的队列 那么这个信息会接着很快被处理</strong> 但是这里涉及到一个问题</p>
+<blockquote>
+<p>队列是怎样知道接收方成功接收了信息呢？</p>
+</blockquote>
+<p><a href="#%E9%98%9F%E5%88%97%E6%80%8E%E4%B9%88%E7%9F%A5%E9%81%93%E6%8E%A5%E6%94%B6%E6%96%B9%E6%88%90%E5%8A%9F%E6%8E%A5%E6%94%B6">详情如下</a></p>
+<blockquote>
+<p>但是一旦发送方这边挂了 怎么办呢？</p>
+</blockquote>
+<p><a href="#%E5%8F%91%E9%80%81%E6%96%B9%E4%B8%8D%E5%B0%8F%E5%BF%83%E6%8C%82%E4%BA%86%E6%80%8E%E4%B9%88%E5%8A%9E">详情如下</a></p>
+<blockquote>
+<p>公平分发 有时候有些种情况是当exchange类型是默认类型的话 需要分发信息12345 奇数的信息需要处理的时间更久一点 偶数处理时间比较短 那么还是轮流来分配对于第一个消费者来书是不公平的</p>
+</blockquote>
+<p><a href="#%E5%85%AC%E5%B9%B3%E5%88%86%E5%8F%91">如何实现公平分发</a></p>
+<p>4.消费者<br>第四部分是消费者 消费者是可以多个的 消息队列的一个很大的好处是平行化工作 设想一下有一种情况是生产者不断生产工作 发送到队列里面 多个消费者从队列里面获取工作信息进行工作 这样的话可以大到<strong>平行化工作</strong>的效果 最大使用服务端这边的资源</p>
+<hr>
+<h2 id="exchange类型"><a href="#exchange类型" class="headerlink" title="exchange类型"></a>exchange类型</h2><p>exchange的集中类型</p>
+<ul>
+<li>默认类型 用一个””空字符串进行声明 在publish发送信息的时候需要指定一个队列的名字进行转发 如果有多个队列名字一样的接收方 那么将进行轮训转发 例如有12345需要转发 有两个队列名字一样的接收方 那么一个接受135 一个接受24</li>
+<li>fanout 扇出类型 将信息发给所有可用的队列</li>
+<li>direct类型 direct类型根据唯一的bindingKey将信息转发到进行了队列绑定的队列上 通俗地说就是打上了一个标签的信息会被转发到唯一的一个队列上</li>
+<li>topic类型 topic类型是direct类型的进化版本 每个队列可以匹配一个或者多个标签</li>
+</ul>
+<p>各种类型的交换区的使用方法有点啰嗦 这里就不讲了 可以去看官方文档 文档比较多例子 通俗易懂<br><a href="https://www.rabbitmq.com/tutorials/tutorial-one-go.html" target="_blank" rel="noopener">rabbitMQ go文档</a></p>
+<p>但是后面我会拿我这次在用户关系图谱这个项目上使用的rabbitMQ作为例子 我使用了direct类型的exchange</p>
+<p><a href="#rabbitMQ%E5%9C%A8%E6%9C%8D%E5%8A%A1%E7%AB%AF%E4%B8%8A%E4%BD%BF%E7%94%A8">rabbitMQ在服务端上使用</a></p>
+<hr>
+<h2 id="队列怎么知道接收方成功接收"><a href="#队列怎么知道接收方成功接收" class="headerlink" title="队列怎么知道接收方成功接收"></a>队列怎么知道接收方成功接收</h2><p>这里跟计算机网络里面的ACK是类似的 当接收方成功接收到了一个信息 会为这个信息给队列发送一个ACK信号说明我成功接收到了这个信息 在官方文档的hello world里面是设置了默认的自动发送ACK信号<br><img src="http://static.zybuluo.com/gzm1997/5ai5z53e3ihu8s16jb301ndv/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180808161057.png" alt="微信图片_20180808161057.png-13kB"></p>
+<p><strong>这个ACK机制其实是为了预防接收方挂了 因为一旦接收方不小心挂了 那么发送方这边就接收不到ACK信号 从而重新给那个信息排队</strong> </p>
+<p>你也可以设置autoAck为false 然后自己在接收方那边使用</p>
+<pre><code>d.Ack(false)
+</code></pre><p>来进行发送ACK信号</p>
+<hr>
+<h2 id="发送方不小心挂了怎么办"><a href="#发送方不小心挂了怎么办" class="headerlink" title="发送方不小心挂了怎么办"></a>发送方不小心挂了怎么办</h2><p>这就设置<strong>可靠性</strong>的设置了 </p>
+<p>首先需要设置队列是可靠的 durable可靠性这个选项是需要在服务端和客户端两边都需要设置的<br><img src="http://static.zybuluo.com/gzm1997/mrzrjp2t2ty8zd9bczd2c4qp/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180808161610.png" alt="微信图片_20180808161610.png-9.2kB"></p>
+<p>然后设置我们的信息是<strong>persistent持久的</strong><br><img src="http://static.zybuluo.com/gzm1997/ygb92cd0g9voxjani3wfckyl/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180808161855.png" alt="微信图片_20180808161855.png-9.2kB"></p>
+<p>上面两个设置可以有效防止发送方这边挂了的情况 这样即使发送方不小心崩溃了 在重启之后也会重新发送还没发送成功的信息</p>
+<hr>
+<h2 id="公平分发"><a href="#公平分发" class="headerlink" title="公平分发"></a>公平分发</h2><p>有时候有些种情况是当exchange类型是默认类型的话 需要分发信息12345 奇数的信息需要处理的时间更久一点 偶数处理时间比较短 那么还是轮流来分配对于第一个消费者来书是不公平的<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">err = ch.Qos(</span><br><span class="line">  <span class="number">1</span>,     <span class="comment">// prefetch count</span></span><br><span class="line">  <span class="number">0</span>,     <span class="comment">// prefetch size</span></span><br><span class="line">  <span class="literal">false</span>, <span class="comment">// global</span></span><br><span class="line">)</span><br><span class="line">failOnError(err, <span class="string">"Failed to set QoS"</span>)</span><br></pre></td></tr></table></figure></p>
+<p>其实这样设置一下就可以了 这样表明队列是不会一次性地给一个消费者分发超过一个的消息 直到消费者处理完并且发送了前一个信息的ack信号之后再分发 或者将这个信息发送给下一个不是很忙的消费者</p>
+<hr>
+<h2 id="rabbitMQ在服务端上使用"><a href="#rabbitMQ在服务端上使用" class="headerlink" title="rabbitMQ在服务端上使用"></a>rabbitMQ在服务端上使用</h2><p>项目部分代码地址<br><a href="https://github.com/gzm1997/graph-relation/tree/master/graphServer" target="_blank" rel="noopener">用户关系图谱路由server</a></p>
+<p>其中rabbitMQ主要使在cache模块<br><a href="https://github.com/gzm1997/graph-relation/blob/master/graphServer/cache/rabbit.go#L18-L47" target="_blank" rel="noopener">进行rabbit的初始化</a><br>一定要注意如果你是在init函数中进行rabbit的初始化的话一定不要在init函数了里面使用defer进行关闭连接跟channel 因为这样的话后面要使用rabbit资源就会报错显示连接或者channel断开 rabbit资源的释放需要在其后关闭 最好需要关闭<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">//加载rabbitMQ在配置文件中的配置</span></span><br><span class="line">	rabbitUser := beego.AppConfig.String(<span class="string">"rabbitUser"</span>)</span><br><span class="line">	rabbitPsw := beego.AppConfig.String(<span class="string">"rabbitPsw"</span>)</span><br><span class="line">	rabbitIp := beego.AppConfig.String(<span class="string">"rabbitIp"</span>)</span><br><span class="line">	rabbitPort, _ := beego.AppConfig.Int(<span class="string">"rabbitPort"</span>)</span><br><span class="line">	dbUrl := fmt.Sprintf(<span class="string">"amqp://%s:%s@%s:%d/"</span>, rabbitUser, rabbitPsw, rabbitIp, rabbitPort)</span><br><span class="line">	<span class="keyword">var</span> err error</span><br><span class="line">	<span class="comment">//建立链接</span></span><br><span class="line">	<span class="keyword">if</span> conn, err = amqp.Dial(dbUrl); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//声明一个channel</span></span><br><span class="line">	<span class="keyword">if</span> ch, err = conn.Channel(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//声明一个类型为direct的交换区</span></span><br><span class="line">	err = ch.ExchangeDeclare(</span><br><span class="line">		EXCHANGE,</span><br><span class="line">		<span class="string">"direct"</span>,</span><br><span class="line">		<span class="literal">true</span>,</span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		<span class="literal">nil</span>,</span><br><span class="line">	)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(<span class="literal">nil</span>)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>发布新消息<br><a href="https://github.com/gzm1997/graph-relation/blob/master/graphServer/cache/rabbit.go#L49-L65" target="_blank" rel="noopener">发布信息</a></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">PublishMsg</span><span class="params">(json []<span class="keyword">byte</span>, bingdingKey BindingKey)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	err := ch.Publish(</span><br><span class="line">		<span class="comment">//指定我们要使用的direct类型的交换区</span></span><br><span class="line">		EXCHANGE,</span><br><span class="line">		<span class="comment">//根据bingdingKey进行转发</span></span><br><span class="line">		bingdingKey.String(),</span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		amqp.Publishing&#123;</span><br><span class="line">			<span class="comment">//发送的信息时候持久的 即使发送方突然挂了 重启之后还会继续发</span></span><br><span class="line">			DeliveryMode: amqp.Persistent,</span><br><span class="line">			<span class="comment">//发送的类型是json对象</span></span><br><span class="line">			ContentType: <span class="string">"application/json"</span>,</span><br><span class="line">			Body: json,</span><br><span class="line">		&#125;)</span><br><span class="line">	<span class="keyword">return</span> err</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接受信息<br><a href="https://github.com/gzm1997/graph-relation/blob/master/graphServer/cache/rabbit.go#L67-L195" target="_blank" rel="noopener">接受信息</a><br>接收方因为用户关系图谱这个项目的逻辑比较复杂 所以写的说起来有点麻烦 </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetMsg</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">//在这里释放rabbit的资源</span></span><br><span class="line">	<span class="keyword">defer</span> conn.Close()</span><br><span class="line">	<span class="keyword">defer</span> ch.Close()</span><br><span class="line">	forever := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">bool</span>)</span><br><span class="line">	<span class="keyword">for</span> _, bingdingKey := <span class="keyword">range</span> AllBindingKeys &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(b BindingKey)</span></span> &#123;</span><br><span class="line">			fmt.Println(<span class="string">"queue for"</span>, b)</span><br><span class="line">			<span class="comment">//声明一个匿名队列</span></span><br><span class="line">			q, err := ch.QueueDeclare(</span><br><span class="line">				<span class="string">""</span>,</span><br><span class="line">				<span class="literal">true</span>,</span><br><span class="line">				<span class="literal">false</span>,</span><br><span class="line">				<span class="literal">true</span>,</span><br><span class="line">				<span class="literal">false</span>,</span><br><span class="line">				<span class="literal">nil</span>,</span><br><span class="line">			)</span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="built_in">panic</span>(err)</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">//进行队列绑定</span></span><br><span class="line">			err = ch.QueueBind(</span><br><span class="line">				q.Name,</span><br><span class="line">				b.String(),</span><br><span class="line">				EXCHANGE,</span><br><span class="line">				<span class="literal">false</span>,</span><br><span class="line">				<span class="literal">nil</span>)</span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="built_in">panic</span>(err)</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">//声明一个消费者 从这个匿名队列里面读取信息</span></span><br><span class="line">			msgs, err := ch.Consume(</span><br><span class="line">				q.Name, <span class="comment">// queue</span></span><br><span class="line">				<span class="string">""</span>,     <span class="comment">// consumer</span></span><br><span class="line">				<span class="literal">false</span>,   <span class="comment">// auto ack</span></span><br><span class="line">				<span class="literal">false</span>,  <span class="comment">// exclusive</span></span><br><span class="line">				<span class="literal">false</span>,  <span class="comment">// no local</span></span><br><span class="line">				<span class="literal">false</span>,  <span class="comment">// no wait</span></span><br><span class="line">				<span class="literal">nil</span>,    <span class="comment">// args</span></span><br><span class="line">			)</span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="built_in">panic</span>(err)</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			store := session.GetGraph()</span><br><span class="line"></span><br><span class="line">			<span class="keyword">switch</span> b &#123;</span><br><span class="line">			<span class="keyword">case</span> CreateGroupShareLink:</span><br><span class="line">				<span class="keyword">for</span> d := <span class="keyword">range</span> msgs &#123;</span><br><span class="line">					cgsl := models.CreateGroupShareLink&#123;&#125;</span><br><span class="line">					<span class="keyword">if</span> err := json.Unmarshal(d.Body, &amp;cgsl); err == <span class="literal">nil</span> &#123;</span><br><span class="line">						fmt.Println(<span class="string">"add CreateGroupShareLink"</span>, cgsl)</span><br><span class="line">						fmt.Println(cgsl.AddCreateGroupShareLinkToCayley(store))</span><br><span class="line">					&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">						<span class="built_in">panic</span>(err)</span><br><span class="line">					&#125;</span><br><span class="line">				    <span class="comment">//发送ack信号 代表已经接受成功</span></span><br><span class="line">					d.Ack(<span class="literal">false</span>)</span><br><span class="line">				&#125;</span><br><span class="line">			<span class="comment">//省略部分 太长省略</span></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;(bingdingKey)</span><br><span class="line">	&#125;</span><br><span class="line">	&lt;- forever</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="释放rabbit资源"><a href="#释放rabbit资源" class="headerlink" title="释放rabbit资源"></a>释放rabbit资源</h2><p>如果没有释放rabbit的资源 而且设置了channel和queue为可靠以及持久性的话 一般会导致一个bug</p>
+<blockquote>
+<p>receiveed unexpected response</p>
+</blockquote>
+<p>这是因为有可能在你挑食的时候突然关闭 而你却没有在代码里面主动close掉connection和channel 那么下一次运行的时候 接收方会重新发送一次一个信息 这导致发送方不知道这是什么ACK的信息 从而导致这个报错 一般来说<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在这里释放rabbit的资源</span></span><br><span class="line"><span class="keyword">defer</span> conn.Close()</span><br><span class="line"><span class="keyword">defer</span> ch.Close()</span><br></pre></td></tr></table></figure></p>
+<p>可以有效解决这个问题 但是还是会偶尔出现的 出现的话就重新开几次 两三次之后缓存被清理掉就没有这个报错了</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/06/mux学习/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1952,150 +2144,11 @@ wg.Add(5)
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/06/beego入门/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="gzm1997">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gzm's blogs">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/08/06/beego入门/" itemprop="url">beego入门</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-08-06T16:10:12+08:00">
-                2018-08-06
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="入门部分"><a href="#入门部分" class="headerlink" title="入门部分"></a>入门部分</h2><p>beego跟一般Python框架不怎样一样 它有controler控制器的概念 </p>
-<ul>
-<li><strong>每个url对应一个controller</strong></li>
-<li>controller可以从beego.Controller中继承过来</li>
-<li>beego.Controller已经具有get post delete put等方法</li>
-<li>我们要注册视图函数的一般做法就是<strong>重写</strong>这些方法 来定义我们自己的视图函数</li>
-</ul>
-<p>hello world<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"github.com/astaxie/beego"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//定义一个controller 继承beego.Controller</span></span><br><span class="line"><span class="keyword">type</span> MainController <span class="keyword">struct</span> &#123;</span><br><span class="line">	beego.Controller</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//重写get函数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *MainController)</span> <span class="title">Get</span><span class="params">()</span></span> &#123;</span><br><span class="line">	c.Ctx.WriteString(<span class="string">"lalalala"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	<span class="comment">//注册路由</span></span><br><span class="line">	beego.Router(<span class="string">"/"</span>, &amp;MainController&#123;&#125;)</span><br><span class="line">	<span class="comment">//运行web app</span></span><br><span class="line">	beego.Run()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="beego安装工具bee"><a href="#beego安装工具bee" class="headerlink" title="beego安装工具bee"></a>beego安装工具bee</h2><p>跟其他web 框架一样 beego也是可以初始化一个后端应用的文件目录结构来方便开发者进行开发的</p>
-<p>创建一个新的beego项目</p>
-<pre><code>bee new newProjectName
-</code></pre><p>目录结构如下<br><img src="http://static.zybuluo.com/gzm1997/kjjv441biwigye0xb0iqvoe5/image_1chuh0ikb124h12l81s1fum41o5pp.png" alt="image_1chuh0ikb124h12l81s1fum41o5pp.png-29.7kB"></p>
-<p>可以看到是包含static和views目录的 意味着这包含着前端部分的内容</p>
-<p>创建一个api应用</p>
-<pre><code>bee api apiProjectName
-</code></pre><p>目录结构如下 可以看到是没有静态文件和模板文件目录了<br><img src="http://static.zybuluo.com/gzm1997/uaj4ubkkbao9s1lwprki0yur/image_1chuh6345r681h5r1i261bl0hi7p.png" alt="image_1chuh6345r681h5r1i261bl0hi7p.png-22.3kB"></p>
-<p>进入项目的根目录下运行</p>
-<pre><code>bee run
-</code></pre><p>进行热编译 我也不知道热变异是什么</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -2141,7 +2194,7 @@ wg.Add(5)
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-count">31</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -2154,7 +2207,7 @@ wg.Add(5)
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-count">36</span>
                   <span class="site-state-item-name">tags</span>
                 
               </div>
