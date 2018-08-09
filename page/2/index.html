@@ -62,6 +62,75 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-beego学习2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/06/beego学习2/" class="article-date">
+  <time datetime="2018-08-06T08:11:35.000Z" itemprop="datePublished">2018-08-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/06/beego学习2/">beego学习2</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="beego执行逻辑"><a href="#beego执行逻辑" class="headerlink" title="beego执行逻辑"></a>beego执行逻辑</h2><p><img src="http://static.zybuluo.com/gzm1997/4w8ia8vm9196vkdxpong1dvq/image_1cjtbnflsj961esq4ujqi66fm9.png" alt="image_1cjtbnflsj961esq4ujqi66fm9.png-144.5kB"></p>
+<hr>
+<h2 id="控制器"><a href="#控制器" class="headerlink" title="控制器"></a>控制器</h2><p>beego是严格遵循MVC的模式的 所以它的控制器是非常重要的 他的路由注册是有点特别的 它是一个URL前缀对应一个控制器 然后控制器里面定义不同的http methods对应的处理函数</p>
+<p>一般声明一个控制器的方法就是自创建一个结构体 包含一个<strong>beego.Controller</strong>原生的控制器</p>
+<p>现在我们来看一下控制器的内部<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Controller <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">// 上下文数据</span></span><br><span class="line">	Ctx  *context.Context</span><br><span class="line">   <span class="comment">// 用来存储一些配置等信息非常方便	</span></span><br><span class="line">	Data <span class="keyword">map</span>[<span class="keyword">interface</span>&#123;&#125;]<span class="keyword">interface</span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 控制器的一些基本介绍信息 名字之类的</span></span><br><span class="line">	controllerName <span class="keyword">string</span></span><br><span class="line">	actionName     <span class="keyword">string</span></span><br><span class="line">	methodMapping  <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="function"><span class="keyword">func</span><span class="params">()</span> //<span class="title">method</span>:<span class="title">routertree</span></span></span><br><span class="line"><span class="function">	<span class="title">gotofunc</span>       <span class="title">string</span></span></span><br><span class="line"><span class="function">	<span class="title">AppController</span>  <span class="title">interface</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 渲染模板信息 模板名字等 这个现在而言不是很重要</span></span><br><span class="line">	TplName        <span class="keyword">string</span></span><br><span class="line">	ViewPath       <span class="keyword">string</span></span><br><span class="line">	Layout         <span class="keyword">string</span></span><br><span class="line">	LayoutSections <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">string</span> <span class="comment">// the key is the section name and the value is the template name</span></span><br><span class="line">	TplPrefix      <span class="keyword">string</span></span><br><span class="line">	TplExt         <span class="keyword">string</span></span><br><span class="line">	EnableRender   <span class="keyword">bool</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 跨域数据</span></span><br><span class="line">	_xsrfToken <span class="keyword">string</span></span><br><span class="line">	XSRFExpire <span class="keyword">int</span></span><br><span class="line">	EnableXSRF <span class="keyword">bool</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// session数据</span></span><br><span class="line">	CruSession session.Store</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>所以一个beego控制器中含有以下几部分内容</p>
+<ul>
+<li>上下文数据</li>
+<li>控制器基本信息</li>
+<li>渲染模板信息</li>
+<li>跨域信息</li>
+<li>session信息</li>
+</ul>
+<hr>
+<h2 id="json对象转struct"><a href="#json对象转struct" class="headerlink" title="json对象转struct"></a>json对象转struct</h2><p>当路由的方法是post的时候 旺旺需要post一些json对象到后端 那么将他们转为json对象就尤为必要 但是当这个struct结构含有匿名函数的时候需要注意一下</p>
+<p>1.当struct没有匿名成员的时候 </p>
+<p>一切跟平时将json转struct没什么区别 只注意要讲结构体内的成员首字母为大写来声明 不然没有导出的字段是无法被赋值上去的</p>
+<p>2.当时结构体含有匿名成员的时候</p>
+<p>我们要记住 其实<strong>匿名成员里面的所有字段都是直接属于最外面的结构体的</strong> 所以我们post表单的时候要注意 <strong>不需要给匿名成员提供key 直接将匿名成员里面的字段作为一对key-value对就行了</strong></p>
+<p>例如<br>结构体设计如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">	Desc</span><br><span class="line">	Name <span class="keyword">string</span> <span class="string">`json:"name"`</span></span><br><span class="line">	Id <span class="keyword">int</span> <span class="string">`json:"id"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Desc <span class="keyword">struct</span> &#123;</span><br><span class="line">	Num <span class="keyword">int</span> <span class="string">`json:"num"`</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>那么在postman这边需要这样提交post json对象<br><img src="http://static.zybuluo.com/gzm1997/txinx1cv6pze1t891yt134cb/image_1ck1fk2v9194l1vln1s2mlbl1u349.png" alt="image_1ck1fk2v9194l1vln1s2mlbl1u349.png-20.5kB"></p>
+<p>结果<br><img src="http://static.zybuluo.com/gzm1997/bfhpg6w0au8poa7it1az6pjv/image_1ck1fkq7n1h2319mn1c2vdp6hmpm.png" alt="image_1ck1fkq7n1h2319mn1c2vdp6hmpm.png-9.6kB"></p>
+<hr>
+<h2 id="copybody-bug"><a href="#copybody-bug" class="headerlink" title="copybody bug"></a>copybody bug</h2><p>这里真的是神坑 浪费了我很多时间 在beego的post路由函数中 我们一般是这样接受发送过来的json对象的<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> err := json.Unmarshal(this.Ctx.Input.RequestBody, &amp;f); err == <span class="literal">nil</span> &#123;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>但是有可能一直报错<strong>unexpected end of json data</strong> json对象的结构不对？但是postman上并没有显示报错啊这就很迷了</p>
+<blockquote>
+<p>实质上是这是因为没有设置copyrequestbody = true 所以post过去的数据一直都是空的 但是我的配置文件上一直有这句话啊 比较坑的是 其实配置文件并没有被加载进去 beego没有加载了你的配置文件 而是加载了默认的配置文件 比较坑的是beego并没有报错说配置文件找不到 所以copyrequestbody一直为false</p>
+</blockquote>
+<p>解决方法是在运行配置那里修改working directory修改为beego项目的根目录 这样beego就可以找到你的配置文件的正确目录了</p>
+<p>真的是神坑 beego找不到配置文件目录竟然不会报错。。。</p>
+<hr>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/06/beego学习2/" data-id="cjkmig98o0005dco0603ijmrn" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/beego/">beego</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-beego入门" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/08/06/beego入门/" class="article-date">
@@ -108,7 +177,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/beego入门/" data-id="cjkkyhyl80004pko0e3whqlkv" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/beego入门/" data-id="cjkmig98n0004dco029m6g0yf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/beego/">beego</a></li></ul>
@@ -183,7 +252,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/18/session和cookies关系和原理/" data-id="cjkkyhym5000ypko0co7871h2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/18/session和cookies关系和原理/" data-id="cjkmig99k000xdco0cwam3cve" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cookies/">cookies</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li></ul>
@@ -255,7 +324,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/16/servlet登录demo/" data-id="cjkkyhym4000wpko0j9j54sdt" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/16/servlet登录demo/" data-id="cjkmig99j000vdco0obeip15g" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/servlet/">servlet</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tomcat/">tomcat</a></li></ul>
@@ -351,7 +420,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/13/aiohttp-session/" data-id="cjkkyhykm0000pko09r0mhza3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/13/aiohttp-session/" data-id="cjkmig98a0000dco0xl2s4zm2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li></ul>
@@ -470,7 +539,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/10/aiohttp的跨域问题/" data-id="cjkkyhyl60003pko08o660a4c" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/10/aiohttp的跨域问题/" data-id="cjkmig98h0001dco0yt2yf1uj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cors/">cors</a></li></ul>
@@ -575,7 +644,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cjkkyhym1000spko03cbftg16" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cjkmig99f000qdco0gitjqqrt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deploy/">deploy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ubuntu/">ubuntu</a></li></ul>
@@ -620,7 +689,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cjkkyhylt000ipko05p8ti5rj" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cjkmig992000idco0tezk2d1e" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/socket/">socket</a></li></ul>
@@ -866,7 +935,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjkkyhylw000lpko0xigywyn7" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjkmig994000kdco0pyv9x2e4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -940,81 +1009,10 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjkkyhym3000tpko0ld6hknva" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjkmig99i000sdco0as6e8x7z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/package/">package</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-使用异步ORM-aiomysql-sa" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/26/使用异步ORM-aiomysql-sa/" class="article-date">
-  <time datetime="2018-05-26T02:46:37.000Z" itemprop="datePublished">2018-05-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/26/使用异步ORM-aiomysql-sa/">使用异步ORM aiomysql.sa</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
-<p>因为系统分析与设计大作业的web框架我选择了使用aiohttp这个异步框架，所以ORM的选择上要做出改变。sqlalchemy是不支持异步IO的，所以用sqlalchemy搭配aiohttp并不可行，最终我选择了整合了sqlalchemy的aiomysql.sa，这是一个支持mysql的异步ORM。</p>
-</blockquote>
-<p>相关的学习链接<br><a href="http://aiomysql.readthedocs.io/en/latest/sa.html" target="_blank" rel="noopener">官方文档</a><br><a href="https://github.com/aio-libs/aiomysql/blob/master/docs/sa.rst" target="_blank" rel="noopener">用法参考</a></p>
-<p>从官方文档上我们可以看到</p>
-<p><img src="http://static.zybuluo.com/gzm1997/qxak3ah9finr2ect9ah131ug/image_1ced39bc8n731hlgijuectil9.png" alt="image_1ced39bc8n731hlgijuectil9.png-12.2kB"></p>
-<p>aiomysql的api接口跟aiopg是非常类似的，可以在学习中参考一下aiopg，同时aiomysql.sa是整合了sqlalchemy的，也可以参考sqlalchemy的文档。为什么我要这么说呢，因为aiomysql.sa官方提供的文档描述相当有限，在学习过程中必须参考少之又少的资料，并且这些资料可能因为版本问题还不一定是对的。</p>
-<hr>
-<h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><p>python的异步io很多都是基于python的协程实现的，asyncio就是，同时aiomysql.sa也是底层由协程实现，所以我们是使用aiomysql.sa过程中，都需要定义各种操作为<strong>协程</strong>。</p>
-<p>1.初始化引擎</p>
-<p>初始化引擎跟mysql.connector很类似，但是返回一个engine实例<br><img src="http://static.zybuluo.com/gzm1997/wau66y7hzv1p6u8bny2sxiu9/image_1ced3mktqg6t1hr35mg1p1qed0m.png" alt="image_1ced3mktqg6t1hr35mg1p1qed0m.png-28.8kB"><br>例子<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">init_engine</span><span class="params">()</span>:</span></span><br><span class="line">    engine = <span class="keyword">await</span> aiomysql.sa.create_engine(user = config[<span class="string">"user"</span>], db = config[<span class="string">"database"</span>], host = config[<span class="string">"host"</span>], password = config[<span class="string">"password"</span>])</span><br><span class="line">    <span class="keyword">return</span> engine</span><br></pre></td></tr></table></figure></p>
-<p>2.引擎获取与事务<br>这部分我看了下文档和github上的用法参考，感觉都不怎么正确，可能因为版本问题，自己总结了如下<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">with</span> engine.acquire() <span class="keyword">as</span> conn:</span><br><span class="line">    trans = <span class="keyword">await</span> conn.begin()</span><br><span class="line">    <span class="keyword">await</span> conn.execute(food.insert().values(name = <span class="string">"test_food"</span>))</span><br><span class="line">    <span class="keyword">await</span> trans.commit()</span><br></pre></td></tr></table></figure></p>
-<p>引擎资源的获取需要engine.acquire()来获取，返回值为一个SAconnection实例，可以进行execute(query, *multiparams, **params)操作。</p>
-<p>最好在with语句里面使用acquire，这样可以自动释放engine资源。</p>
-<p>aiomysql.sa支持事务，它无论是insert delete还是select都需要事务的提交，没错你没看错，select它都必须你提交事务，不然会报错<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Failed to release a connection <span class="keyword">with</span> transaction started at <span class="string">'aiomysql'</span></span><br></pre></td></tr></table></figure></p>
-<p>同时这个报错有点意思，如果你没有主动提交事务，它这个报错一定会出现的，但是如果你之前的增删查着操作出现了错误，它会导致整个事务失败，最终这个事务没办法成功提交，也会报这个错误。<strong>也就是说如果出现这个错误，并一定就是你事务没有主动提交，而是有可能你的增删查着操作出现了错误导致事务的失败。</strong></p>
-<p>事务的获取和提交，事务的获取可以通过SAconnection.begin()获取这个事务<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trans = <span class="keyword">await</span> conn.begin()</span><br></pre></td></tr></table></figure></p>
-<p>事务提交<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">await</span> trans.commit()</span><br></pre></td></tr></table></figure></p>
-<p>嵌套事务<br>文档中这样描述嵌套事务</p>
-<blockquote>
-<p>Nested calls to begin() on the same SAConnection will return new Transaction objects that represent an emulated transaction within the scope of the enclosing transaction</p>
-</blockquote>
-<p>在同一个SAconnection中嵌套调用begin的话，会在外层事务中间返回一个模仿的事务对象</p>
-<p>嵌套事务的特点</p>
-<blockquote>
-<p>Calls to Transaction.commit() only have an effect when invoked via the outermost Transaction object, though the Transaction.rollback() method of any of the Transaction objects will roll back the transaction</p>
-</blockquote>
-<p>只有当最外层的事务被调用，那么事务才会被提交，例子如下<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">trans = <span class="keyword">yield</span> <span class="keyword">from</span> conn.begin()   <span class="comment"># outermost transaction</span></span><br><span class="line">trans2 = <span class="keyword">yield</span> <span class="keyword">from</span> conn.begin()  <span class="comment"># "inner"</span></span><br><span class="line"><span class="keyword">yield</span> <span class="keyword">from</span> trans2.commit()          <span class="comment"># does nothing</span></span><br><span class="line"><span class="keyword">yield</span> <span class="keyword">from</span> trans.commit()           <span class="comment"># actually commits</span></span><br></pre></td></tr></table></figure></p>
-<p>最后说一数据结构的声明，因为在sqlalchemy中我们一般比较习惯使用class User(Base)这样的方式来定义我们的数据库表结构，因为这符合我们面向对象编程的习惯，同时定义了这些class之后我们可以在稍后的增删查着操作中使用这些class。但是在aiomysql.sa中这样做并不好。官方文档中这样解释<br><img src="http://static.zybuluo.com/gzm1997/1ad8i0z2sc9pq3yiasaof0bo/image_1ced511agkr510uc104oevv1qr013.png" alt="image_1ced511agkr510uc104oevv1qr013.png-59.7kB"></p>
-<p>就是说Question.query.filter_by(question_text=’Why’).first()或者session.query(TableName).all()之类的查询并不支持异步，所以把表结构定义为class并没有什么帮助，正确的做法是定义为Table对象。</p>
-<p>关于class和Table对象的关系我之前<a href="https://gzm1997.github.io/2018/05/16/sqlalchemy%E4%B8%80%E4%BA%9B%E5%B8%B8%E8%A7%81%E6%A6%82%E5%BF%B5/" target="_blank" rel="noopener">一篇博客</a>有说过，就是创建一个class就会自动生成一个同名的Table对象，并且使用一个Mapper对象将这两个对象映射在一起。</p>
-<p>所以我们在aiomysql.sa中定义我们的数据库表结构大多形如下面<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">food = sa.Table(</span><br><span class="line">    <span class="string">"food"</span>,</span><br><span class="line">    meta,</span><br><span class="line">    sa.Column(<span class="string">"id"</span>, sa.Integer, primary_key = <span class="keyword">True</span>),</span><br><span class="line">    sa.Column(<span class="string">"name"</span>, sa.String(<span class="number">50</span>), unique = <span class="keyword">True</span>, nullable = <span class="keyword">False</span>),</span><br><span class="line">    sa.Column(<span class="string">"picture"</span>, sa.String(<span class="number">50</span>)),</span><br><span class="line">    sa.Column(<span class="string">"price"</span>, sa.Integer, nullable = <span class="keyword">False</span>),</span><br><span class="line">    sa.Column(<span class="string">"description"</span>, sa.String(<span class="number">50</span>)),</span><br><span class="line">    sa.Column(<span class="string">"rating"</span>, sa.Float),</span><br><span class="line">    sa.Column(<span class="string">"amount"</span>, sa.Integer, nullable = <span class="keyword">False</span>),</span><br><span class="line">    sa.Column(<span class="string">"likes"</span>, sa.Integer, default = <span class="number">0</span>),</span><br><span class="line">    sa.Column(<span class="string">"tag_id"</span>, sa.Integer, sa.ForeignKey(<span class="string">"tag.id"</span>), nullable = <span class="keyword">False</span>)</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
-<p>基本用法基本就是上面所说的了，具体可以参考一下<a href="https://github.com/gzm1997/aio_ooad" target="_blank" rel="noopener">我github上系统分析与设计的web后台</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cjkkyhymg0019pko03h7rg5nd" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ORM/">ORM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
 
     </footer>
   </div>
@@ -1041,7 +1039,7 @@ user=www-data
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -1051,7 +1049,7 @@ user=www-data
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 10px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 10px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -1073,6 +1071,10 @@ user=www-data
       <ul>
         
           <li>
+            <a href="/2018/08/09/图数据库跟传统数据库以及图算法/">图数据库跟传统数据库以及图算法</a>
+          </li>
+        
+          <li>
             <a href="/2018/08/08/使用rabbitMQ作为缓存队列/">使用rabbitMQ作为缓存队列</a>
           </li>
         
@@ -1086,10 +1088,6 @@ user=www-data
         
           <li>
             <a href="/2018/08/06/go多线程/">go多线程</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/06/go注意要点/">go注意要点</a>
           </li>
         
       </ul>
