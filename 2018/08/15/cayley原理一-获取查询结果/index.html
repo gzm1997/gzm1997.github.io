@@ -5,15 +5,25 @@
   
 
   
-  <title>Tag: ubuntu | gzm&#39;s blogs</title>
+  <title>cayley原理一(获取查询结果) | gzm&#39;s blogs</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="gzm&#39;s blogs">
-<meta property="og:url" content="http://yoursite.com/tags/ubuntu/index.html">
+  <meta name="description" content="查询结果的获取首先我们假定cayley已将我们的查询语句path转化为mongodb的查询语句 现在我们分析cayley是如何从mongodb里面获取查询结果 并且返回给上层的 总体的结构如下(只包含从mongodb中获取查询结果 不包含解析为mongodb查询语句) 由cayley官方提供的hello world的查询方式如下12345if err := p.Iterate(nil).EachV">
+<meta name="keywords" content="cayley,go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cayley原理一(获取查询结果)">
+<meta property="og:url" content="http://yoursite.com/2018/08/15/cayley原理一-获取查询结果/index.html">
 <meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="查询结果的获取首先我们假定cayley已将我们的查询语句path转化为mongodb的查询语句 现在我们分析cayley是如何从mongodb里面获取查询结果 并且返回给上层的 总体的结构如下(只包含从mongodb中获取查询结果 不包含解析为mongodb查询语句) 由cayley官方提供的hello world的查询方式如下12345if err := p.Iterate(nil).EachV">
 <meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/ddaggos1xeyxb8nm3211m1d7/get.jpg">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/3cevje4c3hq094ifee3i02d7/image_1ckun71jb1l0s69khljmep15h2s.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/o1y86b0ro82yi1clu3eotfrq/image_1ckun822b3bc14dec3k1u2pnvv39.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/zp9jikpfh9ok7gs7885n1p7i/image_1ckup1a0kv53hqeo1s1lb51c2ds.png">
+<meta property="og:updated_time" content="2018-08-15T13:03:09.099Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="gzm&#39;s blogs">
+<meta name="twitter:title" content="cayley原理一(获取查询结果)">
+<meta name="twitter:description" content="查询结果的获取首先我们假定cayley已将我们的查询语句path转化为mongodb的查询语句 现在我们分析cayley是如何从mongodb里面获取查询结果 并且返回给上层的 总体的结构如下(只包含从mongodb中获取查询结果 不包含解析为mongodb查询语句) 由cayley官方提供的hello world的查询方式如下12345if err := p.Iterate(nil).EachV">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/ddaggos1xeyxb8nm3211m1d7/get.jpg">
   
     <link rel="alternate" href="/atom.xml" title="gzm&#39;s blogs" type="application/atom+xml">
   
@@ -60,40 +70,69 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2018" class="archive-year">2018</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/06/08/nginx-supervisor部署aiohttp/" class="archive-article-date">
-  <time datetime="2018-06-08T07:18:32.000Z" itemprop="datePublished">Jun 8</time>
+        <section id="main"><article id="post-cayley原理一-获取查询结果" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/15/cayley原理一-获取查询结果/" class="article-date">
+  <time datetime="2018-08-15T13:01:47.000Z" itemprop="datePublished">2018-08-15</time>
 </a>
-      
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/06/08/nginx-supervisor部署aiohttp/">nginx+supervisor部署aiohttp</a>
+    <h1 class="article-title" itemprop="name">
+      cayley原理一(获取查询结果)
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="查询结果的获取"><a href="#查询结果的获取" class="headerlink" title="查询结果的获取"></a>查询结果的获取</h2><p>首先我们假定cayley已将我们的查询语句path转化为mongodb的查询语句 现在我们分析cayley是如何从mongodb里面获取查询结果 并且返回给上层的</p>
+<p>总体的结构如下(只包含从mongodb中获取查询结果 不包含解析为mongodb查询语句)<br><img src="http://static.zybuluo.com/gzm1997/ddaggos1xeyxb8nm3211m1d7/get.jpg" alt="get.jpg-67.1kB"></p>
+<p>由cayley官方提供的hello world的查询方式如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> err := p.Iterate(<span class="literal">nil</span>).EachValue(<span class="literal">nil</span>, <span class="function"><span class="keyword">func</span><span class="params">(value quad.Value)</span></span> &#123;</span><br><span class="line">	<span class="comment">// ignore</span></span><br><span class="line">&#125;); err != <span class="literal">nil</span> &#123;</span><br><span class="line">	<span class="built_in">panic</span>(err)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以看见是调用了<strong>EachValue</strong>这个函数 这个函数是属于一个叫做<strong>IterateChain</strong>结构体的一个方法 如上提最左边的类 上图最左边是我们的顶层调用 越往右是底层调用</p>
+<p>为了直观 我们从右边到左边 从底层到高层的调用如下</p>
+<p> 1.mongo.go中的Iterator结构体(称为迭代器1)中调用Next()函数 这个Next()再调用mgo.v2\session.go中Iter结构体中的Next()函数 从而将从<strong>mgo</strong>中迭代的结果保存在迭代器1中的<strong>res字段</strong>中 这个字段类型是bson.M(实质上是一个map[string]interface{}类型) 然后迭代器1调用Doc()方法 将res类型转为Document(实质上为map[string]graph.Value)<br><img src="http://static.zybuluo.com/gzm1997/3cevje4c3hq094ifee3i02d7/image_1ckun71jb1l0s69khljmep15h2s.png" alt="image_1ckun71jb1l0s69khljmep15h2s.png-34.4kB"></p>
+<p> 2.nosql\iterate.go中Iterator结构体(称为迭代器2)调用自己的Next()函数 进而调用步骤1中的迭代器1的Next()和Doc()函数完成步骤1的操作 并且转化为Document的结果存进迭代器2中的<strong>result字段</strong>中 类型是graph.Value<br><img src="http://static.zybuluo.com/gzm1997/o1y86b0ro82yi1clu3eotfrq/image_1ckun822b3bc14dec3k1u2pnvv39.png" alt="image_1ckun822b3bc14dec3k1u2pnvv39.png-60.3kB"></p>
+<p> 3.iterate.go中的IterateChain结构体(称为迭代链)调用自己的Each()方法 进而 调用步骤2中的迭代器2中的Next()函数完成步骤2中的操作 并且使用迭代器2的Result()函数获取这个保存在迭代器2的Result字段中的结果<br><img src="http://static.zybuluo.com/gzm1997/zp9jikpfh9ok7gs7885n1p7i/image_1ckup1a0kv53hqeo1s1lb51c2ds.png" alt="image_1ckup1a0kv53hqeo1s1lb51c2ds.png-50.9kB"></p>
+<hr>
+<h2 id="使用接口实现多种实现方案"><a href="#使用接口实现多种实现方案" class="headerlink" title="使用接口实现多种实现方案"></a>使用接口实现多种实现方案</h2><p>上面图中的两部分绿色非常关键 两部分都是定义了很多方法的<strong>接口</strong> 我们称最右边的接口为接口1 另一个称为接口2</p>
+<p>对于接口1来说<br>这些包含了若干方法的接口是声明在nosql.go中的DocIterator这个接口中的 并且被nosql\iterate.go中进行调用 在接口的具体实现上我们上面的方案是使用了mongo.go文件中的Iterator结构体实现方式 </p>
+<p>试想一下：当我们实现另一个新的Iterator迭代器 并且都实现接口1的方法 但是在这些方法的定义上使用其他的nosql数据库进行底层存储 那么我就可以添加一种新的底层存储可选方案了</p>
+<p>其实cayley可以使用mysql 还是mongodb bolt redis甚至内存等多种存储方式作为底层存储的原因就是：</p>
+<blockquote>
+<p>其实cayley在sql还是nosql类型方案的选择上就是通过<strong>接口2</strong>的实现方式不一样来实现的 而nosql方式的底层存储数据库到底选择何种nosql数据库也是通过<strong>接口1</strong>的实现方式不一样来实现的 sql具体数据库的选择也是类似</p>
+</blockquote>
 
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/15/cayley原理一-获取查询结果/" data-id="cjkv5ciwe0003wko0vpmcvrf2" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/08/09/图数据库跟传统数据库以及图算法/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">图数据库跟传统数据库以及图算法</div>
+    </a>
+  
+</nav>
+
+  
+</article>
 
 </section>
         
