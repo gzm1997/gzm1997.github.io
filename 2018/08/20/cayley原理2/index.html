@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>cayley原理2 | gzm&#39;s blogs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="cayley查询过程cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确  构造态射数组对于我们用来查询的结构path12345type Path struct &amp;#123;	stack       []morphism	qs          graph.QuadStore // Optionally. A nil qs is equivalent to a">
+<meta name="keywords" content="cayley">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cayley原理2">
+<meta property="og:url" content="http://yoursite.com/2018/08/20/cayley原理2/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="cayley查询过程cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确  构造态射数组对于我们用来查询的结构path12345type Path struct &amp;#123;	stack       []morphism	qs          graph.QuadStore // Optionally. A nil qs is equivalent to a">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/no1a9uh8euf17s9v1hm9k9ou/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820172126.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/76y9vn6l45cx30d3w747rpy2/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820155549.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/bamzi6zpilvq6sha5khhxro8/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162647.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/2x1c3zt37b32j3u8st294mu5/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162145.png">
+<meta property="og:updated_time" content="2018-08-20T09:26:02.809Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="cayley原理2">
+<meta name="twitter:description" content="cayley查询过程cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确  构造态射数组对于我们用来查询的结构path12345type Path struct &amp;#123;	stack       []morphism	qs          graph.QuadStore // Optionally. A nil qs is equivalent to a">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/no1a9uh8euf17s9v1hm9k9ou/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820172126.png">
+  
+    <link rel="alternate" href="/atom.xml" title="gzm&#39;s blogs" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">gzm&#39;s blogs</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-cayley原理2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/20/cayley原理2/" class="article-date">
+  <time datetime="2018-08-20T09:25:00.000Z" itemprop="datePublished">2018-08-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      cayley原理2
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="cayley查询过程"><a href="#cayley查询过程" class="headerlink" title="cayley查询过程"></a>cayley查询过程</h2><p>cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确<br><img src="http://static.zybuluo.com/gzm1997/no1a9uh8euf17s9v1hm9k9ou/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820172126.png" alt="微信图片_20180820172126.png-16.9kB"></p>
+<hr>
+<h2 id="构造态射数组"><a href="#构造态射数组" class="headerlink" title="构造态射数组"></a>构造态射数组</h2><p>对于我们用来查询的结构path<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Path <span class="keyword">struct</span> &#123;</span><br><span class="line">	stack       []morphism</span><br><span class="line">	qs          graph.QuadStore <span class="comment">// Optionally. A nil qs is equivalent to a morphism.</span></span><br><span class="line">	baseContext pathContext</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>morphism态射</strong>在范畴论中就是一个函数变换的抽象过程 cayley中的态射我们可以理解是我们每一个out int has等等指向下一个节点迭代的函数封装 我们每一个指向下一个的迭代(in out等)都转换为一个morphism态射 然后存在path中的stack<strong>态射数组</strong></p>
+<blockquote>
+<p>这个stack存储着表示我们查询的每一个划分(out in has等等)的态射</p>
+</blockquote>
+<p>每一个态射在cayley中的定义 </p>
+<ul>
+<li>其中Reversal返回的态射是一个反向的态射(比如out的反向态射就是in) 这就是cayley实现无向图的原因 每个态射都包含一个它的反向态射</li>
+<li>Apply为执行这个态射的具体函数 这个函数返回值中得到的shape中就表示了执行态射后得到的节点</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> morphism <span class="keyword">struct</span> &#123;</span><br><span class="line">	IsTag    <span class="keyword">bool</span></span><br><span class="line">	Reversal <span class="function"><span class="keyword">func</span><span class="params">(*pathContext)</span> <span class="params">(morphism, *pathContext)</span></span></span><br><span class="line"><span class="function">	<span class="title">Apply</span>    <span class="title">applyMorphism</span></span></span><br><span class="line"><span class="function">	<span class="title">tags</span>     []<span class="title">string</span></span></span><br><span class="line"><span class="function">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>举一个简答的例子 下面的查询path是从A这个节点出发 经过节点12 查询可以获得什么节点</p>
+<pre><code>p := cayley.StartPath(store, quad.String(&quot;A&quot;)).Out(quad.Int(12))
+</code></pre><p>上面这条查询语句在声明了一个path结构体的同时 也构造出我们上面所说的<strong>态射数组</strong><br>下面的绿色大框即为我们的态射数组stack 两个蓝色框即为我们数组中的两个态射 都是morphism结构体 但是我们可以看红色框框 他们的apply这个函数是不一样的 一个是isMorphism 一个outMorphism</p>
+<p><img src="http://static.zybuluo.com/gzm1997/76y9vn6l45cx30d3w747rpy2/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820155549.png" alt="微信图片_20180820155549.png-45.6kB"></p>
+<p>我们可以很容易理解为什么有outMorphism态射 但是不能理解为什么有isMorphism这个态射 其实这是初始化的态射</p>
+<hr>
+<h2 id="构造shape"><a href="#构造shape" class="headerlink" title="构造shape"></a>构造shape</h2><p>shape顾名思义就是我们查询路径的一种表现形式 表示了我们使用path查询始末的一条抽象路径 如上面的查询抽象的一个shape就是</p>
+<pre><code>A -&gt; 12 -&gt;
+</code></pre><p>shape在cayley中只是一个接口 但凡实现了这个接口中的方法的结构体都是shape 具体的形式非常多样和复杂 我们这里不做详细研究 shape接口定义如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Shape represent a query tree shape.</span></span><br><span class="line"><span class="keyword">type</span> Shape <span class="keyword">interface</span> &#123;</span><br><span class="line">	<span class="comment">// BuildIterator constructs an iterator tree from a given shapes and binds it to QuadStore.</span></span><br><span class="line">	BuildIterator(qs graph.QuadStore) graph.Iterator</span><br><span class="line">	<span class="comment">// Optimize runs an optimization pass over a query shape.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// It returns a bool that indicates if shape was replaced and should always return a copy of shape in this case.</span></span><br><span class="line">	<span class="comment">// In case no optimizations were made, it returns the same unmodified shape.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// If Optimizer is specified, it will be used instead of default optimizations.</span></span><br><span class="line">	Optimize(r Optimizer) (Shape, <span class="keyword">bool</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>一个具体的shape的例子 可见shape的具体类型和机构是很多样的 没必要具体研究<br><img src="http://static.zybuluo.com/gzm1997/bamzi6zpilvq6sha5khhxro8/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162647.png" alt="微信图片_20180820162647.png-31.5kB"></p>
+<p>可以看到下面 随着态射一个一个被执行 我们的到的构造出来的shape也是变化的 每一次态射之后的到的shape都作为参数传入下一个被执行的态射函数 shape不断积累 最终形成我们需要的查询路径<br><img src="http://static.zybuluo.com/gzm1997/2x1c3zt37b32j3u8st294mu5/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162145.png" alt="微信图片_20180820162145.png-17.3kB"></p>
+<p>构造shape部分还包含了大量的shape优化 这部分复杂而内容很多 这里不展开</p>
+<hr>
+<h2 id="构造迭代器和迭代链链"><a href="#构造迭代器和迭代链链" class="headerlink" title="构造迭代器和迭代链链"></a>构造迭代器和迭代链链</h2><p><strong>Iterator迭代器</strong>这个概念我们可以理解只负责某一部分计算工作的组件 cayley的查询设计是由若干个迭代器<strong>嵌套</strong>或者<strong>依次排列</strong>组合成的 呈现一个<strong>分布式结构</strong> 组合成的最终迭代器叫做<strong>IterateChain迭代器链</strong></p>
+<p>cayley中对于迭代器的声明也是一个接口 在cayley中但凡实现了这个接口中所有方法的结构体我们都统称为迭代器Iterator</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Iterator <span class="keyword">interface</span> &#123;</span><br><span class="line">	String() <span class="keyword">string</span></span><br><span class="line">	Tagger() *Tagger</span><br><span class="line">	TagResults(<span class="keyword">map</span>[<span class="keyword">string</span>]Value)</span><br><span class="line">	Result() Value</span><br><span class="line">	Next(ctx context.Context) <span class="keyword">bool</span></span><br><span class="line">	NextPath(ctx context.Context) <span class="keyword">bool</span></span><br><span class="line">	Contains(ctx context.Context, v Value) <span class="keyword">bool</span></span><br><span class="line">	Err() error</span><br><span class="line">	Reset()</span><br><span class="line">	Clone() Iterator</span><br><span class="line">	Stats() IteratorStats</span><br><span class="line">	Size() (<span class="keyword">int64</span>, <span class="keyword">bool</span>)</span><br><span class="line">	Type() Type</span><br><span class="line">	Optimize() (Iterator, <span class="keyword">bool</span>)</span><br><span class="line">	SubIterators() []Iterator</span><br><span class="line">	Close() error</span><br><span class="line">	UID() <span class="keyword">uint64</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面最重要的迭代器方法就是</p>
+<ul>
+<li>Result() Value</li>
+<li>Next(ctx context.Context) bool</li>
+</ul>
+<p>Next方法被这个迭代器用来执行内嵌在它自己内部的另一个迭代器 Result这个函数用来获取执行结果</p>
+<p>那么我们会很好奇迭代器这么抽象是怎样最终转化为mongodb的查询语句的呢？因为在cayley中使用的mongodb连接第三方包就是mgo.v2</p>
+<p>其实我们知道迭代是一层一层嵌套的 那么我们可以看一下最底层的迭代器的结构 最底层的迭代器如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Iterator <span class="keyword">struct</span> &#123;</span><br><span class="line">	uid        <span class="keyword">uint64</span></span><br><span class="line">	tags       graph.Tagger</span><br><span class="line">	qs         *QuadStore</span><br><span class="line">	collection <span class="keyword">string</span></span><br><span class="line">	limit      <span class="keyword">int64</span></span><br><span class="line">	constraint []FieldFilter</span><br><span class="line">	links      []Linkage <span class="comment">// used in Contains</span></span><br><span class="line"></span><br><span class="line">	iter   DocIterator</span><br><span class="line">	result graph.Value</span><br><span class="line">	size   <span class="keyword">int64</span></span><br><span class="line">	err    error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这个迭代是位于cayley源代码中的nosql\iterator.go中声明的迭代器 其中我们可以看到它包含一个字段</p>
+<pre><code>constraint []FieldFilter
+</code></pre><p>FieldFilter在cayley定义如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// FieldFilter represents a single field comparison operation.</span></span><br><span class="line"><span class="keyword">type</span> FieldFilter <span class="keyword">struct</span> &#123;</span><br><span class="line">	Path   []<span class="keyword">string</span> <span class="comment">// path is a path to specific field in the document</span></span><br><span class="line">	Filter FilterOp <span class="comment">// comparison operation</span></span><br><span class="line">	Value  Value    <span class="comment">// value that will be compared with field of the document</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Filter FilterO是一个用来表示比较的字段 有</p>
+<ul>
+<li>Equal</li>
+<li>NotEqual</li>
+<li>GT</li>
+<li>GTE</li>
+<li>LT</li>
+<li>LTE</li>
+</ul>
+<p>Value  Value就是存储的节点值</p>
+<p>语义上 上面这个结构体可以根据比较大小的操作符FilterOp和它的值value 来转化为在mongodb中对图的具体某个节点的查询</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjl22siut0005p0o0hxb0m411" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/08/15/cayley原理一-获取查询结果/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">cayley原理一(获取查询结果)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/08/20/cayley原理2/">cayley原理2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/15/cayley原理一-获取查询结果/">cayley原理一(获取查询结果)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/09/图数据库跟传统数据库以及图算法/">图数据库跟传统数据库以及图算法</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/08/使用rabbitMQ作为缓存队列/">使用rabbitMQ作为缓存队列</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/06/mux学习/">mux学习</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 gzm1997<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

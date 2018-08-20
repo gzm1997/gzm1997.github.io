@@ -62,6 +62,208 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-cayley图数据库" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/06/cayley图数据库/" class="article-date">
+  <time datetime="2018-08-06T08:13:38.000Z" itemprop="datePublished">2018-08-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/06/cayley图数据库/">cayley图数据库</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>郭柱明</p>
+<hr>
+<h2 id="图数据库背景"><a href="#图数据库背景" class="headerlink" title="图数据库背景"></a>图数据库背景</h2><p>在此之前已经简单记录了一下图数据的背景和发展现状 图数据引擎那部分现在还是知之甚少 还没深入去了解<br><a href="https://www.zybuluo.com/gzm1997/note/1207854" target="_blank" rel="noopener">图数据库背景</a></p>
+<hr>
+<h2 id="cayley优点"><a href="#cayley优点" class="headerlink" title="cayley优点"></a>cayley优点</h2><ul>
+<li>go语言实现</li>
+<li>运行简单(三四条命令)</li>
+<li>支持http接口以及REPL交互式</li>
+<li>支持多种语言进行查询<ul>
+<li>Gizmo</li>
+<li>MQL</li>
+<li>GraphQL</li>
+</ul>
+</li>
+<li>支持多种后端存储<ul>
+<li>KVs: Bolt, LevelDB</li>
+<li>NoSQL: MongoDB, ElasticSearch, CouchDB/PouchDB</li>
+<li>SQL: PostgreSQL, CockroachDB, MySQL</li>
+<li>n-memory, ephemeral</li>
+</ul>
+</li>
+<li>模块化编程 容易拓展</li>
+<li>良好的测试覆盖</li>
+<li>速度快</li>
+<li>免费</li>
+</ul>
+<hr>
+<h2 id="运行和应用"><a href="#运行和应用" class="headerlink" title="运行和应用"></a>运行和应用</h2><p>这里真的要非常注意 因为cayley提供的官方文档相当有限 会导致很多新手搞不清到底怎么使用这个图数据</p>
+<p>cayley使用两种方式</p>
+<ul>
+<li>作为应用运行使用</li>
+<li>作为第三方库运行使用</li>
+</ul>
+<hr>
+<h2 id="作为应用运行使用"><a href="#作为应用运行使用" class="headerlink" title="作为应用运行使用"></a>作为应用运行使用</h2><p>下面是官方文档中作为应用进行运行使用的部分<br><a href="https://github.com/cayleygraph/cayley/blob/master/docs/Quickstart-As-Application.md" target="_blank" rel="noopener">参考链接</a></p>
+<ol>
+<li>下载二进制文件解压或者下载源码进行编译</li>
+<li>配置</li>
+<li>导入数据</li>
+<li>运行</li>
+</ol>
+<p>运行使用一下命令</p>
+<pre><code>./cayley http --config=cayley.yml --host=0.0.0.0:64210
+</code></pre><p>或者在Linux系统下后台运行</p>
+<pre><code>./cayley http --config=cayley.yml --host=0.0.0.0:64210 &amp;
+</code></pre><p>可以看到已经在后台运行 监听64210端口<br><img src="http://static.zybuluo.com/gzm1997/q1yl1m5vzoguov27qs6hs6b9/image_1ci3f3d0g1hg21bt411nh4f04r09.png" alt="image_1ci3f3d0g1hg21bt411nh4f04r09.png-26.4kB"></p>
+<p>上面这种运行方式是使用一个go原生<strong>net/http</strong>架起一个web服务器 以方便开放人员作为管理员可以在web界面上使用UI进行数据库的增删查找 如下<br><img src="http://static.zybuluo.com/gzm1997/2acyhi8sr9f25j6bsflqpupi/image_1ci24pfveosv1hudifc10ivmcl9.png" alt="image_1ci24pfveosv1hudifc10ivmcl9.png-149.3kB"></p>
+<p><strong>但是 对于这个http接口 官方并没有提供进一步的封装</strong> 意味着如果你要使用这种方式运行cayley 并且在你的项目中连接这个数据库 那么你是需要自己拼凑我们用来增删查找的Gizmo语句(如果选择使用Gizmo) 类似以下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">g.V().Has(&quot;&lt;name&gt;&quot;,&quot;Casablanca&quot;)</span><br><span class="line">  .Out(&quot;&lt;/film/film/starring&gt;&quot;).Out(&quot;&lt;/film/performance/actor&gt;&quot;)</span><br><span class="line">  .Out(&quot;&lt;name&gt;&quot;).All()</span><br></pre></td></tr></table></figure></p>
+<p>然后post给服务端上的cayley</p>
+<p>这就意味着你需要进一步封装这个http接口 就跟写一个爬虫一样 虽然在Python上已经有人做好了这部分工作<br><a href="https://github.com/ziyasal/pyley" target="_blank" rel="noopener">pyley</a>一个封装了cayley http接口的客户端</p>
+<p>但是go语言我目前还没发现有类似的 官方亦然</p>
+<hr>
+<h2 id="作为第三方库运行使用"><a href="#作为第三方库运行使用" class="headerlink" title="作为第三方库运行使用"></a>作为第三方库运行使用</h2><p>我个人推荐将cayley作为第三方库来进行运行 一个是go get安装cayley第三方库的时候就顺带安装了cayley 因为cayley本身就是go编写的 但是这方面的使用官方文档上简直坑得不行 仅仅提供了几个hello world 对刚接触的开发者来说真的非常不友好</p>
+<p>官方提供的几个<a href="https://github.com/cayleygraph/cayley/tree/master/examples" target="_blank" rel="noopener">example</a></p>
+<p><strong>hello_world</strong>和<strong>transaction</strong>都是使用</p>
+<pre><code>cayley.NewMemoryGraph()
+</code></pre><p>这个api使用内存作为临时的存储位置进行存储的</p>
+<p><strong>hello_bolt</strong>和<strong>hello_schema</strong>都是使用一个叫bolt的键值对数据库进行存储的 这个需要一个路径来存存储着数据的文件 </p>
+<p>除此之外 官方文档就没提供太多 实际在go语言中链接cayley的方式了</p>
+<p>但是我们小组的领导决定使用mongodb作为backend进行存储 上面的例子都没有太大的实际应用意义</p>
+<p>我参照了bolt作为backend的例子修改了一下 获得了使用mongodb作为backend的方法</p>
+<p>注释已经将每一部分讲的很清楚了 所以就不说其他什么了</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"context"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"github.com/cayleygraph/cayley"</span></span><br><span class="line">	<span class="string">"github.com/cayleygraph/cayley/graph"</span></span><br><span class="line">	<span class="comment">//下面这个import必不可少 因为在这个import这个库的时候 它的init函数会注册这个类型的数据库 允许使用这个数据库进行存储</span></span><br><span class="line">	_ <span class="string">"github.com/cayleygraph/cayley/graph/nosql/mongo"</span></span><br><span class="line">	<span class="string">"github.com/cayleygraph/cayley/quad"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 初始化数据库</span></span><br><span class="line">	err := graph.InitQuadStore(<span class="string">"mongo"</span>, <span class="string">"mongodb://120.92.100.60:27017"</span>, <span class="literal">nil</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//打开和使用数据库</span></span><br><span class="line">	store, err := cayley.NewGraph(<span class="string">"mongo"</span>, <span class="string">"mongodb://120.92.100.60:27017"</span>, <span class="literal">nil</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatalln(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//给数据库添加一个quad实例 phrase of the day is of course Hello BoltDB! demo graph</span></span><br><span class="line">	<span class="comment">//主语 phrase of the day</span></span><br><span class="line">	<span class="comment">//谓语 is of course</span></span><br><span class="line">	<span class="comment">//宾语 Hello BoltDB!</span></span><br><span class="line">	<span class="comment">//标签 demo graph</span></span><br><span class="line">	store.AddQuad(quad.Make(<span class="string">"phrase of the day"</span>, <span class="string">"is of course"</span>, <span class="string">"Hello BoltDB!"</span>, <span class="string">"demo graph"</span>))</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 创建一个用于查找的path</span></span><br><span class="line">	p := cayley.StartPath(store, quad.String(<span class="string">"phrase of the day"</span>)).Out(quad.String(<span class="string">"is of course"</span>))</span><br><span class="line"></span><br><span class="line">	<span class="comment">//下面的查询是跟hello world里面是差不多的 但是更先进一点</span></span><br><span class="line">	<span class="comment">//获取这个path的迭代器 并且优化它</span></span><br><span class="line">	it, _ := p.BuildIterator().Optimize()</span><br><span class="line"></span><br><span class="line">	<span class="comment">//在quad层面进行优化 之后这个迭代器就被指定了backend的迭代器取代了</span></span><br><span class="line">	it, _ = store.OptimizeIterator(it)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 关闭迭代器</span></span><br><span class="line">	<span class="keyword">defer</span> it.Close()</span><br><span class="line"></span><br><span class="line">	ctx := context.TODO()</span><br><span class="line">	<span class="comment">// 当path上还有下一个</span></span><br><span class="line">	<span class="keyword">for</span> it.Next(ctx) &#123;</span><br><span class="line">		token := it.Result()                <span class="comment">// 获取节点的一个引用</span></span><br><span class="line">		value := store.NameOf(token)        <span class="comment">// 获取节点的值</span></span><br><span class="line">		nativeValue := quad.NativeOf(value) <span class="comment">// 将上面获取的节点的值转化为正常的数</span></span><br><span class="line">		fmt.Println(nativeValue)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err := it.Err(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatalln(err)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出<br><img src="http://static.zybuluo.com/gzm1997/so7d700kq18p8v7cjyc79qz3/image_1ci3gj9n4178dooh1a7g166fsbbm.png" alt="image_1ci3gj9n4178dooh1a7g166fsbbm.png-24.1kB"></p>
+<hr>
+<p>事务</p>
+<ol>
+<li>初始化数据库获取一个handle</li>
+<li>获取一个事务</li>
+<li>添加多个四元组到事务中</li>
+<li>将事务添加到handle中</li>
+<li>查询跟之前没什么区别</li>
+</ol>
+<p><img src="http://static.zybuluo.com/gzm1997/k9kmpu8jatkj257p10tiitp0/image_1ci8s50oq9jqrrt82c1hqk19nq19.png" alt="image_1ci8s50oq9jqrrt82c1hqk19nq19.png-107.8kB"></p>
+<hr>
+<p>数据结构与api</p>
+<p>1.添加四元组的方式<br><img src="http://static.zybuluo.com/gzm1997/5y9xdob80nzpbnfblk941vxl/image_1ci99nqqkm61l077bd12fj1ng1m.png" alt="image_1ci99nqqkm61l077bd12fj1ng1m.png-113.8kB"></p>
+<p>2.更新或者删除四元组<br>cayley的设计中是没有更新四元组这个api 如果想要更新一个四元组只能先删除这个四元组 然后再重新添加一条新的四元组</p>
+<p><img src="http://static.zybuluo.com/gzm1997/28tmug1wnryl7t4j540ja2pu/image_1ci9habhi1iob1b5094s14k518t52j.png" alt="image_1ci9habhi1iob1b5094s14k518t52j.png-105kB"></p>
+<hr>
+<h2 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h2><h2 id=""><a href="#" class="headerlink" title=""></a><img src="http://static.zybuluo.com/gzm1997/clywp0fgdwenshe2fbbw8c4a/image_1ci3jdcegdal17q8tga180t8at13.png" alt="image_1ci3jdcegdal17q8tga180t8at13.png-135.6kB"></h2><h2 id="cayley-api"><a href="#cayley-api" class="headerlink" title="cayley api"></a>cayley api</h2><p>四元组 含有主谓宾标签<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Quad</span><span class="params">(subject, predicate, object, label <span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">quad</span>.<span class="title">Quad</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> quad.Make(subject, predicate, object, label)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>三元组 含有主谓宾 没有标签(标签为nil)<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Triple</span><span class="params">(subject, predicate, object <span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">quad</span>.<span class="title">Quad</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> Quad(subject, predicate, object, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>处理器handle<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Handle = graph.Handle</span><br></pre></td></tr></table></figure></p>
+<p>一个handle的结构是<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Handle <span class="keyword">struct</span> &#123;</span><br><span class="line">    QuadStore</span><br><span class="line">    QuadWriter</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>包含一个匿名的四元组存储成员 一个匿名的四元组写入成员</p>
+<p>新建一个处理器<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewGraph</span><span class="params">(name, dbpath <span class="keyword">string</span>, opts graph.Options)</span> <span class="params">(*Handle, error)</span></span></span><br></pre></td></tr></table></figure></p>
+<p>返回一个handle</p>
+<p>新建一个内存存储的处理器<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewMemoryGraph</span><span class="params">()</span> <span class="params">(*Handle, error)</span></span></span><br></pre></td></tr></table></figure></p>
+<p>从它的具体实现 可以知道这基于<strong>memstore</strong>内存进行存储的处理器<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewMemoryGraph</span><span class="params">()</span> <span class="params">(*Handle, error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> NewGraph(<span class="string">"memstore"</span>, <span class="string">""</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>迭代器<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Iterator = graph.Iterator</span><br></pre></td></tr></table></figure></p>
+<p>query path<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Path = path.Path</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="Gizmo"><a href="#Gizmo" class="headerlink" title="Gizmo"></a>Gizmo</h2><p>因为我们上面都是使用Gizmo作为查询语言进行查询的 所以很有必要记录一下Gizmo的基本语法</p>
+<p>基本语句太多了 所以只简要记录一下常用的语句</p>
+<p>1.<br>    graph.M()<br>是</p>
+<pre><code>graph.Morphism()
+</code></pre><p>的缩写 Morphism创建一条路径 这样允许Gizmo的路径可以被复用<br>类似如下</p>
+<pre><code>var shorterPath = graph.Morphism().Out(&quot;foo&quot;).Out(&quot;bar&quot;)
+</code></pre><hr>
+<p>2.</p>
+<pre><code>graph.V(*)
+</code></pre><p>是</p>
+<pre><code>graph.Vertex([nodeId],[nodeId]...)
+</code></pre><p>的缩写 这个语句返回一个根据给定的点作为始点的query path 没有nodeID的话以为着所有的点</p>
+<hr>
+<p>3.<br>Path object .Morphism()和.Vertex()和这个函数都可以创建一个query path对象</p>
+<hr>
+<p>4.</p>
+<pre><code>path.And(path)
+</code></pre><p>是</p>
+<pre><code>path.Intersect(path)
+</code></pre><p>的缩写 就是逻辑与的意思<br>例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g.V(&quot;&lt;charlie&gt;&quot;).Out(&quot;&lt;follows&gt;&quot;).And(g.V(&quot;&lt;dani&gt;&quot;).Out(&quot;&lt;follows&gt;&quot;)).All()</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>5.</p>
+<pre><code>path.As(tags)
+</code></pre><p>是</p>
+<pre><code>path.Tag(tags)
+</code></pre><p>的缩写<br>Tag保存一个list的nodes存到给定的tag 主要是为了保存我们的工作或者为了了解一个path是怎样到达终点的 我们需要这个tag来进行标志一下</p>
+<hr>
+<p>6.</p>
+<pre><code>path.Back(tag)
+</code></pre><p>跟tag来后退到tag上面去</p>
+<hr>
+<p>7.</p>
+<pre><code>path.Both([predicatePath], [tags])
+</code></pre><p>获取同时进来和出去的节点<br>例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g.V(&quot;&lt;fred&gt;&quot;).Both(&quot;&lt;follows&gt;&quot;).All()</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>8.</p>
+<pre><code>path.Count()
+</code></pre><p>返回结果的数量</p>
+<hr>
+<p>9.</p>
+<pre><code>path.Difference(path)
+</code></pre><p>是</p>
+<pre><code>path.Except(path)
+</code></pre><p>的别名<br>Except移除当前path上匹配了这个query path删的所有paths</p>
+<hr>
+<p>10.</p>
+<pre><code>path.Follow(path)
+</code></pre><p>是一种使用.Morphism()准备好的query path的方式</p>
+<hr>
+<p>11.</p>
+<pre><code>path.ForEach(callback) or (limit, callback)
+</code></pre><p>遍历query path</p>
+<hr>
+<p>12.</p>
+<pre><code>path.Has(predicate, object)
+</code></pre><p>一般应用于所有节点或者一个堆节点按照某个谓语进行查询 例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g.V().Has(&quot;&lt;follows&gt;&quot;, &quot;&lt;bob&gt;&quot;).All()</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>13.</p>
+<pre><code>path.In([predicatePath], [tags])
+</code></pre><p>in就比较直观了 就是按照这个谓语进来到这个节点</p>
+<pre><code>path.Out([predicatePath], [tags])
+</code></pre><p>类似 就是按照这个谓语出来这个节点</p>
+<hr>
+<p>14.</p>
+<pre><code>path.Or(path)
+</code></pre><p>是</p>
+<pre><code>path.Union(path)
+</code></pre><p>别名<br>这个也比较直观 就是逻辑或</p>
+<hr>
+<p>15.</p>
+<pre><code>path.Save(predicate, tag)
+</code></pre><p>保存所有使用这个谓语进入这个tag的节点 并且不遍历</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/06/cayley图数据库/" data-id="cjl22siuz000ap0o0xsn46c6f" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/database/">database</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-图数据库" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/08/06/图数据库/" class="article-date">
@@ -128,7 +330,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/图数据库/" data-id="cjkv5cixz001ewko0yho2i9gn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/图数据库/" data-id="cjl22sivt001gp0o0n2mig0lz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/database/">database</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/graph/">graph</a></li></ul>
@@ -197,7 +399,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/beego学习2/" data-id="cjkv5ciwh0004wko014acjncx" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/beego学习2/" data-id="cjl22siuw0008p0o0goobm9uw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/beego/">beego</a></li></ul>
@@ -255,7 +457,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/beego入门/" data-id="cjkv5ciuu0000wko08datzlkb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/beego入门/" data-id="cjl22sius0004p0o0x3d3mslr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/beego/">beego</a></li></ul>
@@ -330,7 +532,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/18/session和cookies关系和原理/" data-id="cjkv5cixm000zwko0lhd1zy0l" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/18/session和cookies关系和原理/" data-id="cjl22sivj0012p0o0yb0rggie" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cookies/">cookies</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li></ul>
@@ -402,7 +604,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/16/servlet登录demo/" data-id="cjkv5cixj000vwko0mqbpy5ti" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/16/servlet登录demo/" data-id="cjl22sivh0010p0o0oqlu7z0s" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/servlet/">servlet</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tomcat/">tomcat</a></li></ul>
@@ -498,7 +700,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/13/aiohttp-session/" data-id="cjkv5ciwn0009wko0s7u2991i" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/13/aiohttp-session/" data-id="cjl22siug0000p0o0o2ntn1nz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li></ul>
@@ -617,7 +819,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/10/aiohttp的跨域问题/" data-id="cjkv5cix5000lwko0tznssdkz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/10/aiohttp的跨域问题/" data-id="cjl22siuq0003p0o0socny9jx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cors/">cors</a></li></ul>
@@ -722,7 +924,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cjkv5cizn003twko0ad4rhjrj" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cjl22sivf000wp0o0q2dpc4f2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deploy/">deploy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ubuntu/">ubuntu</a></li></ul>
@@ -767,256 +969,10 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cjkv5cix8000nwko05kj4it0f" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cjl22siv9000lp0o01fcicroa" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/socket/">socket</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-java基础知识" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/06/04/java基础知识/" class="article-date">
-  <time datetime="2018-06-04T06:33:06.000Z" itemprop="datePublished">2018-06-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/06/04/java基础知识/">java基础知识</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>gzm keep patient</p>
-<hr>
-<h2 id="java和编译型语言区别"><a href="#java和编译型语言区别" class="headerlink" title="java和编译型语言区别"></a>java和编译型语言区别</h2><p><img src="http://www.runoob.com/wp-content/uploads/2013/12/ZSSDMld.png" alt="此处输入图片的描述"><br>编译型语言直接编译变为可执行程序exe，然后就可以执行了。但是java需要先编译为.class字節碼，在由解釋器進行解釋執行。可以說java是介於編譯型語言和解釋型語言之間的一鍾語言了。所以網上一直有種說法：最好不要使用編譯型語言和解釋型語言的劃分方法來劃分java，因爲它既有編譯，也有解釋。</p>
-<p><img src="http://static.zybuluo.com/gzm1997/j59t84gedmf9aeiomjy15n6z/image_1cer6l3dg1ma768a1egjb8d7671g.png" alt="image_1cer6l3dg1ma768a1egjb8d7671g.png-2.5kB"></p>
-<hr>
-<h2 id="各种类型变量存储位置"><a href="#各种类型变量存储位置" class="headerlink" title="各种类型变量存储位置"></a>各种类型变量存储位置</h2><p>局部变量 -&gt; 栈<br>动态变量 -&gt; 堆<br>全局变量 静态变量 -&gt; 静态存储区<br>函数代码 -&gt; 代码区<br>常量 -&gt; 常量区</p>
-<hr>
-<h2 id="java支持的变量类型"><a href="#java支持的变量类型" class="headerlink" title="java支持的变量类型"></a>java支持的变量类型</h2><p>类中的变量类型</p>
-<ul>
-<li>类变量 独立于方法之外的变量 static修饰 每个类共享</li>
-<li>实例变量 独立于方法之外 但是没有static修饰 每个实例都有自己的一个这个变量的版本 实例变量具有默认值。数值型变量的默认值是0，布尔型变量的默认值是false，引用类型变量的默认值是null 变量的值可以在声明时指定，也可以在构造方法中指定</li>
-<li>局部变量 类方法中的变量 <strong>访问修饰符可以修饰实例变量</strong></li>
-</ul>
-<p>局部变量</p>
-<ul>
-<li>声明在方法、构造方法或者语句块中</li>
-<li>访问修饰符不能用于局部变</li>
-<li>局部变量是没有默认值 所有被声明之后需要初始化之后才可以使用</li>
-</ul>
-<hr>
-<p>final修饰变量</p>
-<p><strong>final</strong> 变量能被显式地初始化并且只能初始化一次。被声明为 final 的对象的引用不能指向不同的对象。但是 final 对象里的数据可以被改变。也就是说 final 对象的引用不能改变，但是里面的值可以改变</p>
-<p>final修饰类中的方法<br>类中的 final 方法可以被子类继承，但是不能被子类修改。</p>
-<p>final修饰类<br>final修饰的类不能被继承 没有类能继承final类的任何特性</p>
-<hr>
-<h2 id="abstract修饰符"><a href="#abstract修饰符" class="headerlink" title="abstract修饰符"></a>abstract修饰符</h2><blockquote>
-<p>abstract抽象类是不能用来实例化对象的 声明抽象类的唯一目的就是将来对该类进行扩充 </p>
-</blockquote>
-<p>如果一个类中具有抽象方法 那么这个类一定要声明微抽象类 抽象方法的的定义由子类提供</p>
-<p><strong>任何继承抽象类的子类必须实现父类的所有抽象方法，除非该子类也是抽象类。</strong></p>
-<p>abstract抽象类例子<br>Test.java<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Mon_class</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">m</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Son_class</span> <span class="keyword">extends</span> <span class="title">Mon_class</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">m</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"this is a m func"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> </span>&#123;</span><br><span class="line">        Son_class test_class = <span class="keyword">new</span> Son_class();</span><br><span class="line">        test_class.m();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>可以使用非抽象子类的构造函数创建一个抽象父类的引用对象 并且可以调用具体定义在非抽象子类中的重写方法<br>但是注意非抽象类的构造函数并不可以用来创建一个实例</p>
-<hr>
-<h2 id="synchronized-修饰符"><a href="#synchronized-修饰符" class="headerlink" title="synchronized 修饰符"></a>synchronized 修饰符</h2><p>synchronized 关键字声明的方法同一时间只能被一个线程访问。synchronized 修饰符可以应用于四个访问修饰符。</p>
-<hr>
-<h2 id="transient-修饰符"><a href="#transient-修饰符" class="headerlink" title="transient 修饰符"></a>transient 修饰符</h2><p>序列化的对象包含被 transient修饰的实例变量时，java虚拟机(JVM)跳过该特定的变量。<br>该修饰符包含在定义变量的语句中，用来预处理类和变量的数据类型。</p>
-<hr>
-<h2 id="volatile-修饰符"><a href="#volatile-修饰符" class="headerlink" title="volatile 修饰符"></a>volatile 修饰符</h2><p>volatile 修饰的成员变量在每次被线程访问时，都强制从共享内存中重新读取该成员变量的值。而且，当成员变量发生变化时，会强制线程将变化值回写到共享内存。这样在任何时刻，两个不同的线程总是看到某个成员变量的同一个值。</p>
-<p>一个 volatile 对象引用可能是 null。</p>
-<hr>
-<h2 id="extends和implements"><a href="#extends和implements" class="headerlink" title="extends和implements"></a>extends和implements</h2><ol>
-<li>在类的声明中，通过关键字extends来创建一个类的子类。一个类通过关键字implements声明自己使用一个或者多个接口。<br>extends 是继承某个类, 继承之后可以使用父类的方法, 也可以重写父类的方法; implements 是实现多个接口, 接口的方法一般为空的, 必须重写才能使用<br>2.extends是继承父类，只要那个类不是声明为final或者那个类定义为abstract的就能继承，JAVA中不支持多重继承，但是可以用接口 来实现，这样就要用到implements，继承只能继承一个类，但implements可以实现多个接口，用逗号分开就行了</li>
-</ol>
-<hr>
-<h2 id="instanceof运算符"><a href="#instanceof运算符" class="headerlink" title="instanceof运算符"></a>instanceof运算符</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> </span>&#123;</span><br><span class="line">        String name = <span class="string">"gzm"</span>;</span><br><span class="line">        System.out.println(name <span class="keyword">instanceof</span> String);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="装箱和拆箱"><a href="#装箱和拆箱" class="headerlink" title="装箱和拆箱"></a>装箱和拆箱</h2><p>在java中的内置数据类型对应的包装类都是继承一个叫做Number的抽象类的，关系图如下<br><img src="http://static.zybuluo.com/gzm1997/ju6g8b2cnhyoxnqdx8a1iprz/image_1cetpi31q1ldo12bi1f1l1i841aru9.png" alt="image_1cetpi31q1ldo12bi1f1l1i841aru9.png-43.3kB"></p>
-<ul>
-<li>当内置数据类型被当作对象使用的时候 编译器会吧内置类型装箱</li>
-<li>反过来 编译器也会一个包装类拆箱</li>
-</ul>
-<p>比如下面是整型包装类和内置类型之间的装箱和拆箱之间的关系<br><img src="http://static.zybuluo.com/gzm1997/dykem4xmjm8n3tzgk0zlk8c1/image_1cetputrjfl1t58lp7o0g1a8m.png" alt="image_1cetputrjfl1t58lp7o0g1a8m.png-3kB"></p>
-<p>例子<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//装箱</span></span><br><span class="line">        Integer num = <span class="number">5</span>;</span><br><span class="line">        <span class="comment">//拆箱</span></span><br><span class="line">        num += <span class="number">10</span>;</span><br><span class="line">        System.out.println(<span class="string">"num "</span> + num);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="Charactor"><a href="#Charactor" class="headerlink" title="Charactor"></a>Charactor</h2><p>char这个内置数据类型对应的包装类是Charactor</p>
-<hr>
-<h2 id="String和char-array"><a href="#String和char-array" class="headerlink" title="String和char array"></a>String和char array</h2><p>String和char array的相互转换以及遍历<br>String转为char array<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String t_str = <span class="string">"abcd"</span>;</span><br><span class="line"><span class="keyword">char</span> [] c_arr = t_str.toCharArray();</span><br></pre></td></tr></table></figure></p>
-<p>char array转为String<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String new_str = <span class="keyword">new</span> String(c_arr);</span><br></pre></td></tr></table></figure></p>
-<p>foreach只可以用来迭代可迭代对象 String并不是可迭代对象 只有char array是可迭代对象<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">char</span> c: c_arr</span><br><span class="line">     ) &#123;</span><br><span class="line">    System.out.println(c);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">char</span> c: <span class="keyword">new</span> <span class="keyword">char</span>[]&#123;<span class="string">'1'</span>, <span class="string">'2'</span>, <span class="string">'3'</span>&#125;</span><br><span class="line">     ) &#123;</span><br><span class="line">    System.out.println(c);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>String类是不可该改变的 即使具有concat那些字符串连接方法 但是那也是新建了一个新的String对象 如果需要改变字符串 那么就需要使用StringBuffer和StringBuilder对象了</p>
-<ul>
-<li>String 不可修改 速度最慢</li>
-<li>StringBuffer 可修改 速度中等 线程安全</li>
-<li>StringBuilder 可修改 速度最快 非线程安全</li>
-</ul>
-<p>StringBuffer基本使用<br>(注意在insert和replace这些函数中 start end的范围是跟python是相同 都是包含start但是没有包含end)<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span> <span class="params">(String []args)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        StringBuffer test_buffer = <span class="keyword">new</span> StringBuffer(<span class="string">"lala"</span>);</span><br><span class="line">        test_buffer.append(<span class="string">"heihei"</span>);</span><br><span class="line">        System.out.println(test_buffer);</span><br><span class="line">        test_buffer.reverse();</span><br><span class="line">        System.out.println(test_buffer);</span><br><span class="line">        test_buffer.delete(test_buffer.length() - <span class="number">3</span>, test_buffer.length());</span><br><span class="line">        System.out.println(test_buffer);</span><br><span class="line">        test_buffer.replace(<span class="number">1</span>, <span class="number">2</span>, <span class="string">"heihei"</span>);</span><br><span class="line">        System.out.println(test_buffer);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="StringBuilder"><a href="#StringBuilder" class="headerlink" title="StringBuilder"></a>StringBuilder</h2><p>如果在StringBilder的构造函数中没有传入一个长度参数，那么这个构造函数将会为这个StringBuilder分配默认的16个字符的空间</p>
-<hr>
-<p>什么是内存抖动Memory Churn<br>内存抖动是因为大量对象被创建又在段时间内马上被释放 内存页被频繁更换 导致整个系统效率急剧下降 这个现象称为内存抖动 一般都是因为内存分配算法不好 内存太小造成的<br><strong>其实内存抖动就是系统颠簸</strong></p>
-<hr>
-<h2 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h2><p>基本使用<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">String content = <span class="string">"i am haha"</span>;</span><br><span class="line">String patern = <span class="string">".*haha"</span>;</span><br><span class="line">System.out.println(Pattern.matches(patern, content));</span><br></pre></td></tr></table></figure></p>
-<p>常用的正则表达</p>
-<ul>
-<li>.表示任意一个字符</li>
-<li>\s+表示若干个空格(应该是1个或者多个)</li>
-<li>\d+表示一个或者多个数字</li>
-<li>\.表示.</li>
-<li>()?表示问好前面中的括号的内容是可选的</li>
-<li>{n} n为非负数 表示前面的字符刚好重复n次</li>
-<li>{n，} n为非负数 表示前面的字符至少重复n次</li>
-<li>{n，m} n为非负数 表示前面的字符出现次数至少n次 之多m次</li>
-<li>x|y 匹配x或者y</li>
-<li>[xyz]匹配xyz中任一字符</li>
-<li>[^xyz] 跟上面的相反 匹配不是xyz的字符</li>
-<li>[a-z] 字符范围 匹配a-z之间的字符</li>
-<li>[^a-z]反向范围</li>
-<li>\b匹配一个字符边界(字符和空格间的位置) 例如，”er\b”匹配”never”中的”er”，但不匹配”verb”中的”er”。</li>
-<li>\B匹配一个非字符边界 “er\B”匹配”verb”中的”er”，但不匹配”never”中的”er”。</li>
-</ul>
-<hr>
-<h2 id="java可变参数"><a href="#java可变参数" class="headerlink" title="java可变参数"></a>java可变参数</h2><p>从jdk1.5开始 java支持传递同类型的可变参数 这个跟声明参数为数组类型的不同的地方在于可以传入多个同类型的参数</p>
-<p>声明方式</p>
-<pre><code>typeName... parameterName
-</code></pre><p>例子：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testPrint</span><span class="params">(<span class="keyword">int</span>... arr)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (arr.length == <span class="number">0</span>) &#123;</span><br><span class="line">            System.out.println(<span class="string">"no parameter has been transfer"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i: arr</span><br><span class="line">             ) &#123;</span><br><span class="line">            System.out.println(i);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> </span>&#123;</span><br><span class="line">        testPrint(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>);</span><br><span class="line">        testPrint(<span class="keyword">new</span> <span class="keyword">int</span>[] &#123;<span class="number">3</span>, <span class="number">2</span>, <span class="number">1</span>&#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="收尾机制finalize"><a href="#收尾机制finalize" class="headerlink" title="收尾机制finalize"></a>收尾机制finalize</h2><p>例子<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> <span class="keyword">extends</span> <span class="title">Object</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    Dog(<span class="keyword">int</span> _id) &#123;</span><br><span class="line">        id = _id;</span><br><span class="line">        System.out.printf(<span class="string">"id %d dog is create\n"</span>, id);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">finalize</span><span class="params">()</span> <span class="keyword">throws</span> java.lang.Throwable </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.finalize();</span><br><span class="line">        System.out.printf(<span class="string">"id %d dog is dispose\n"</span>, id);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> </span>&#123;</span><br><span class="line">        Dog d1 = <span class="keyword">new</span> Dog(<span class="number">1</span>);</span><br><span class="line">        Dog d2 = <span class="keyword">new</span> Dog(<span class="number">2</span>);</span><br><span class="line">        <span class="comment">//Dog d3 = new Dog(3);</span></span><br><span class="line">        <span class="comment">//d1 = null;</span></span><br><span class="line">        <span class="comment">//System.gc();</span></span><br><span class="line">        d1 = d2 = <span class="keyword">null</span>;</span><br><span class="line">        System.gc();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="java-io"><a href="#java-io" class="headerlink" title="java io"></a>java io</h2><p>从控制台中输入一个字符<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.BufferedReader;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.InputStreamReader;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        BufferedReader br = <span class="keyword">new</span> BufferedReader(<span class="keyword">new</span> InputStreamReader(System.in));</span><br><span class="line">        <span class="keyword">int</span> r = br.read();</span><br><span class="line">        <span class="keyword">char</span> c = (<span class="keyword">char</span>) r;</span><br><span class="line">        System.out.println(c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>在控制台中输入一个字符串 也是使用Bufferreader这个对象进行读取 但是是使用readline这个函数进行读取<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.BufferedReader;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.InputStreamReader;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        BufferedReader br = <span class="keyword">new</span> BufferedReader(<span class="keyword">new</span> InputStreamReader(System.in));</span><br><span class="line">        String r = br.readLine();</span><br><span class="line">        System.out.println(r);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>可以解决中文输入输出出现乱码都解决方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line"></span><br><span class="line">        File f = <span class="keyword">new</span> File(<span class="string">"a.txt"</span>);</span><br><span class="line">        FileOutputStream fop = <span class="keyword">new</span> FileOutputStream(f);</span><br><span class="line">        <span class="comment">// 构建FileOutputStream对象,文件不存在会自动新建</span></span><br><span class="line"></span><br><span class="line">        OutputStreamWriter writer = <span class="keyword">new</span> OutputStreamWriter(fop, <span class="string">"UTF-8"</span>);</span><br><span class="line">        <span class="comment">// 构建OutputStreamWriter对象,参数可以指定编码,默认为操作系统默认编码,windows上是gbk</span></span><br><span class="line"></span><br><span class="line">        writer.append(<span class="string">"中文输入"</span>);</span><br><span class="line">        <span class="comment">// 写入到缓冲区</span></span><br><span class="line"></span><br><span class="line">        writer.append(<span class="string">"\r\n"</span>);</span><br><span class="line">        <span class="comment">//换行</span></span><br><span class="line"></span><br><span class="line">        writer.append(<span class="string">"English"</span>);</span><br><span class="line">        <span class="comment">// 刷新缓存冲,写入到文件,如果下面已经没有写入的内容了,直接close也会写入</span></span><br><span class="line"></span><br><span class="line">        writer.close();</span><br><span class="line">        <span class="comment">//关闭写入流,同时会把缓冲区内容写入文件,所以上面的注释掉</span></span><br><span class="line"></span><br><span class="line">        fop.close();</span><br><span class="line">        <span class="comment">// 关闭输出流,释放系统资源</span></span><br><span class="line"></span><br><span class="line">        FileInputStream fip = <span class="keyword">new</span> FileInputStream(f);</span><br><span class="line">        <span class="comment">// 构建FileInputStream对象</span></span><br><span class="line"></span><br><span class="line">        InputStreamReader reader = <span class="keyword">new</span> InputStreamReader(fip, <span class="string">"UTF-8"</span>);</span><br><span class="line">        <span class="comment">// 构建InputStreamReader对象,编码与写入相同</span></span><br><span class="line"></span><br><span class="line">        StringBuffer sb = <span class="keyword">new</span> StringBuffer();</span><br><span class="line">        <span class="keyword">while</span> (reader.ready()) &#123;</span><br><span class="line">            sb.append((<span class="keyword">char</span>) reader.read());</span><br><span class="line">            <span class="comment">// 转成char加到StringBuffer对象中</span></span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(sb.toString());</span><br><span class="line">        reader.close();</span><br><span class="line">        <span class="comment">// 关闭读取流</span></span><br><span class="line"></span><br><span class="line">        fip.close();</span><br><span class="line">        <span class="comment">// 关闭输入流,释放系统资源</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="Scanner"><a href="#Scanner" class="headerlink" title="Scanner"></a>Scanner</h2><p>Scanner是java5的新特征 可以通过Scanner类来获取输入的字符串或者数字 字符</p>
-<p>下面是获取输入字符串的例子<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> java.util.Scanner;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        Scanner s = <span class="keyword">new</span> Scanner(System.in);</span><br><span class="line">        <span class="keyword">if</span> (s.hasNext()) &#123;</span><br><span class="line">            String r = s.next();</span><br><span class="line">            System.out.println(r);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Scanner s1 = <span class="keyword">new</span> Scanner(System.in);</span><br><span class="line">        <span class="keyword">if</span> (s1.hasNextLine()) &#123;</span><br><span class="line">            String r = s1.nextLine();</span><br><span class="line">            System.out.println(r);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">`</span><br></pre></td></tr></table></figure></p>
-<p>next和nextLine的区别<br>next</p>
-<ol>
-<li>一定要读取到有效字符后才可以结束输入。</li>
-<li>对输入有效字符之前遇到的空白，next()方法会自动将其去掉。</li>
-<li>只有输入有效字符后才将其后面输入的空白作为分隔符或者结束符。</li>
-<li>next() 不能得到带有空格的字符串。</li>
-</ol>
-<p>nextLine</p>
-<ol>
-<li>以Enter为结束符,也就是说 nextLine()方法返回的是输入回车之前的所有字符。</li>
-<li>可以获得空白。</li>
-</ol>
-<hr>
-<h2 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h2><p><img src="http://static.zybuluo.com/gzm1997/53k55dvgsec69ejiu8eweqzx/image_1cf08i4nf1ifd1qtm12hfuoa1lu9.png" alt="image_1cf08i4nf1ifd1qtm12hfuoa1lu9.png-24.4kB"></p>
-<hr>
-<h2 id="继承和接口"><a href="#继承和接口" class="headerlink" title="继承和接口"></a>继承和接口</h2><blockquote>
-<p>java的继承是单继承 就是说一个子类只可以有一个父类 同时java是支持多重继承的 就是说c可以继承b b继承a 这就是多重继承</p>
-</blockquote>
-<p>但是java也是可以通过interface来实现多重继承的<br>例子<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">A</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">eat</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">B</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sleep</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A_test</span> <span class="keyword">implements</span> <span class="title">A</span>, <span class="title">B</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">eat</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"this is eat func"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sleep</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"this is sleep func"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> </span>&#123;</span><br><span class="line">        A_test test_a = <span class="keyword">new</span> A_test();</span><br><span class="line">        test_a.eat();</span><br><span class="line">        test_a.sleep();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>值得一提的是 接口也可以初始化实例 并且这些接口初始化出来的实例也可以调用它们的方法 即使这些方法的定义在implements了它们的class中</p>
-<hr>
-<h2 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h2><blockquote>
-<p>java的子类是不能继承夫类的构造函数的 但是当父类的构造函数含有参数时候 必须在子类的构造函数中使用super关键字调用父类构造函数 并且传入参数<br>但是当父类的构造函数没有参数 子类不是必须super调用父类构造函数的 因为系统会自动调用父类的无参构造函数</p>
-</blockquote>
-<hr>
-<h2 id="继承中的引用对象"><a href="#继承中的引用对象" class="headerlink" title="继承中的引用对象"></a>继承中的引用对象</h2><p>可以使用</p>
-<ul>
-<li>子类的构造函数构造父类的引用对象</li>
-<li>不可以使用父类的构造函数构造子类的引用对象</li>
-</ul>
-<p>如果使用的是子类的构造函数来构造父类的引用对象 那么这个对象调用的函数版本是子类中重写的版本</p>
-<hr>
-<h2 id="override和overload"><a href="#override和overload" class="headerlink" title="override和overload"></a>override和overload</h2><p>重写</p>
-<ul>
-<li>重写是在子类和父类之间的</li>
-<li>重写的参数列表和返回类型必须相同</li>
-<li>声明微final的方法不可以被重写</li>
-<li>构造方法不可以被重写</li>
-<li>static方法不可以被重写 但是可以被重新声明</li>
-</ul>
-<p>子类和父类都具有相同的static的的同名 同参数列表 同返回类型的函数 但是<strong>这不是重写 static函数不可以被重写 这是重新声明</strong></p>
-<p>static函数被重新声明的时候<br>无论父类的引用对象是被父类构造函数还是子类构造函数构造的 它调用的版本都是父类的static函数版本</p>
-<p>子类的引用对象调用的版本是自己重新声明的static版本</p>
-<p>例子<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.awt.*;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Animal</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">move</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"animal is move"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testStatic</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"this is animal static func"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> <span class="keyword">extends</span> <span class="title">Animal</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">move</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Dog is move"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testStatic</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"this is a Dog static funcss"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">         Animal a = <span class="keyword">new</span> Animal();</span><br><span class="line">         Animal b = <span class="keyword">new</span> Dog();</span><br><span class="line">         a.testStatic();</span><br><span class="line">         b.testStatic();</span><br><span class="line">         Dog c = <span class="keyword">new</span> Dog();</span><br><span class="line">         c.testStatic();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>输出<br><img src="http://static.zybuluo.com/gzm1997/7lvemg4vbu261q3dcd98zx1z/image_1cf49j0l51m6jpbfaqp4h6f219.png" alt="image_1cf49j0l51m6jpbfaqp4h6f219.png-8.3kB"></p>
-<p>重载</p>
-<ul>
-<li>在通一个class中</li>
-<li>返回类型 函数名 参数列表相同</li>
-</ul>
-<hr>
-<h2 id="多态"><a href="#多态" class="headerlink" title="多态"></a>多态</h2><p>多态是建立在上面的方法重写之上的 被重写的方法称为虚方法</p>
-<p>多态的编译和运行</p>
-<p>使用子类引用子类的对象 </p>
-<ul>
-<li>在编译的时候编译器会在子类中找到相应的方法 然后执行的时候JVM会调用子类的这个方法</li>
-</ul>
-<p>使用父类引用子类的对象</p>
-<ul>
-<li>在编译时 编译器会使用父类的虚方法进行验证 但是在运行时 JVM调用的是子类的对应的虚方法</li>
-</ul>
-<p>java的所有方法都按照这种方式来实现 因此<strong>重写方法能在运行时调用</strong> 不敢编译的时候源代码中引用变量是什么数据类型</p>
-<p> 多态的实现方式</p>
-<ul>
-<li>重写</li>
-<li>接口</li>
-</ul>
-<p>我一直以为重写是实现多态的唯一方式 但是java里面接口也是实现多态的一种方式 比如上面的多态内容中 我不是发现使用implements了接口的类构造函数类来创建一个interface引用对象 并且可以调用实现方法在这个class中的方法 所以这也是实现多态的一种方式</p>
-<p>例子<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.awt.*;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">A</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">move</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span> <span class="keyword">implements</span> <span class="title">A</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">move</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"this is move func in Dog"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        A testA = <span class="keyword">new</span> Dog();</span><br><span class="line">        testA.move();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>注意 interface没有构造函数 因为根本不能用以实例化一个对象</p>
-<hr>
-<h2 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h2><p>interface特性</p>
-<ul>
-<li>每个接口的方法都隐士指定为public abstract 其他修饰符都会报错</li>
-<li>接口中可以有变量到 都会被隐士指定为public static final 使用private修饰编译会报错</li>
-<li>接口的方法不能在接口中实现 只能由实现接口的类来实现</li>
-<li>接口可以继承 这个跟类的继承相似 但是类只支持多重继承 不支持多继承 接口的继承支持多继承也支持多重继承</li>
-</ul>
-<p>标记接口</p>
-<blockquote>
-<p>最常用的继承接口是没有包含任何方法的接口和属性的 这个叫做<strong>标记接口</strong> 主要是表明它的类属于一个特定的类型</p>
-</blockquote>
-<p>目的</p>
-<ul>
-<li>建立一个公共的父接口 正如EventListener接口，这是由几十个其他接口扩展的Java API，你可以使用一个标记接口来建立一组接口的父接口。例如：当一个接口继承了EventListener接口，Java虚拟机(JVM)就知道该接口将要被用于一个事件的代理方案</li>
-<li>向一个类添加数据类型 这种情况是标记接口最初的目的，实现标记接口的类不需要定义任何接口方法(因为标记接口根本就没有方法)，但是该类通过多态性变成一个接口类型</li>
-</ul>
-<hr>
-<h2 id="包"><a href="#包" class="headerlink" title="包"></a>包</h2><blockquote>
-<p>同一个包内的类命名是不可以相同的 但是不同包内的命名是可以相同的</p>
-</blockquote>
-<p>包例子：<br>结构如下</p>
-<ul>
-<li>animal<ul>
-<li>Animal.java(Animal interface)</li>
-<li>MammalInt.java(MammalInt class implements Animal)</li>
-</ul>
-</li>
-<li>Test.java(import animal.MammalInt)</li>
-</ul>
-<p>Animal.java<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> animal;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Animal</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">eat</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>MammalInt.jav<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> animal;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MammalInt</span> <span class="keyword">implements</span> <span class="title">Animal</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">eat</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"this is is animal eat func"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        MammalInt testM = <span class="keyword">new</span> MammalInt();</span><br><span class="line">        testM.eat();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>Test.java<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> animal.MammalInt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        MammalInt testM = <span class="keyword">new</span> MammalInt();</span><br><span class="line">        testM.eat();</span><br><span class="line">        System.out.println(<span class="string">"this is test java file"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p> 运行Test.java<br> <img src="http://static.zybuluo.com/gzm1997/mz2rq84io7bbnj3v4814emzz/image_1cf4lkjqb6vtuc0f5ja2nc0kt.png" alt="image_1cf4lkjqb6vtuc0f5ja2nc0kt.png-7.7kB"></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjkv5cixh000swko0twp2jb9r" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
 
     </footer>
   </div>
@@ -1053,7 +1009,7 @@ user=www-data
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 12.5px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -1075,6 +1031,10 @@ user=www-data
       <ul>
         
           <li>
+            <a href="/2018/08/20/cayley原理2/">cayley原理2</a>
+          </li>
+        
+          <li>
             <a href="/2018/08/15/cayley原理一-获取查询结果/">cayley原理一(获取查询结果)</a>
           </li>
         
@@ -1088,10 +1048,6 @@ user=www-data
         
           <li>
             <a href="/2018/08/06/mux学习/">mux学习</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/06/go-web/">go web</a>
           </li>
         
       </ul>
