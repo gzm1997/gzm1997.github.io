@@ -7,22 +7,22 @@
   
   <title>cayley原理2 | gzm&#39;s blogs</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="cayley查询过程cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确  构造态射数组对于我们用来查询的结构path12345type Path struct &amp;#123;	stack       []morphism	qs          graph.QuadStore // Optionally. A nil qs is equivalent to a">
+  <meta name="description" content="cayley查询过程cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确  构造态射数组在cayley中的查询一般我们都是构造一个path结构体实例 例如查询从A出发 经过节点12 可以达到什么节点 p := cayley.StartPath(store, quad.String(&amp;quot;A&amp;quot;)).Out(quad.Int(12)) 上面的语句实质">
 <meta name="keywords" content="cayley">
 <meta property="og:type" content="article">
 <meta property="og:title" content="cayley原理2">
 <meta property="og:url" content="http://yoursite.com/2018/08/20/cayley原理2/index.html">
 <meta property="og:site_name" content="gzm&#39;s blogs">
-<meta property="og:description" content="cayley查询过程cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确  构造态射数组对于我们用来查询的结构path12345type Path struct &amp;#123;	stack       []morphism	qs          graph.QuadStore // Optionally. A nil qs is equivalent to a">
+<meta property="og:description" content="cayley查询过程cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确  构造态射数组在cayley中的查询一般我们都是构造一个path结构体实例 例如查询从A出发 经过节点12 可以达到什么节点 p := cayley.StartPath(store, quad.String(&amp;quot;A&amp;quot;)).Out(quad.Int(12)) 上面的语句实质">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="http://static.zybuluo.com/gzm1997/no1a9uh8euf17s9v1hm9k9ou/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820172126.png">
 <meta property="og:image" content="http://static.zybuluo.com/gzm1997/76y9vn6l45cx30d3w747rpy2/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820155549.png">
 <meta property="og:image" content="http://static.zybuluo.com/gzm1997/bamzi6zpilvq6sha5khhxro8/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162647.png">
 <meta property="og:image" content="http://static.zybuluo.com/gzm1997/2x1c3zt37b32j3u8st294mu5/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162145.png">
-<meta property="og:updated_time" content="2018-08-20T09:26:02.809Z">
+<meta property="og:updated_time" content="2018-08-20T09:52:47.544Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="cayley原理2">
-<meta name="twitter:description" content="cayley查询过程cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确  构造态射数组对于我们用来查询的结构path12345type Path struct &amp;#123;	stack       []morphism	qs          graph.QuadStore // Optionally. A nil qs is equivalent to a">
+<meta name="twitter:description" content="cayley查询过程cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确  构造态射数组在cayley中的查询一般我们都是构造一个path结构体实例 例如查询从A出发 经过节点12 可以达到什么节点 p := cayley.StartPath(store, quad.String(&amp;quot;A&amp;quot;)).Out(quad.Int(12)) 上面的语句实质">
 <meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/no1a9uh8euf17s9v1hm9k9ou/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820172126.png">
   
     <link rel="alternate" href="/atom.xml" title="gzm&#39;s blogs" type="application/atom+xml">
@@ -94,28 +94,31 @@
       
         <h2 id="cayley查询过程"><a href="#cayley查询过程" class="headerlink" title="cayley查询过程"></a>cayley查询过程</h2><p>cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确<br><img src="http://static.zybuluo.com/gzm1997/no1a9uh8euf17s9v1hm9k9ou/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820172126.png" alt="微信图片_20180820172126.png-16.9kB"></p>
 <hr>
-<h2 id="构造态射数组"><a href="#构造态射数组" class="headerlink" title="构造态射数组"></a>构造态射数组</h2><p>对于我们用来查询的结构path<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Path <span class="keyword">struct</span> &#123;</span><br><span class="line">	stack       []morphism</span><br><span class="line">	qs          graph.QuadStore <span class="comment">// Optionally. A nil qs is equivalent to a morphism.</span></span><br><span class="line">	baseContext pathContext</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p><strong>morphism态射</strong>在范畴论中就是一个函数变换的抽象过程 cayley中的态射我们可以理解是我们每一个out int has等等指向下一个节点迭代的函数封装 我们每一个指向下一个的迭代(in out等)都转换为一个morphism态射 然后存在path中的stack<strong>态射数组</strong></p>
+<h2 id="构造态射数组"><a href="#构造态射数组" class="headerlink" title="构造态射数组"></a>构造态射数组</h2><p>在cayley中的查询一般我们都是构造一个path结构体实例 例如查询从A出发 经过节点12 可以达到什么节点</p>
+<pre><code>p := cayley.StartPath(store, quad.String(&quot;A&quot;)).Out(quad.Int(12))
+</code></pre><p>上面的语句实质上返回一个path实例 就是p 对于我们用来查询的结构path<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Path <span class="keyword">struct</span> &#123;</span><br><span class="line">	stack       []morphism</span><br><span class="line">	qs          graph.QuadStore <span class="comment">// Optionally. A nil qs is equivalent to a morphism.</span></span><br><span class="line">	baseContext pathContext</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面有一个重要的字段</p>
+<pre><code>stack       []morphism
+</code></pre><p><strong>morphism态射</strong>在范畴论中就是一个函数变换的抽象过程 cayley中的态射我们可以理解是我们每一个out int has等等指向下一个节点迭代的函数封装 我们每一个指向下一个的迭代(in out等)都转换为一个morphism态射 然后存在path中的stack<strong>态射数组</strong></p>
 <blockquote>
 <p>这个stack存储着表示我们查询的每一个划分(out in has等等)的态射</p>
 </blockquote>
-<p>每一个态射在cayley中的定义 </p>
+<p>每一个态射在cayley中的定义<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> morphism <span class="keyword">struct</span> &#123;</span><br><span class="line">	IsTag    <span class="keyword">bool</span></span><br><span class="line">	Reversal <span class="function"><span class="keyword">func</span><span class="params">(*pathContext)</span> <span class="params">(morphism, *pathContext)</span></span></span><br><span class="line"><span class="function">	<span class="title">Apply</span>    <span class="title">applyMorphism</span></span></span><br><span class="line"><span class="function">	<span class="title">tags</span>     []<span class="title">string</span></span></span><br><span class="line"><span class="function">&#125;</span></span><br></pre></td></tr></table></figure></p>
 <ul>
 <li>其中Reversal返回的态射是一个反向的态射(比如out的反向态射就是in) 这就是cayley实现无向图的原因 每个态射都包含一个它的反向态射</li>
 <li>Apply为执行这个态射的具体函数 这个函数返回值中得到的shape中就表示了执行态射后得到的节点</li>
 </ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> morphism <span class="keyword">struct</span> &#123;</span><br><span class="line">	IsTag    <span class="keyword">bool</span></span><br><span class="line">	Reversal <span class="function"><span class="keyword">func</span><span class="params">(*pathContext)</span> <span class="params">(morphism, *pathContext)</span></span></span><br><span class="line"><span class="function">	<span class="title">Apply</span>    <span class="title">applyMorphism</span></span></span><br><span class="line"><span class="function">	<span class="title">tags</span>     []<span class="title">string</span></span></span><br><span class="line"><span class="function">&#125;</span></span><br></pre></td></tr></table></figure>
-<p>举一个简答的例子 下面的查询path是从A这个节点出发 经过节点12 查询可以获得什么节点</p>
+<p>举一个简答的例子 也是上面那个例子</p>
 <pre><code>p := cayley.StartPath(store, quad.String(&quot;A&quot;)).Out(quad.Int(12))
 </code></pre><p>上面这条查询语句在声明了一个path结构体的同时 也构造出我们上面所说的<strong>态射数组</strong><br>下面的绿色大框即为我们的态射数组stack 两个蓝色框即为我们数组中的两个态射 都是morphism结构体 但是我们可以看红色框框 他们的apply这个函数是不一样的 一个是isMorphism 一个outMorphism</p>
 <p><img src="http://static.zybuluo.com/gzm1997/76y9vn6l45cx30d3w747rpy2/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820155549.png" alt="微信图片_20180820155549.png-45.6kB"></p>
-<p>我们可以很容易理解为什么有outMorphism态射 但是不能理解为什么有isMorphism这个态射 其实这是初始化的态射</p>
+<p>我们可以很容易理解为什么有outMorphism态射 但是不能理解为什么有isMorphism这个态射 其实isMorphism是初始化的态射</p>
 <hr>
 <h2 id="构造shape"><a href="#构造shape" class="headerlink" title="构造shape"></a>构造shape</h2><p>shape顾名思义就是我们查询路径的一种表现形式 表示了我们使用path查询始末的一条抽象路径 如上面的查询抽象的一个shape就是</p>
 <pre><code>A -&gt; 12 -&gt;
 </code></pre><p>shape在cayley中只是一个接口 但凡实现了这个接口中的方法的结构体都是shape 具体的形式非常多样和复杂 我们这里不做详细研究 shape接口定义如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Shape represent a query tree shape.</span></span><br><span class="line"><span class="keyword">type</span> Shape <span class="keyword">interface</span> &#123;</span><br><span class="line">	<span class="comment">// BuildIterator constructs an iterator tree from a given shapes and binds it to QuadStore.</span></span><br><span class="line">	BuildIterator(qs graph.QuadStore) graph.Iterator</span><br><span class="line">	<span class="comment">// Optimize runs an optimization pass over a query shape.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// It returns a bool that indicates if shape was replaced and should always return a copy of shape in this case.</span></span><br><span class="line">	<span class="comment">// In case no optimizations were made, it returns the same unmodified shape.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// If Optimizer is specified, it will be used instead of default optimizations.</span></span><br><span class="line">	Optimize(r Optimizer) (Shape, <span class="keyword">bool</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>一个具体的shape的例子 可见shape的具体类型和机构是很多样的 没必要具体研究<br><img src="http://static.zybuluo.com/gzm1997/bamzi6zpilvq6sha5khhxro8/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162647.png" alt="微信图片_20180820162647.png-31.5kB"></p>
-<p>可以看到下面 随着态射一个一个被执行 我们的到的构造出来的shape也是变化的 每一次态射之后的到的shape都作为参数传入下一个被执行的态射函数 shape不断积累 最终形成我们需要的查询路径<br><img src="http://static.zybuluo.com/gzm1997/2x1c3zt37b32j3u8st294mu5/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162145.png" alt="微信图片_20180820162145.png-17.3kB"></p>
+<p>可以看到下面 随着态射一个一个被执行 我们的到的构造出来的shape也是变化的 每一次态射之后的到的shape都作为参数传入下一个被执行的态射函数 shape不断积累 不断拓张 最终形成我们需要的查询路径<br><img src="http://static.zybuluo.com/gzm1997/2x1c3zt37b32j3u8st294mu5/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162145.png" alt="微信图片_20180820162145.png-17.3kB"></p>
 <p>构造shape部分还包含了大量的shape优化 这部分复杂而内容很多 这里不展开</p>
 <hr>
 <h2 id="构造迭代器和迭代链链"><a href="#构造迭代器和迭代链链" class="headerlink" title="构造迭代器和迭代链链"></a>构造迭代器和迭代链链</h2><p><strong>Iterator迭代器</strong>这个概念我们可以理解只负责某一部分计算工作的组件 cayley的查询设计是由若干个迭代器<strong>嵌套</strong>或者<strong>依次排列</strong>组合成的 呈现一个<strong>分布式结构</strong> 组合成的最终迭代器叫做<strong>IterateChain迭代器链</strong></p>
@@ -147,7 +150,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjl22siut0005p0o0hxb0m411" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjl23rov50003xko0pk0qbm7s" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li></ul>
