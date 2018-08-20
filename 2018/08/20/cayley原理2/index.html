@@ -19,7 +19,7 @@
 <meta property="og:image" content="http://static.zybuluo.com/gzm1997/76y9vn6l45cx30d3w747rpy2/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820155549.png">
 <meta property="og:image" content="http://static.zybuluo.com/gzm1997/bamzi6zpilvq6sha5khhxro8/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162647.png">
 <meta property="og:image" content="http://static.zybuluo.com/gzm1997/2x1c3zt37b32j3u8st294mu5/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162145.png">
-<meta property="og:updated_time" content="2018-08-20T10:49:23.772Z">
+<meta property="og:updated_time" content="2018-08-20T11:05:11.171Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="cayley原理2">
 <meta name="twitter:description" content="cayley查询过程cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确  构造态射数组在cayley中的查询一般我们都是构造一个path结构体实例 例如查询从A出发 经过节点12 可以达到什么节点 p := cayley.StartPath(store, quad.String(&amp;quot;A&amp;quot;)).Out(quad.Int(12)) 上面的语句实质">
@@ -121,7 +121,7 @@
 <p>可以看到下面 随着态射一个一个被执行 我们的到的构造出来的shape也是变化的 每一次态射之后的到的shape都作为参数传入下一个被执行的态射函数 shape不断积累 不断拓张 最终形成我们需要的查询路径<br><img src="http://static.zybuluo.com/gzm1997/2x1c3zt37b32j3u8st294mu5/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162145.png" alt="微信图片_20180820162145.png-17.3kB"></p>
 <p>构造shape部分还包含了大量的shape优化 这部分复杂而内容很多 这里不展开</p>
 <hr>
-<h2 id="构造迭代器和迭代链链"><a href="#构造迭代器和迭代链链" class="headerlink" title="构造迭代器和迭代链链"></a>构造迭代器和迭代链链</h2><p><strong>Iterator迭代器</strong>这个概念我们可以理解只负责某一部分计算工作的组件 cayley的查询设计是由若干个迭代器<strong>嵌套</strong>或者<strong>依次排列</strong>组合成的 呈现一个<strong>分布式结构</strong> 组合成的最终迭代器叫做<strong>IterateChain迭代器链</strong></p>
+<h2 id="构造迭代器和迭代链"><a href="#构造迭代器和迭代链" class="headerlink" title="构造迭代器和迭代链"></a>构造迭代器和迭代链</h2><p><strong>Iterator迭代器</strong>这个概念我们可以理解只负责某一部分计算工作的组件 cayley的查询设计是由若干个迭代器<strong>嵌套</strong>或者<strong>依次排列</strong>组合成的 呈现一个<strong>分布式结构</strong> 组合成的最终迭代器叫做<strong>IterateChain迭代器链</strong> 跟上面的shape一样 迭代的种类也是多种多样的 在这个分布式结构中的迭代器种类也不是都是类型一样的 所以宏观上我们不必关系具体使用了何种迭代器</p>
 <p>cayley中对于迭代器的声明也是一个接口 在cayley中但凡实现了这个接口中所有方法的结构体我们都统称为迭代器Iterator</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Iterator <span class="keyword">interface</span> &#123;</span><br><span class="line">	String() <span class="keyword">string</span></span><br><span class="line">	Tagger() *Tagger</span><br><span class="line">	TagResults(<span class="keyword">map</span>[<span class="keyword">string</span>]Value)</span><br><span class="line">	Result() Value</span><br><span class="line">	Next(ctx context.Context) <span class="keyword">bool</span></span><br><span class="line">	NextPath(ctx context.Context) <span class="keyword">bool</span></span><br><span class="line">	Contains(ctx context.Context, v Value) <span class="keyword">bool</span></span><br><span class="line">	Err() error</span><br><span class="line">	Reset()</span><br><span class="line">	Clone() Iterator</span><br><span class="line">	Stats() IteratorStats</span><br><span class="line">	Size() (<span class="keyword">int64</span>, <span class="keyword">bool</span>)</span><br><span class="line">	Type() Type</span><br><span class="line">	Optimize() (Iterator, <span class="keyword">bool</span>)</span><br><span class="line">	SubIterators() []Iterator</span><br><span class="line">	Close() error</span><br><span class="line">	UID() <span class="keyword">uint64</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>上面最重要的迭代器方法就是</p>
@@ -150,7 +150,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjl25rzf50003bso04kp48pfv" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjl26ceqe0007xwo0sn1c7h85" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li></ul>
