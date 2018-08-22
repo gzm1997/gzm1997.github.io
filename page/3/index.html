@@ -62,6 +62,51 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-java-socket编程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/08/java-socket编程/" class="article-date">
+  <time datetime="2018-06-08T07:14:26.000Z" itemprop="datePublished">2018-06-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/08/java-socket编程/">java socket编程</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>java的socket编程跟python的很像 而且也很方便 简单记录一下 同时server那边的accept也是阻塞的</p>
+</blockquote>
+<p>connect函数可以在初始化一个socket对象之后 一般客户端可以用来链接服务端 但是如果在socket构造函数那里传入serverName和port 也是可以在初始化的时候进行连接的</p>
+<p>服务端<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.DataInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.DataOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.net.ServerSocket;</span><br><span class="line"><span class="keyword">import</span> java.net.Socket;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JServer</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> ServerSocket server;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">JServer</span><span class="params">(<span class="keyword">int</span> port)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        server = <span class="keyword">new</span> ServerSocket(port);</span><br><span class="line">        server.setSoTimeout(<span class="number">10000</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">"等待客户端连接"</span>);</span><br><span class="line">                Socket s = server.accept();</span><br><span class="line">                System.out.println(<span class="string">"远程连接地址 "</span> + s.getRemoteSocketAddress());</span><br><span class="line">                DataInputStream in = <span class="keyword">new</span> DataInputStream(s.getInputStream());</span><br><span class="line">                System.out.println(<span class="string">"接受数据"</span> + in.readUTF());</span><br><span class="line">                DataOutputStream out = <span class="keyword">new</span> DataOutputStream(s.getOutputStream());</span><br><span class="line">                out.writeUTF(<span class="string">"我接收到了 拜拜"</span>);</span><br><span class="line">                s.close();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException i) &#123;</span><br><span class="line">                i.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        JServer JS = <span class="keyword">new</span> JServer(<span class="number">5000</span>);</span><br><span class="line">        JS.run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>客户端<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.DataInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.DataOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.net.Socket;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JClient</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Socket client;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">JClient</span><span class="params">(String serverName, <span class="keyword">int</span> port)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        client = <span class="keyword">new</span> Socket(serverName, port);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">"现在开始连接服务端"</span>);</span><br><span class="line">            DataOutputStream out = <span class="keyword">new</span> DataOutputStream(client.getOutputStream());</span><br><span class="line">            out.writeUTF(<span class="string">"我是客户端 服务端你那边接收到我发的信息了没"</span>);</span><br><span class="line">            DataInputStream in = <span class="keyword">new</span> DataInputStream(client.getInputStream());</span><br><span class="line">            System.out.println(<span class="string">"从服务端接受到 "</span> + in.readUTF());</span><br><span class="line">            client.close();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException i) &#123;</span><br><span class="line">            i.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        JClient client = <span class="keyword">new</span> JClient(<span class="string">"127.0.0.1"</span>, <span class="number">5000</span>);</span><br><span class="line">        client.run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>结果<br><img src="http://static.zybuluo.com/gzm1997/wqhihdmobujgo1q0qhkowxzu/image_1cf7fbt5l1flia2gpmn1bp1328p.png" alt="image_1cf7fbt5l1flia2gpmn1bp1328p.png-192.9kB"><br><img src="http://static.zybuluo.com/gzm1997/n2xnec3oqf70wxtjzugqpfjs/image_1cf7fcgan62o1ict1n4lvbbda16.png" alt="image_1cf7fcgan62o1ict1n4lvbbda16.png-160.3kB"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cjl52f4c7000n5go0334w91lf" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/socket/">socket</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-java基础知识" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/06/04/java基础知识/" class="article-date">
@@ -296,7 +341,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjl26cere000nxwo03spox4w3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjl52f4cb000u5go02444dnvi" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -370,7 +415,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjl26cert000yxwo0dptj9520" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjl52f4ca000r5go06ojhccc8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/package/">package</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
@@ -441,7 +486,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cjl26cesi001dxwo09kswcz7t" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cjl52f4cn00195go0jrs22dzo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ORM/">ORM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
@@ -503,7 +548,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cjl26cept0001xwo0z7hyeyio" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cjl52f4f000465go05qhhhdx7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/backend/">backend</a></li></ul>
@@ -578,7 +623,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/22/自制简易图片云盘/" data-id="cjl26cesy001mxwo08iu0jsal" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/22/自制简易图片云盘/" data-id="cjl52f4el003z5go0jsd94c2f" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/git/">git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/image/">image</a></li></ul>
@@ -631,7 +676,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/16/sqlalchemy一些常见概念/" data-id="cjl26ces20014xwo04r3yz5nl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/16/sqlalchemy一些常见概念/" data-id="cjl52f4cf000y5go0i9cza4gb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li></ul>
@@ -749,7 +794,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cjl26cet1001oxwo0co8udm0f" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cjl52f4cv001l5go0g1nqicxr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
@@ -809,7 +854,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/" data-id="cjl26ces80018xwo064qbnchx" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/" data-id="cjl52f4cq001d5go0y3nbc9ew" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/requests/">requests</a></li></ul>
@@ -891,159 +936,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/上传和展示pdf以及markdown/" data-id="cjl26cesc001axwo0r0kp3jep" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/上传和展示pdf以及markdown/" data-id="cjl52f4cl00185go0rr308t4t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask/">flask</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-暗网爬虫" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/15/暗网爬虫/" class="article-date">
-  <time datetime="2018-05-15T14:54:11.000Z" itemprop="datePublished">2018-05-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/15/暗网爬虫/">暗网爬虫</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>暗网蜘蛛，本项目<a href="https://github.com/15331094/shadow_spider" target="_blank" rel="noopener">github地址</a></p>
-<hr>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/spider.jpg?raw=true" alt="shadow_spider"></p>
-<hr>
-<p>暗网</p>
-<blockquote>
-<p>暗网（英语：Darknet或Dark Web）通称只能用特殊软件、特殊授权、或对电脑做特殊设置才能连上的网络，使用一般的浏览器和搜索引擎找不到暗网的内容</p>
-</blockquote>
-<hr>
-<h2 id="在python上进入暗网"><a href="#在python上进入暗网" class="headerlink" title="在python上进入暗网"></a>在python上进入暗网</h2><hr>
-<p>在python中进入暗网需要配置tor代理，因为本人使用的win10，所以主要讲在win10下配置tor代理</p>
-<hr>
-<p><strong>下载准备</strong>：（除了下载给出的下载链接，本人此项目github也提供相关资源下载 <a href="https://github.com/15331094/shadow_spider/tree/master/resources" target="_blank" rel="noopener">下载链接</a>）</p>
-<ol>
-<li><p>首先下载tor expert bundle<br>官方下载<a href="https://www.torproject.org/download/download" target="_blank" rel="noopener">链接</a><br>本人提供的百度云<a href="http://pan.baidu.com/s/1eRNpqa2" target="_blank" rel="noopener">链接</a>，密码: fsp8<br>下载解压</p>
-</li>
-<li><p>下载到的tor expert bundle没有图形界面，使用起来不方便，因此需要下载Vidalia配合使用<br>本人提供的百度云<a href="http://pan.baidu.com/s/1bOdr6e" target="_blank" rel="noopener">链接</a>，密码: kknf</p>
-</li>
-<li><p>cow下载，百度云<a href="http://pan.baidu.com/s/1c1QHf1m" target="_blank" rel="noopener">连接</a>，密码: c4kx。<br>由于tor使用的协议是socks5，由于需要python的<strong>requests</strong>和<strong>selenium</strong>两个模块进行get， post请求。但是经过本人尝试，requests对socks5协议代理支持是很不良好的，使用requests加上socks5协议代理去get类似于 <a href="https://api.ipify.org/?format=json" target="_blank" rel="noopener">https://api.ipify.org/?format=json</a> 这样查询ip的url是没有问题的，但是去get其他url或者暗网的url马上会出现莫名其妙的错误。所以需要使用cow把tor的socks5协议转为http协议</p>
-</li>
-</ol>
-<hr>
-<p><strong>配置</strong></p>
-<hr>
-<p>我们要配置上面下载到的工具，使得我们的代理路线如下：<br><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/net.png?raw=true" alt="net"><br>1,解压下载下来的tor expert bundle</p>
-<p>2,开启你的vpn，本人使用的green vpn，socks5协议，监听1080端口</p>
-<p>3,安装vidalia，安装后如图所示：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/vidalia.png?raw=true" alt="vidalia"></p>
-<p>然后以<strong>管理员身份</strong>运行Start Vidalia.exe</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/vidalia%20run.png?raw=true" alt="vidalia run"></p>
-<p>点击设定，在常规那里选中vidalia启动时运行tor软件，并在下面的路径中找到解压tor expert bundle后得到的tor.exe</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/setting1.png?raw=true" alt="setting1"></p>
-<p>点击网络，选中我使用代理服务器连接网络，由于本人使用的green vpn是监听本地的1080端口，所以地址写为：127.0.0.1，端口写为：1080（貌似shadowsocks等vpn也是监听本地1080端口）</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/setting2.png?raw=true" alt="setting2"></p>
-<p>点击高级，在tor配置文件下选中vidalia安装后得到的Data/Tor/torrc文件，在数据目录那里选中Data文件夹（貌似我是多余地自己另外创建了一个Data文件夹给它，但是并不影响，有一个Data文件夹给vidalia存储数据就可以了）</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/setting3.png?raw=true" alt="setting3"></p>
-<p>点击确认</p>
-<p>点击启动tor</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/run.png?raw=true" alt="run"></p>
-<p>稍等片刻，显示连接tor网络成功！</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/connect.png?raw=true" alt="connect"></p>
-<p>因为需要在requests模块上使用tor代理而requests模块对socks5支持非常不良好，所以我们需要配置cow把socks5转为http<br>打开解压后的cow目录：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/cow.png?raw=true" alt="cow"></p>
-<p>修改rc.txt内容为如下：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/rc.png?raw=true" alt="rc"></p>
-<p>点击运行cow.exe或者点击cow-hide.exe后台运行</p>
-<hr>
-<p><strong>在python中使用tor代理</strong></p>
-<hr>
-<p>再次重申上面配置好的代理结构：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/net.png?raw=true" alt="net"></p>
-<p>能否正常使用tor代理一个很好的检验方法就是能否<strong>进入暗网</strong>，这是一个收集了很多暗网url的网站：<a href="https://onionlinks.org/" target="_blank" rel="noopener">https://onionlinks.org/</a></p>
-<p>我给出一个暗网url:<strong><a href="http://hcutffpecnc44vef.onion/" target="_blank" rel="noopener">http://hcutffpecnc44vef.onion/</a></strong><br>这是一个暗网的金融网站，普通的上网方式是打不开的，作为一个大哥哥，真心建议18-的小朋友还是不要去看暗网一些其他内容，为了你的身心健康。那下面的测试就是在python中进入这个暗网url为检验标准。</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/cash%20machine.png?raw=true" alt="cash machine"></p>
-<p><em>在requests中进入暗网</em>：<br>新建一个test.py,输入以下内容：</p>
-<pre><code>import requests
-proxies = {&apos;http&apos;: &apos;http://127.0.0.1:7777&apos;, &apos;https&apos;: &apos;http://127.0.0.1:7777&apos;}
-s = requests.Session()
-r = s.get(&quot;http://hcutffpecnc44vef.onion/&quot;, proxies = proxies)
-print(r.text)
-f = open(&quot;onion.html&quot;, &quot;wb&quot;)
-f.write(r.content)
-f.close()
-</code></pre><p>运行，发现可以打印这个暗网网页的内容出来了：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/run%20test.png?raw=true" alt="run test"></p>
-<p>打开test.py同一目录下，生成了一个onion.html的文件，点开，发现把内容也下载下来了：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/get.png?raw=true" alt="get"></p>
-<p><em>在python的selenium模块的模拟浏览器phantomjs中进入暗网</em><br>selenium有三种，chrome，firefox，phantomjs，前两种有图形界面，第三种没有图形界面，所以我选中phantomjs</p>
-<p>phantomjs下载：<br>本人github上的下载<a href="https://github.com/15331094/shadow_spider/blob/master/resources/phantomjs-2.1.1-windows.zip" target="_blank" rel="noopener">下载链接</a><br>本人百度云<a href="http://pan.baidu.com/s/1eSxNa86" target="_blank" rel="noopener">下载链接</a>，密码: pj81</p>
-<p>这次我们选择另一个暗网url:<a href="http://zqktlwi4fecvo6ri.onion/wiki/index.php/Main_Page" target="_blank" rel="noopener">http://zqktlwi4fecvo6ri.onion/wiki/index.php/Main_Page</a><br>这是一个暗网wiki，上面有很多分类好的暗网url,各位要谨慎点开那些url，因为不少内容不健康的。<br>下载phantomjs解压，新建一个test2.py文件(下面的executable_path是上面下载解压phantomjs得到的phantomjs.exe运行文件的路径)</p>
-<pre><code>from selenium import webdriver
-
-executable_path = &quot;C:/Users/Administrator/Downloads/phantomjs-2.1.1-windows/phantomjs-2.1.1-windows/bin/phantomjs.exe&quot;
-service_args = [&apos;--proxy=127.0.0.1:7777&apos;, &apos;--proxy-type=http&apos;]
-
-driver = webdriver.PhantomJS(executable_path = executable_path, service_args = service_args)
-
-driver.get(&quot;http://zqktlwi4fecvo6ri.onion/wiki/index.php/Main_Page&quot;)
-
-print(driver.page_source)
-
-f = open(&quot;onion.html&quot;, &quot;wb&quot;)
-f.write(driver.page_source.encode(&quot;utf-8&quot;))
-f.close()
-</code></pre><p>结果也可行：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/run%20test2.png?raw=true" alt="run test2"><br><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/wiki.png?raw=true" alt="wiki"></p>
-<hr>
-<h2 id="本人的shadow-spider项目（未完待续）"><a href="#本人的shadow-spider项目（未完待续）" class="headerlink" title="本人的shadow_spider项目（未完待续）"></a>本人的shadow_spider项目（未完待续）</h2><hr>
-<p>项目<a href="https://github.com/15331094/shadow_spider" target="_blank" rel="noopener">github地址</a><br>本项目目的在于最大程度还原暗网上网页的内容，这就意味着需要：</p>
-<p>注意要点：</p>
-<ul>
-<li>下载html</li>
-<li>在下载html之前必须加载javascript。因为javascript里面会有ajax，如果把javascript下载下来，而不是加载完javascript再下载html，那么下载到本地ajax向tor网络（暗网）中的服务器发送网络请求，这是行不通的。所以必须加载完javascript再下载html（网上有人说暗网上的网页都没有javascript，但是经本人尝试，暗网上的网页是有javascript的）。而python里加载javascript一个很好的工具就是上面的selenium</li>
-<li>下载css和图片等静态资源，需要使用requests模块，不能使用selenium。selenium下载图片和css等资源是很蛋疼的。因为这些模拟浏览器要下载资源就必须做到模仿我们在真的浏览器上那样右键另存为等操作，而这时候会弹出下载确认的弹窗，而selenium中的chrome和firefox是需要手动点击代码运行过程中弹出来的确认保存弹窗的，而phantomjs没有图形界面，所以就根本下载不图片和css等资源。</li>
-</ul>
-<p>代码细节不详细说了，在我的<a href="https://github.com/15331094/shadow_spider" target="_blank" rel="noopener">github</a>中下载到本地，输入：</p>
-<pre><code>pip install -r requirements.txt
-</code></pre><p>安装需要的响应模块</p>
-<p>运行main.py文件，输入一个暗网url:</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/run%20main.png?raw=true" alt="run main"></p>
-<p>下载到本地的结果：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/result.png?raw=true" alt="result"></p>
-<p>下面是一些暗网网页真实模样和我还原的样子：<br>真实1：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/real1.png?raw=true" alt="real1"></p>
-<p>还原1：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/imitate1.png?raw=true" alt="imitate1"></p>
-<p>真实2：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/real2.png?raw=true" alt="real2"></p>
-<p>还原2：</p>
-<p><img src="https://github.com/15331094/shadow_spider/blob/master/screenshots/imitate2.png?raw=true" alt="imitate2"></p>
-<p>此项目shadow_spider未完待续，等到暑假回考虑添加服务端。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/暗网爬虫/" data-id="cjl26cesw001lxwo04ase36co" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deep-web/">deep web</a></li></ul>
 
     </footer>
   </div>
@@ -1070,7 +966,7 @@ f.close()
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -1080,7 +976,7 @@ f.close()
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -1102,6 +998,10 @@ f.close()
       <ul>
         
           <li>
+            <a href="/2018/08/22/goroutine与工作池/">goroutine与工作池</a>
+          </li>
+        
+          <li>
             <a href="/2018/08/20/cayley原理2/">cayley原理2</a>
           </li>
         
@@ -1115,10 +1015,6 @@ f.close()
         
           <li>
             <a href="/2018/08/08/使用rabbitMQ作为缓存队列/">使用rabbitMQ作为缓存队列</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/06/mux学习/">mux学习</a>
           </li>
         
       </ul>

@@ -62,6 +62,83 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-goroutine与工作池" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/22/goroutine与工作池/" class="article-date">
+  <time datetime="2018-08-22T11:38:11.000Z" itemprop="datePublished">2018-08-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/22/goroutine与工作池/">goroutine与工作池</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://github.com/gzm1997/workerPool" target="_blank" rel="noopener">github地址</a></p>
+<hr>
+<h2 id="背景描述"><a href="#背景描述" class="headerlink" title="背景描述"></a>背景描述</h2><p>我们在使用go的时候 特别是面对并发的情况下 经常需要使用多线程 goroutine可以用来解决这个问题 一个goroutine解决一个线程的问题 但是我们要知道一个系统的<strong>最大线程数</strong>是有限的 大到这个限制 那么线程数量就不会增加了 更重要的是 线程太多的时候 CPU需要在线程之间频繁地切换 切换过于频繁也会导致CPU的<strong>使用率</strong>下降的 所以我们是有必要限制在这种情况下的<strong>线程数量</strong></p>
+<hr>
+<h2 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h2><p>网上的一个方案就是设置工作池或者说线程池 我们从工作队列中获取工作之后只可以从这个工作池中获取一个可用的线程 然后执行工作 工作池中我们其实存的是并不是线程 而是用来传输工作的管道 我们通过限制在工作池中的管道的数量 从工作队列中获取的工作只可以被从工作池中获取出来的一条管道传输到另一边 然后在那边就行处理 这样就可以限制了线程的数量(以上思路和下面图片皆来自CSDN博主)</p>
+<p><img src="http://static.zybuluo.com/gzm1997/rl41bhe4usmqigg88e7qqy5x/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180822185246.png" alt="微信图片_20180822185246.png-34.8kB"></p>
+<p>那么有个问题是怎么限制上面所说的工作池中任务管道的数量呢？<br>其实我们可以将<strong>工作池本身就定义为一个管道</strong> 然后将限定数量的工作管道传输进这个工作池大管道中 然后所有的任务从任务队列中取出之后 都需要从工作池大管道中获取一个工作管道 然后通过这个工作管道将工作传输过去 让那边完成这个工作 完成工作之后再将这个工作管道发送回工作池管道 等待下一次被取出</p>
+<hr>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>顶一个Task接口 里面有个完成这个工作的方法DoTask 所以的任务都需要实现这接口<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Task <span class="keyword">interface</span> &#123;</span><br><span class="line">	DoTask() error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>具体定义了一种任务的结构体 实现了Task这个接口<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> ItTask <span class="keyword">struct</span> &#123;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t ItTask)</span> <span class="title">DoTask</span><span class="params">()</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"a task is finished"</span>)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们需要定义一个传输工作的管道类型</p>
+<pre><code>// 用来传输任务的管道
+type TaskChan chan Task
+</code></pre><p>像上面所说 我们把工作池也设计为一个管道</p>
+<pre><code>// 用来传输 传输任务的管道(就是上面那个) 的管道
+type PoolChan chan TaskChan
+</code></pre><p>然后我们需要两个全局变量</p>
+<ul>
+<li>缓存我们所有有待完成的工作的一个管道</li>
+<li>工作池大管道</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> (</span><br><span class="line">	AllTaskQueue TaskChan</span><br><span class="line">	TaskPool PoolChan</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	AllTaskQueue = <span class="built_in">make</span>(TaskChan)</span><br><span class="line">	TaskPool = <span class="built_in">make</span>(PoolChan)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面开始我忘记了再init函数中对这两个公有变量进行初始化了 导致后面一开始使用这两个管道发送和接受信息一致没反应 但是也不报错 很坑爹 我觉得是因为公有变量如果没有被初始化 是不可以用来传输信息的 但是这种情况是不会报错的</p>
+<p>然后我们需要将上面用来传输进一步封装 其实不封装也可以 主要是给给我们这个传输任务的管道加一个quit管道 以应道需要中途中断我们的任务</p>
+<pre><code>type Worker struct {
+    Todo TaskChan
+    quit chan bool
+}
+</code></pre><p>给Worker定义一个启动函数 这个函数将我们这个任务管道Todo发送给工作池管道TaskPool 然后等待这个工作管道中发送来新的工作任务 完成这个任务 并且重新将这个任务管道发送回工作池管道中<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w Worker)</span> <span class="title">Start</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">for</span> &#123;</span><br><span class="line">			TaskPool &lt;- w.Todo</span><br><span class="line">			<span class="keyword">select</span> &#123;</span><br><span class="line">			<span class="keyword">case</span> task := &lt;-w.Todo:</span><br><span class="line">				<span class="keyword">if</span> err := task.DoTask(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">					fmt.Println(<span class="string">"task fail"</span>)</span><br><span class="line">				&#125;</span><br><span class="line">			<span class="keyword">case</span> &lt;-w.quit:</span><br><span class="line">				<span class="keyword">return</span></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;()</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//产生一个新的worker</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewWorker</span><span class="params">()</span> *<span class="title">Worker</span></span> &#123;</span><br><span class="line">	w := &amp;Worker&#123;&#125;</span><br><span class="line">	w.Todo = <span class="built_in">make</span>(TaskChan)</span><br><span class="line">	w.quit = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">bool</span>)</span><br><span class="line">	<span class="keyword">return</span> w</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>此外我们还需要顶一个分发器<br>分发器中含有两个重要字段 一个数可用的worker指针数组(其实相当于是任务管道数组) 另一个也是一个quit管道 用来接收暂停的信号</p>
+<pre><code>type Dispatcher struct {
+    AvailableWorkers []*Worker
+    Quit chan bool
+}
+</code></pre><p>同时我们也需要声明一个分发器运行函数 这个函数首先需要声明限定数量的worker 然后将这些worker中的任务管道发送到公有变量 那个工作池管道中 然后每个worker中的任务管道等到传送过来的消息 并且进行处理</p>
+<p>第二部分需要做的就是监听任务队列AllTaskQueue这个管道看看有没有新的任务被发送过来 一旦检测到 从工作池管道中获取一个任务管道 并且将这个任务从这个工作管道中传输过去</p>
+<p>main函数中要做的事情就很简单了 一个就是运行一个分发器 一个是多线程地制造多个任务 然后阻塞地等待任务呗接受和完成<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	dis := pool.Dispatcher&#123;&#125;</span><br><span class="line">	forever := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">bool</span>)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		dis.Run()</span><br><span class="line">	&#125;()</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			t := pool.ItTask&#123;&#125;</span><br><span class="line">			pool.AllTaskQueue &lt;- t</span><br><span class="line">		&#125;()</span><br><span class="line">	&#125;</span><br><span class="line">	&lt;- forever</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>运行结果<br><img src="http://static.zybuluo.com/gzm1997/82n1peoq3l5hd7h0oghzf3wi/image_1clgm6h5upf4qto1d8ovfiuue15.png" alt="image_1clgm6h5upf4qto1d8ovfiuue15.png-23.9kB"></p>
+<p>完整的源代码可以看我<a href="https://github.com/gzm1997/workerPool" target="_blank" rel="noopener">github地址</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjl52f4bi00095go0k48ped34" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/线程/">线程</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cayley原理2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/08/20/cayley原理2/" class="article-date">
@@ -142,7 +219,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjl26ceqe0007xwo0sn1c7h85" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjl52f4b400035go0z9dvb0yy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li></ul>
@@ -196,7 +273,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/15/cayley原理一-获取查询结果/" data-id="cjl26ceqh0008xwo0paf8swvj" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/15/cayley原理一-获取查询结果/" data-id="cjl52f4b900055go0mbclaxmw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
@@ -294,7 +371,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/09/图数据库跟传统数据库以及图算法/" data-id="cjl26cesq001hxwo0vis5f1or" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/09/图数据库跟传统数据库以及图算法/" data-id="cjl52f4cr001g5go00ujh9m2h" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图算法/">图算法</a></li></ul>
@@ -405,7 +482,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/08/使用rabbitMQ作为缓存队列/" data-id="cjl26cesg001cxwo02fb7eiu6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/08/使用rabbitMQ作为缓存队列/" data-id="cjl52f4cj00155go0sror8ufl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li></ul>
@@ -503,7 +580,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/mux学习/" data-id="cjl26cerj000sxwo02u8ehb84" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/mux学习/" data-id="cjl52f4c8000p5go06s3a3l69" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mux/">mux</a></li></ul>
@@ -563,7 +640,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/go-web/" data-id="cjl26cer1000gxwo0j8enidpi" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/go-web/" data-id="cjl52f4bo000d5go0lq8sgi7n" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web/">web</a></li></ul>
@@ -680,7 +757,7 @@ wg.Add(5)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/go多线程/" data-id="cjl26cer5000ixwo0d64gcwqw" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/go多线程/" data-id="cjl52f4bu000h5go05w0p2eh6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/多线程/">多线程</a></li></ul>
@@ -805,7 +882,7 @@ wg.Add(5)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/go注意要点/" data-id="cjl26cer8000jxwo09iiv8p4n" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/go注意要点/" data-id="cjl52f4bt000f5go0a1zbfhlx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
@@ -861,212 +938,10 @@ wg.Add(5)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/mongodb入门/" data-id="cjl26cerh000qxwo0c68yktey" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/mongodb入门/" data-id="cjl52f4by000k5go08z4a8u6k" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/database/">database</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mongodb/">mongodb</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-dgraph图数据库" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/08/06/dgraph图数据库/" class="article-date">
-  <time datetime="2018-08-06T08:14:45.000Z" itemprop="datePublished">2018-08-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/06/dgraph图数据库/">dgraph图数据库</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="schema"><a href="#schema" class="headerlink" title="schema"></a>schema</h2><p>dgraph的节点分为两类</p>
-<ol>
-<li>node节点</li>
-<li>value字面量</li>
-</ol>
-<p>例如：</p>
-<ul>
-<li>a b是两个人 </li>
-<li>a friend b </li>
-<li>a age 12</li>
-</ul>
-<p>那么a b是两个节点 12是字面量 那么friend跟age都是谓语 friend指向b b是一个node age指向12 12是一个字面量 那么谓语所处的边为什么有时候指向一个node 有时候指向一个字面量呢 这就是由模式所定义的 或者说<strong>模式就是边的定义或者说模式就是谓语的定义</strong></p>
-<p>1.添加模式</p>
-<p>当我们项添加数据到已有的模式中 我们可以直接添加 但是我们需要添加新数据到还没有存在模式中的时候 可以有两种方式</p>
-<ul>
-<li>直接添加数据 让Dgraph自己找出其中的模式</li>
-<li>先添加一个新的模式 然后添加数据</li>
-</ul>
-<p>在模式中我们需要定义索引 因为dgraph的函数跟filter过滤器都是只可以应用于添加了索引的谓语 不在模式中添加索引的话 那么各种查询进行不了</p>
-<p><img src="http://static.zybuluo.com/gzm1997/fisnujzgm8a92yqmer8dy9h9/image_1ci6k5u3ir3810kr17jd1641jud40.png" alt="image_1ci6k5u3ir3810kr17jd1641jud40.png-28.8kB"></p>
-<p>2.查询模式<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">schema(pred: [name, age, friend, owns_pet]) &#123;</span><br><span class="line">  <span class="keyword">type</span></span><br><span class="line">  index</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>输出 很显然下面的输出都是按照谓语一个一个输出这个谓语指向的那个的类型(是node还是字面量) 以及是否具有索引 如果为false就不输出<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"data"</span>: &#123;</span><br><span class="line">    <span class="string">"schema"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="string">"predicate"</span>: <span class="string">"age"</span>,</span><br><span class="line">        <span class="string">"type"</span>: <span class="string">"int"</span>,</span><br><span class="line">        <span class="string">"index"</span>: <span class="literal">true</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="string">"predicate"</span>: <span class="string">"friend"</span>,</span><br><span class="line">        <span class="string">"type"</span>: <span class="string">"uid"</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="string">"predicate"</span>: <span class="string">"name"</span>,</span><br><span class="line">        <span class="string">"type"</span>: <span class="string">"string"</span>,</span><br><span class="line">        <span class="string">"index"</span>: <span class="literal">true</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="string">"predicate"</span>: <span class="string">"owns_pet"</span>,</span><br><span class="line">        <span class="string">"type"</span>: <span class="string">"uid"</span></span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"extensions"</span>: &#123;</span><br><span class="line">    <span class="string">"server_latency"</span>: &#123;</span><br><span class="line">      <span class="string">"encoding_ns"</span>: <span class="number">1000000</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"txn"</span>: &#123;</span><br><span class="line">      <span class="string">"start_ts"</span>: <span class="number">20</span>,</span><br><span class="line">      <span class="string">"lin_read"</span>: &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="dgraph支持的数据类型"><a href="#dgraph支持的数据类型" class="headerlink" title="dgraph支持的数据类型"></a>dgraph支持的数据类型</h2><ul>
-<li>int 有符号64位整数</li>
-<li>float 双精度浮点数</li>
-<li>string 字符串</li>
-<li>bool 布尔值</li>
-<li>id id是以字符串的形式进行存储的</li>
-<li>dateTime 时间</li>
-<li>geo 几何体</li>
-</ul>
-<hr>
-<h2 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h2><p>dgraph是使用utf-8进行编码的 一些谓语也是使用字符串来存储的 可以在加上语言标签来定义是什么语言</p>
-<p>节点加上语言标签进行声明</p>
-<pre><code>&quot;Amit&quot;@en
-</code></pre><p>Amit这个名字是英文</p>
-<p>多个语言匹配</p>
-<pre><code>@lang1:...:langN
-</code></pre><p>上面这个语法的特点</p>
-<ul>
-<li>最多只有一个结果返回</li>
-<li>如果有结果出现在这个语言列表中 那么最左边那部分的匹配结果都会被返回</li>
-<li>如果没有结果匹配就没有返回 但是如果最后时以<strong>.</strong>为结尾的话例外 <strong>.</strong>以为着什么语言都行 匹配上了就可以返回</li>
-</ul>
-<p>使用语言pipei匹配来查询一个人的朋友他的朋友名字各种语言都有<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  language_support(func: allofterms(name@hi, "अमित")) &#123;</span><br><span class="line">    name@bn:hi:en</span><br><span class="line">    age</span><br><span class="line">    friend &#123;</span><br><span class="line">      name@ko:ru:.</span><br><span class="line">      age</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>输出<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"data"</span>: &#123;</span><br><span class="line">    <span class="string">"language_support"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="string">"name@bn:hi:en"</span>: <span class="string">"অমিত"</span>,</span><br><span class="line">        <span class="string">"age"</span>: <span class="number">35</span>,</span><br><span class="line">        <span class="string">"friend"</span>: [</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="string">"name@ko:ru:."</span>: <span class="string">"Michael"</span>,</span><br><span class="line">            <span class="string">"age"</span>: <span class="number">39</span></span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="string">"name@ko:ru:."</span>: <span class="string">"상현"</span>,</span><br><span class="line">            <span class="string">"age"</span>: <span class="number">24</span></span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="string">"name@ko:ru:."</span>: <span class="string">"Артём"</span>,</span><br><span class="line">            <span class="string">"age"</span>: <span class="number">35</span></span><br><span class="line">          &#125;</span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"extensions"</span>: &#123;</span><br><span class="line">    <span class="string">"server_latency"</span>: &#123;</span><br><span class="line">      <span class="string">"encoding_ns"</span>: <span class="number">1000000</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"txn"</span>: &#123;</span><br><span class="line">      <span class="string">"start_ts"</span>: <span class="number">58</span>,</span><br><span class="line">      <span class="string">"lin_read"</span>: &#123;</span><br><span class="line">        <span class="string">"ids"</span>: &#123;</span><br><span class="line">          <span class="string">"1"</span>: <span class="number">6</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="查询格式"><a href="#查询格式" class="headerlink" title="查询格式"></a>查询格式</h2><p>其实上面的查询语句一直都是有规矩可循的 但是一直没有注意到</p>
-<p>之前我们说到dgraph有两种节点</p>
-<ul>
-<li>node节点</li>
-<li>value字面量</li>
-</ul>
-<p>常见的两种形式<br><img src="http://static.zybuluo.com/gzm1997/rorcsu8jb8n9hrqa1znqow2z/image_1ci68dk4oo2r1gn4c3qpga18d152.png" alt="image_1ci68dk4oo2r1gn4c3qpga18d152.png-10.3kB"></p>
-<p><strong>谓语不属于节点</strong></p>
-<p>在查询上</p>
-<ul>
-<li>字面量的查询只需要把字面量的名称写入即可</li>
-<li>node节点的查询需要把指向它的谓语和它的名称一起写入</li>
-</ul>
-<p>如下 查询Michael的字面量: name age (这些都是他指向的字面量) 以及他的朋友(他的朋友就是他指向的节点) </p>
-<p><img src="http://static.zybuluo.com/gzm1997/wtcp6mmcbie8wb8zkxfut0gl/image_1ci6539gh1jp8kvq1aj9j5610hl9.png" alt="image_1ci6539gh1jp8kvq1aj9j5610hl9.png-29.5kB"></p>
-<p>所以我们要进一步查询Michael的朋友的宠物 只要在上面的查询语句稍加修改即可<br><img src="http://static.zybuluo.com/gzm1997/69yxxh15cetx2ihcmlx8o71y/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180712103548.png" alt="微信图片_20180712103548.png-20.7kB"></p>
-<hr>
-<h2 id="过滤器"><a href="#过滤器" class="headerlink" title="过滤器"></a>过滤器</h2><p>常见过滤器</p>
-<p>1.节点上的过滤器</p>
-<pre><code>allOfTerms(node_name, &quot;term1 ... termN&quot;)
-</code></pre><p>节点的名字含有给出的所有单词</p>
-<pre><code>anyOfTerms(node_name, &quot;term1 ... termN&quot;)
-</code></pre><p>节点的名字函数给出的单词列表中的任意一个单词</p>
-<p>2.边上的过滤器<br>边上的过滤器可以应用到<strong>int</strong> <strong>float</strong> <strong>string</strong> <strong>date</strong>类型的边上</p>
-<ul>
-<li>eq(edge_name, value) 等于</li>
-<li>ge(edge_name, value) 大于等于</li>
-<li>le(edge_name, value) 小于等于</li>
-<li>gt(edge_name, value) 大于</li>
-<li>lt(edge_name, value) 小于等于</li>
-</ul>
-<p><img src="http://static.zybuluo.com/gzm1997/cn452n8j541r3msayslw18j4/image_1ci698cfo30h1pi9cot8uh15ut5f.png" alt="image_1ci698cfo30h1pi9cot8uh15ut5f.png-25.5kB"></p>
-<p>过滤器上可以使用逻辑<strong>AND</strong> <strong>OR</strong> <strong>NOT</strong>将过滤条件联合起来</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  michael_friends_and(func: allofterms(name, "Michael")) &#123;</span><br><span class="line">    name</span><br><span class="line">    age</span><br><span class="line">    friend @filter(ge(age, <span class="number">27</span>) AND le(age, <span class="number">48</span>)) &#123;</span><br><span class="line">      name@.</span><br><span class="line">      age</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="排序"><a href="#排序" class="headerlink" title="排序"></a>排序</h2><p>可以使用下面两个关键字进行排序</p>
-<ul>
-<li>orderasc 从小到大排序</li>
-<li>orderdesc 从大到小排序</li>
-</ul>
-<p>注意 排序只是在返回的json对象上有效果 在UI的可视化上是没效果的</p>
-<p><img src="http://static.zybuluo.com/gzm1997/24e2cm0c8qdfd9236m1gs4y2/image_1ci69hu24163uvv11q8f1a0eih15s.png" alt="image_1ci69hu24163uvv11q8f1a0eih15s.png-22.3kB"></p>
-<hr>
-<h2 id="分页"><a href="#分页" class="headerlink" title="分页"></a>分页</h2><ul>
-<li>first: N 只返回前N个结果</li>
-<li>offset: N 跳过前N个结果</li>
-<li>after: uid 返回在这个uid后面的结果</li>
-</ul>
-<p><img src="http://static.zybuluo.com/gzm1997/fu3k396pmpu8hokxr3fdam20/image_1ci6a1bp71l331f50jcsd7d189f79.png" alt="image_1ci6a1bp71l331f50jcsd7d189f79.png-20kB"></p>
-<hr>
-<h2 id="count"><a href="#count" class="headerlink" title="count"></a>count</h2><p>dgraph的count用起来挺方便<br><img src="http://static.zybuluo.com/gzm1997/z5upyy070wblph8bctsxo9xc/image_1ci6a8vhm1gcv1bf0sfikeh1csk7m.png" alt="image_1ci6a8vhm1gcv1bf0sfikeh1csk7m.png-13.8kB"></p>
-<hr>
-<h2 id="根节点"><a href="#根节点" class="headerlink" title="根节点"></a>根节点</h2><p>因为有时候dgraph的图非常大 那么从所有节点开始搜索是很低效的 那么根节点的概念就出现了 从根节点开始搜索</p>
-<p>在根节点处 我们是使用<strong>func:</strong>和一个函数来找到一个初始化的节点集合</p>
-<p>但是root节点的那个函数func是不可以接受and or not那些逻辑操作的 所以如果需要在根节点处加上这些逻辑操作需要在后面自己加一个filter过滤器</p>
-<p><img src="http://static.zybuluo.com/gzm1997/ba0m0nuutqeocrps2iyi2dn3/image_1ci6e87bj1dr3lmjcotgm7aci83.png" alt="image_1ci6e87bj1dr3lmjcotgm7aci83.png-18.9kB"></p>
-<hr>
-<h2 id="根据谓语-边-查询"><a href="#根据谓语-边-查询" class="headerlink" title="根据谓语(边)查询"></a>根据谓语(边)查询</h2><p><img src="http://static.zybuluo.com/gzm1997/svb0a8r4coju46dtfprido4d/image_1ci6hoimm59ufol1nmu125u1snj8g.png" alt="image_1ci6hoimm59ufol1nmu125u1snj8g.png-17.2kB"></p>
-<hr>
-<h2 id="alias别名"><a href="#alias别名" class="headerlink" title="alias别名"></a>alias别名</h2><p>别名可以用于设置返回的json对象中key的名字 改成自己想要设置成的别名<br><img src="http://static.zybuluo.com/gzm1997/5jv13au0dcixqeoo2gv2r7z8/image_1ci6hs52rbcl10hj1s3kbd95m58t.png" alt="image_1ci6hs52rbcl10hj1s3kbd95m58t.png-20kB"></p>
-<hr>
-<h2 id="级联cascade指令"><a href="#级联cascade指令" class="headerlink" title="级联cascade指令"></a>级联cascade指令</h2><p>级联的概念开始真的是有点难以理解 举个例子就容易多了</p>
-<p><img src="http://static.zybuluo.com/gzm1997/mhamq6mzzvrtq4ae6onrc0iw/image_1ci6iv71ofb6jfdmlp1rasfjt9.png" alt="image_1ci6iv71ofb6jfdmlp1rasfjt9.png-15.1kB"><br>上面的查询是查询Michael年纪大于等于70的朋友 Michael有年纪大于等于70的朋友就直接返回在friend的列表里 <strong>如果没有那么friend一项就直接为空</strong></p>
-<p>但是加上@cascade之后效果就不一样了<br><img src="http://static.zybuluo.com/gzm1997/qixfxkm4fcuqaq6xnn24c5ww/image_1ci6j4lgv16r38pugr4ll91isl1m.png" alt="image_1ci6j4lgv16r38pugr4ll91isl1m.png-51.3kB"></p>
-<p>上面加上了@cascade之后 如果Michael如果有年纪大于鞥与70的朋友那么Michael跟她的朋友一起在返回的结果里面 但是如果没有 那么连Michael也不返回</p>
-<p><strong>因为级联就相当于强行的逻辑与</strong>如果后面的节点不满足要求 那么前面已经满足匹配的节点也不会被返回</p>
-<hr>
-<h2 id="normal指令"><a href="#normal指令" class="headerlink" title="normal指令"></a>normal指令</h2><p>@normalize指令</p>
-<ul>
-<li>只返回带有别名的节点</li>
-<li>把结果扁平化 去除嵌套</li>
-</ul>
-<p><img src="http://static.zybuluo.com/gzm1997/xepaf2wqksmiq3ap5cyulypb/image_1ci6jhmbl1ptpu9k130n1ot71q5p33.png" alt="image_1ci6jhmbl1ptpu9k130n1ot71q5p33.png-52.2kB"></p>
-<hr>
-<h2 id="数据突变"><a href="#数据突变" class="headerlink" title="数据突变"></a>数据突变</h2><p>数据突变就是修改存储在Dgraph中的图结构<br><img src="http://static.zybuluo.com/gzm1997/h8103gfh9kvczvome1h3v7ii/image_1ci6knlvgq8l1tnb1fif1qiddev5d.png" alt="image_1ci6knlvgq8l1tnb1fif1qiddev5d.png-81.9kB"></p>
-<hr>
-<h2 id="External-Identifiers外部标识符"><a href="#External-Identifiers外部标识符" class="headerlink" title="External Identifiers外部标识符"></a>External Identifiers外部标识符</h2><p>Dgraph是不支持为node设置外部标记符的 所以如果开发人员希望为节点添加一个外部标记符 那么需要自己添加一条边作为外部标记符</p>
-<hr>
-<h2 id="语言支持"><a href="#语言支持" class="headerlink" title="语言支持"></a>语言支持</h2><p>这个语言标记上面已经减了很多次了 其中中文的标志使用以下来标志</p>
-<pre><code>_:myID &lt;an_edge&gt; &quot;某物&quot;@zh-Hans .
-</code></pre><hr>
-<h2 id="反向边"><a href="#反向边" class="headerlink" title="反向边"></a>反向边</h2><p>边是有向的一个查询是不可以反向遍历的 有两种方式可以双向进行查询</p>
-<ul>
-<li>添加反向边到模式中 添加所有的反向边数据</li>
-<li>在模式中使用@reverse关键字告诉Dgraph告诉Dgraph总是存储反向边</li>
-</ul>
-<pre><code>boss_of: uid @reverse .
-</code></pre><hr>
-<h2 id="整合已有数据"><a href="#整合已有数据" class="headerlink" title="整合已有数据"></a>整合已有数据</h2><p>当我们第一批次向数据库中导入了一系列的人物关系数据 第二批次的时候导入了一系列的公司数据 那么问题在于我们怎么把这些人物和公司关联起来呢？</p>
-<p>答案肯定是添加新的模式 但是添加新的模式要注意 因为我们肯定不能在新的模式中使用下面</p>
-<pre><code>_:sarah &lt;works_for&gt; _:company1 .
-</code></pre><p>因为这样的话会为z这个sarah新建一个uid 而不是我们之前的那个sarah 这是一个新的sarah 正确的做法应该是</p>
-<pre><code>&lt;uid-for-sarah&gt; &lt;works_for&gt; &lt;uid-for-company1&gt; .
-</code></pre><p>找到sarah和company的uid根据uid定义这些已存在节点之间的新模式</p>
-<p>例子<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  set &#123;</span><br><span class="line">    &lt;<span class="number">0x2</span>&gt; &lt;boss_of&gt; &lt;<span class="number">0xd</span>&gt; .</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="删除数据"><a href="#删除数据" class="headerlink" title="删除数据"></a>删除数据</h2><p>删除数据有三种</p>
-<p>方式</p>
-<ul>
-<li><uid> <edge> <uid>/“value” . 根据宾语的node的uid或者宾语中的字面量的值删除一个三元组</uid></edge></uid></li>
-<li><uid> <edge> * . 根据给定的一条边删除所有的三元组</edge></uid></li>
-<li><uid> <em> </em> . 根据给定的一个node 删除所有的三元组</uid></li>
-</ul>
-<p><img src="http://static.zybuluo.com/gzm1997/qk1fftqtquhw6ef1cso2blc9/image_1ci6mejsl1l8t33ophi167a1j585q.png" alt="image_1ci6mejsl1l8t33ophi167a1j585q.png-12.4kB"></p>
-<hr>
-<h2 id="谓语查询"><a href="#谓语查询" class="headerlink" title="谓语查询"></a>谓语查询</h2><p>可以根据一个node节点查询这个节点所有的谓语<br>使用</p>
-<pre><code>_predicate_
-</code></pre><p><img src="http://static.zybuluo.com/gzm1997/szwm0v5e1sjnbdpv6j1dlxcf/image_1ci6migc0iel3o5v010j114hv67.png" alt="image_1ci6migc0iel3o5v010j114hv67.png-52.3kB"></p>
-<hr>
-<h2 id="拓展谓语"><a href="#拓展谓语" class="headerlink" title="拓展谓语"></a>拓展谓语</h2><pre><code>expand(_all_)
-</code></pre><p>上面是查询所有的谓语 拓展谓语是根据给定的谓语进行深入查询 而不是单纯在返回结果中列出他们</p>
-<p><img src="http://static.zybuluo.com/gzm1997/j5smrtslkjgzwwfgrk0p0k5a/image_1ci6mt3qg17abbh479c17cp1n1i74.png" alt="image_1ci6mt3qg17abbh479c17cp1n1i74.png-40.4kB"></p>
-<hr>
-<h2 id="多个查询块"><a href="#多个查询块" class="headerlink" title="多个查询块"></a>多个查询块</h2><p>没什么区别 就是多几个查询根节点而已<br><img src="http://static.zybuluo.com/gzm1997/28lixz5rfb4ty41liv8611m2/image_1ci6p35ni1idvl5j13ja12q7qdg7h.png" alt="image_1ci6p35ni1idvl5j13ja12q7qdg7h.png-26.7kB"></p>
-<hr>
-<h2 id="查询变量"><a href="#查询变量" class="headerlink" title="查询变量"></a>查询变量</h2><p>结果可以被存在变量里面 可以在查询的任意一个位置被使用</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/dgraph图数据库/" data-id="cjl26ceqr000cxwo00p2y8nnx" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dgraph/">dgraph</a></li></ul>
 
     </footer>
   </div>
@@ -1093,7 +968,7 @@ wg.Add(5)
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -1103,7 +978,7 @@ wg.Add(5)
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -1125,6 +1000,10 @@ wg.Add(5)
       <ul>
         
           <li>
+            <a href="/2018/08/22/goroutine与工作池/">goroutine与工作池</a>
+          </li>
+        
+          <li>
             <a href="/2018/08/20/cayley原理2/">cayley原理2</a>
           </li>
         
@@ -1138,10 +1017,6 @@ wg.Add(5)
         
           <li>
             <a href="/2018/08/08/使用rabbitMQ作为缓存队列/">使用rabbitMQ作为缓存队列</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/06/mux学习/">mux学习</a>
           </li>
         
       </ul>

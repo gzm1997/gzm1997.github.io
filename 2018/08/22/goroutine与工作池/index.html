@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>goroutine与工作池 | gzm&#39;s blogs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="github地址  背景描述我们在使用go的时候 特别是面对并发的情况下 经常需要使用多线程 goroutine可以用来解决这个问题 一个goroutine解决一个线程的问题 但是我们要知道一个系统的最大线程数是有限的 大到这个限制 那么线程数量就不会增加了 更重要的是 线程太多的时候 CPU需要在线程之间频繁地切换 切换过于频繁也会导致CPU的使用率下降的 所以我们是有必要限制在这种情况下的线程">
+<meta name="keywords" content="go,线程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="goroutine与工作池">
+<meta property="og:url" content="http://yoursite.com/2018/08/22/goroutine与工作池/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="github地址  背景描述我们在使用go的时候 特别是面对并发的情况下 经常需要使用多线程 goroutine可以用来解决这个问题 一个goroutine解决一个线程的问题 但是我们要知道一个系统的最大线程数是有限的 大到这个限制 那么线程数量就不会增加了 更重要的是 线程太多的时候 CPU需要在线程之间频繁地切换 切换过于频繁也会导致CPU的使用率下降的 所以我们是有必要限制在这种情况下的线程">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/rl41bhe4usmqigg88e7qqy5x/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180822185246.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/82n1peoq3l5hd7h0oghzf3wi/image_1clgm6h5upf4qto1d8ovfiuue15.png">
+<meta property="og:updated_time" content="2018-08-22T11:38:54.152Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="goroutine与工作池">
+<meta name="twitter:description" content="github地址  背景描述我们在使用go的时候 特别是面对并发的情况下 经常需要使用多线程 goroutine可以用来解决这个问题 一个goroutine解决一个线程的问题 但是我们要知道一个系统的最大线程数是有限的 大到这个限制 那么线程数量就不会增加了 更重要的是 线程太多的时候 CPU需要在线程之间频繁地切换 切换过于频繁也会导致CPU的使用率下降的 所以我们是有必要限制在这种情况下的线程">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/rl41bhe4usmqigg88e7qqy5x/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180822185246.png">
+  
+    <link rel="alternate" href="/atom.xml" title="gzm&#39;s blogs" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">gzm&#39;s blogs</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-goroutine与工作池" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/22/goroutine与工作池/" class="article-date">
+  <time datetime="2018-08-22T11:38:11.000Z" itemprop="datePublished">2018-08-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      goroutine与工作池
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://github.com/gzm1997/workerPool" target="_blank" rel="noopener">github地址</a></p>
+<hr>
+<h2 id="背景描述"><a href="#背景描述" class="headerlink" title="背景描述"></a>背景描述</h2><p>我们在使用go的时候 特别是面对并发的情况下 经常需要使用多线程 goroutine可以用来解决这个问题 一个goroutine解决一个线程的问题 但是我们要知道一个系统的<strong>最大线程数</strong>是有限的 大到这个限制 那么线程数量就不会增加了 更重要的是 线程太多的时候 CPU需要在线程之间频繁地切换 切换过于频繁也会导致CPU的<strong>使用率</strong>下降的 所以我们是有必要限制在这种情况下的<strong>线程数量</strong></p>
+<hr>
+<h2 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h2><p>网上的一个方案就是设置工作池或者说线程池 我们从工作队列中获取工作之后只可以从这个工作池中获取一个可用的线程 然后执行工作 工作池中我们其实存的是并不是线程 而是用来传输工作的管道 我们通过限制在工作池中的管道的数量 从工作队列中获取的工作只可以被从工作池中获取出来的一条管道传输到另一边 然后在那边就行处理 这样就可以限制了线程的数量(以上思路和下面图片皆来自CSDN博主)</p>
+<p><img src="http://static.zybuluo.com/gzm1997/rl41bhe4usmqigg88e7qqy5x/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180822185246.png" alt="微信图片_20180822185246.png-34.8kB"></p>
+<p>那么有个问题是怎么限制上面所说的工作池中任务管道的数量呢？<br>其实我们可以将<strong>工作池本身就定义为一个管道</strong> 然后将限定数量的工作管道传输进这个工作池大管道中 然后所有的任务从任务队列中取出之后 都需要从工作池大管道中获取一个工作管道 然后通过这个工作管道将工作传输过去 让那边完成这个工作 完成工作之后再将这个工作管道发送回工作池管道 等待下一次被取出</p>
+<hr>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>顶一个Task接口 里面有个完成这个工作的方法DoTask 所以的任务都需要实现这接口<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Task <span class="keyword">interface</span> &#123;</span><br><span class="line">	DoTask() error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>具体定义了一种任务的结构体 实现了Task这个接口<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> ItTask <span class="keyword">struct</span> &#123;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t ItTask)</span> <span class="title">DoTask</span><span class="params">()</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"a task is finished"</span>)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们需要定义一个传输工作的管道类型</p>
+<pre><code>// 用来传输任务的管道
+type TaskChan chan Task
+</code></pre><p>像上面所说 我们把工作池也设计为一个管道</p>
+<pre><code>// 用来传输 传输任务的管道(就是上面那个) 的管道
+type PoolChan chan TaskChan
+</code></pre><p>然后我们需要两个全局变量</p>
+<ul>
+<li>缓存我们所有有待完成的工作的一个管道</li>
+<li>工作池大管道</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> (</span><br><span class="line">	AllTaskQueue TaskChan</span><br><span class="line">	TaskPool PoolChan</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	AllTaskQueue = <span class="built_in">make</span>(TaskChan)</span><br><span class="line">	TaskPool = <span class="built_in">make</span>(PoolChan)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面开始我忘记了再init函数中对这两个公有变量进行初始化了 导致后面一开始使用这两个管道发送和接受信息一致没反应 但是也不报错 很坑爹 我觉得是因为公有变量如果没有被初始化 是不可以用来传输信息的 但是这种情况是不会报错的</p>
+<p>然后我们需要将上面用来传输进一步封装 其实不封装也可以 主要是给给我们这个传输任务的管道加一个quit管道 以应道需要中途中断我们的任务</p>
+<pre><code>type Worker struct {
+    Todo TaskChan
+    quit chan bool
+}
+</code></pre><p>给Worker定义一个启动函数 这个函数将我们这个任务管道Todo发送给工作池管道TaskPool 然后等待这个工作管道中发送来新的工作任务 完成这个任务 并且重新将这个任务管道发送回工作池管道中<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w Worker)</span> <span class="title">Start</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">for</span> &#123;</span><br><span class="line">			TaskPool &lt;- w.Todo</span><br><span class="line">			<span class="keyword">select</span> &#123;</span><br><span class="line">			<span class="keyword">case</span> task := &lt;-w.Todo:</span><br><span class="line">				<span class="keyword">if</span> err := task.DoTask(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">					fmt.Println(<span class="string">"task fail"</span>)</span><br><span class="line">				&#125;</span><br><span class="line">			<span class="keyword">case</span> &lt;-w.quit:</span><br><span class="line">				<span class="keyword">return</span></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;()</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//产生一个新的worker</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewWorker</span><span class="params">()</span> *<span class="title">Worker</span></span> &#123;</span><br><span class="line">	w := &amp;Worker&#123;&#125;</span><br><span class="line">	w.Todo = <span class="built_in">make</span>(TaskChan)</span><br><span class="line">	w.quit = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">bool</span>)</span><br><span class="line">	<span class="keyword">return</span> w</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>此外我们还需要顶一个分发器<br>分发器中含有两个重要字段 一个数可用的worker指针数组(其实相当于是任务管道数组) 另一个也是一个quit管道 用来接收暂停的信号</p>
+<pre><code>type Dispatcher struct {
+    AvailableWorkers []*Worker
+    Quit chan bool
+}
+</code></pre><p>同时我们也需要声明一个分发器运行函数 这个函数首先需要声明限定数量的worker 然后将这些worker中的任务管道发送到公有变量 那个工作池管道中 然后每个worker中的任务管道等到传送过来的消息 并且进行处理</p>
+<p>第二部分需要做的就是监听任务队列AllTaskQueue这个管道看看有没有新的任务被发送过来 一旦检测到 从工作池管道中获取一个任务管道 并且将这个任务从这个工作管道中传输过去</p>
+<p>main函数中要做的事情就很简单了 一个就是运行一个分发器 一个是多线程地制造多个任务 然后阻塞地等待任务呗接受和完成<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	dis := pool.Dispatcher&#123;&#125;</span><br><span class="line">	forever := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">bool</span>)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		dis.Run()</span><br><span class="line">	&#125;()</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			t := pool.ItTask&#123;&#125;</span><br><span class="line">			pool.AllTaskQueue &lt;- t</span><br><span class="line">		&#125;()</span><br><span class="line">	&#125;</span><br><span class="line">	&lt;- forever</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>运行结果<br><img src="http://static.zybuluo.com/gzm1997/82n1peoq3l5hd7h0oghzf3wi/image_1clgm6h5upf4qto1d8ovfiuue15.png" alt="image_1clgm6h5upf4qto1d8ovfiuue15.png-23.9kB"></p>
+<p>完整的源代码可以看我<a href="https://github.com/gzm1997/workerPool" target="_blank" rel="noopener">github地址</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjl52f4bi00095go0k48ped34" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/线程/">线程</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/08/20/cayley原理2/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">cayley原理2</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/08/22/goroutine与工作池/">goroutine与工作池</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/20/cayley原理2/">cayley原理2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/15/cayley原理一-获取查询结果/">cayley原理一(获取查询结果)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/09/图数据库跟传统数据库以及图算法/">图数据库跟传统数据库以及图算法</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/08/使用rabbitMQ作为缓存队列/">使用rabbitMQ作为缓存队列</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 gzm1997<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
