@@ -62,6 +62,111 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-nginx-supervisor部署aiohttp" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/08/nginx-supervisor部署aiohttp/" class="article-date">
+  <time datetime="2018-06-08T07:18:32.000Z" itemprop="datePublished">2018-06-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/08/nginx-supervisor部署aiohttp/">nginx+supervisor部署aiohttp</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>服务器上的部署问题一直很让我头疼 因为我一直是一个在windows平台上开发的 但是vps一直都是选择ubuntu16.04居多 因为在windos系统上 权限是一个总是不是被注意的事情 但是在ubuntu系统上部署web后端的时候 权限问题尤为重要</p>
+</blockquote>
+<hr>
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>为什么选择nginx+supervisor这样的组合来部署 因为</p>
+<p>优点</p>
+<ul>
+<li>nginx是一个完美的前端服务器 可以防止基于畸形的http协议的攻击等等</li>
+<li>使用nginx运行几个aiohttp实例可以使用CPU多核</li>
+<li>nginx对static静态文件的支持比aiohttp的内置的静态文件支持更快</li>
+<li>supervisor主要是为了系统崩溃或者重启之后重新运行web app实例 怎么kill也kill不掉</li>
+</ul>
+<p>缺点</p>
+<ul>
+<li>配置比其他组合方式麻烦一点</li>
+</ul>
+<p><a href="https://aiohttp.readthedocs.io/en/stable/deployment.html#nginx-supervisord" target="_blank" rel="noopener">参考链接</a></p>
+<p>由于选择使用nginx+superviosr的组合方式部署aiohttp 所以要先下载nginx和supervisor 这个没什么问题 自行谷歌即可 但是要注意点</p>
+<blockquote>
+<p>因为aiohttp是只可以支持python3.5.3+的 但是好巧不巧ubuntu16.04的自带python版本是python3.5.2 这下有点蛋疼 我给的建议是保留python3.5 另外安装python3.6</p>
+<p>因为ubuntu系统以及很多像sublime等软件都是依赖py2或者py3.5的 一旦卸载或者修改了/use/bin/python的链接<br>会导致一系列版本不兼容的问题 我试过最严重的是卸载了python3.5 并且修改默认python版本为3.6 系统崩溃<br>折腾了很久最后只能重装系统</p>
+<p>为什么我要说这个呢 因为supervisor依赖于ubuntu的py2的<br>所以最好不要卸载任何版本python和修改系统默认的python版本 最好就另行安装python3.6 终端中使用python3.6调用即可</p>
+</blockquote>
+<p>项目代码放置于/var/www/aio_ooad下<br><img src="http://static.zybuluo.com/gzm1997/0wr0fcj2lo4yhzqwxxtaybpo/image_1cff1giub10gmo07k6b16gjv339.png" alt="image_1cff1giub10gmo07k6b16gjv339.png-71.6kB"></p>
+<hr>
+<h2 id="nginx配置"><a href="#nginx配置" class="headerlink" title="nginx配置"></a>nginx配置</h2><ul>
+<li>nginx配置文件 /etc/nginx/nginx.conf</li>
+<li>nginx日志文件 <ul>
+<li>/var/log/nginx/access.log</li>
+<li>/var/log/nginx/error.log</li>
+</ul>
+</li>
+</ul>
+<p>/etc/nginx/nginx.conf<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">  server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    client_max_body_size <span class="number">4</span>G;</span><br><span class="line"></span><br><span class="line">    server_name localhost;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">      proxy_set_header Host $http_host;</span><br><span class="line">      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">      proxy_redirect off;</span><br><span class="line">      proxy_buffering off;</span><br><span class="line">      proxy_pass http:<span class="comment">//aiohttp;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    location /<span class="keyword">static</span> &#123;</span><br><span class="line">      # path for static files</span><br><span class="line">      root /var/www/aio_ooad/<span class="keyword">static</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line">  upstream aiohttp &#123;</span><br><span class="line">    # fail_timeout=0 means we always retry an upstream even if it failed</span><br><span class="line">    # to return a good HTTP response</span><br><span class="line"></span><br><span class="line">    # Unix domain servers</span><br><span class="line">    server unix:/var/www/aio_ooad/example_1.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">    server unix:/var/www/aio_ooad/example_2.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">    server unix:/var/www/aio_ooad/example_3.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">    server unix:/var/www/aio_ooad/example_4.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    # Unix domain sockets are used in this example due to their high performance,</span><br><span class="line">    # but TCP/IP sockets could be used instead:</span><br><span class="line">    # server 127.0.0.1:8081 fail_timeout=0;</span><br><span class="line">    # server 127.0.0.1:8082 fail_timeout=0;</span><br><span class="line">    # server 127.0.0.1:8083 fail_timeout=0;</span><br><span class="line">    # server 127.0.0.1:8084 fail_timeout=0;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面大部分内容都是常规的</p>
+<p>指明静态文件路径 nginx提供静态文件的支持是很快的 这是选择nginx部署的原因之一<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">location /<span class="keyword">static</span> &#123;</span><br><span class="line">  # path for static files</span><br><span class="line">  root /var/www/aio_ooad/<span class="keyword">static</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>选择使用unix domian sockets文件的方式设置upstream 下面的注释也说到也可以使用TCP/IP sockets的方式 但是unix domain socket效果更好 一共配置了四个sockets文件 意味着后台一共有四个web app实例可以供nginx轮询选择<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">upstream aiohttp &#123;</span><br><span class="line">  # fail_timeout=0 means we always retry an upstream even if it failed</span><br><span class="line">  # to return a good HTTP response</span><br><span class="line"></span><br><span class="line">  # Unix domain servers</span><br><span class="line">  server unix:/var/www/aio_ooad/example_1.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">  server unix:/var/www/aio_ooad/example_2.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">  server unix:/var/www/aio_ooad/example_3.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line">  server unix:/var/www/aio_ooad/example_4.sock fail_timeout=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  # Unix domain sockets are used in this example due to their high performance,</span><br><span class="line">  # but TCP/IP sockets could be used instead:</span><br><span class="line">  # server 127.0.0.1:8081 fail_timeout=0;</span><br><span class="line">  # server 127.0.0.1:8082 fail_timeout=0;</span><br><span class="line">  # server 127.0.0.1:8083 fail_timeout=0;</span><br><span class="line">  # server 127.0.0.1:8084 fail_timeout=0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="supervisor配置"><a href="#supervisor配置" class="headerlink" title="supervisor配置"></a>supervisor配置</h2><ul>
+<li>supervisor默认配置文件 /etc/supervisor/supervisord.conf</li>
+<li>部署项目的配置文件 /etc/supervisor/conf.d/example.ini</li>
+</ul>
+<p>修改/etc/supervisor/supervisord.conf 最后一行处为<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[include]</span><br><span class="line">files = conf.d<span class="comment">/*.ini    ;</span></span><br></pre></td></tr></table></figure></p>
+<p>/etc/supervisor/conf.d/example.ini<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[program:aiohttp]</span><br><span class="line">numprocs = <span class="number">4</span></span><br><span class="line">numprocs_start = <span class="number">1</span></span><br><span class="line">process_name = example_%(process_num)s</span><br><span class="line"></span><br><span class="line">; Unix socket paths are specified by command line.</span><br><span class="line">command=python3.6 /var/www/aio_ooad/test_main.py --path=/var/www/aio_ooad/example_%(process_num)s.sock --port=<span class="number">808</span>%(process_num)s</span><br><span class="line"></span><br><span class="line">; We can just as easily pass TCP port numbers:</span><br><span class="line">; command=/path/to/aiohttp_example.py --port=<span class="number">808</span>%(process_num)s</span><br><span class="line"></span><br><span class="line">user=www-data</span><br><span class="line">autostart=<span class="keyword">true</span></span><br><span class="line">autorestart=<span class="keyword">true</span></span><br></pre></td></tr></table></figure></p>
+<pre><code>numprocs = 4
+numprocs_start = 1
+process_name = example_%(process_num)s
+</code></pre><p>一共四个进程 进程号从1到4 进程名字由进程号决定 则为example_1 example_2 example_3 example_4</p>
+<pre><code>command=python3.6 /var/www/aio_ooad/test_main.py --path=/var/www/aio_ooad/example_%(process_num)s.sock --port=808%(process_num)s
+user=www-data
+</code></pre><p>后台运行此命令 也即是运行web app所在的py文件 执行用户为www-data</p>
+<p>这里坑就比较多了</p>
+<p>1.python模块问题<br>因为supervisor是由root用户运行的 所以在supervisor里面后台执行python命令也是在root用户下执行的</p>
+<p>正如我开始所说 我一直依赖都是windows系统下进行开发的 对权限的意识不是很足</p>
+<p>下面我们来看看一个模块安装问题<br>因为我是使用普通用户gzm进行安装aiohttp模块的 但是在部署之后日志显示没有安装aiohttp模块</p>
+<p>让我们在普通用户gzm下打开python3终端 查看模块安装目录<br><img src="http://static.zybuluo.com/gzm1997/61hncydvbdnd2cwdkcofcks8/image_1cff2k7ie1nqkpra1a7t1pp81e0q2m.png" alt="image_1cff2k7ie1nqkpra1a7t1pp81e0q2m.png-40kB"><br>我们会发现里面有个路径为</p>
+<pre><code>/home/gzm/.local/lib/python3.6/site-packages
+</code></pre><p>进入之后发现aiohttp正是安装在这个路径下面<br><img src="http://static.zybuluo.com/gzm1997/npxy5oetqeztqsxq16xr4t4b/image_1cff2pkee1quh1kbssklugl167p33.png" alt="image_1cff2pkee1quh1kbssklugl167p33.png-66kB"></p>
+<p>然后让我们切换为root用户 查看模块安装路径 发现没有/home/gzm/.local/lib/python3.6/site-packages 这个路径 这就解释了为什么即使我真的在gzm这个用户下安装了aiohttp等模块 但是运行supervisor还是会在日志中报错没有此模块 所以正确的方式是切换到root安装需要的模块<br><img src="http://static.zybuluo.com/gzm1997/clvu614mas8hh45xfdoxsgh3/image_1cff2sipucq2gtm1qid5141fvd4g.png" alt="image_1cff2sipucq2gtm1qid5141fvd4g.png-40.1kB"></p>
+<p>还有一个问题是</p>
+<pre><code>--path=/var/www/aio_ooad/example_%(process_num)s.sock
+</code></pre><p>意味着www-data用户需要在/var/www/aio_ooad目录下创建四个.socket文件 以支持nginx 所以/var/www/aio_ooad这个文件需要把所有权改为www-data 不然会在日志中报错permission denied</p>
+<pre><code>sudo chown -R www-data:www-data /var/www/aio_ooad/
+</code></pre><hr>
+<h2 id="web-app所在py"><a href="#web-app所在py" class="headerlink" title="web app所在py"></a>web app所在py</h2><p>test_main.py<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> aiohttp_polls <span class="keyword">import</span> main</span><br><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"></span><br><span class="line">parser = argparse.ArgumentParser(description=<span class="string">"aiohttp server example"</span>)</span><br><span class="line">parser.add_argument(<span class="string">'--path'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'--port'</span>)</span><br><span class="line"></span><br><span class="line">app = main.app</span><br><span class="line">args = parser.parse_args()</span><br><span class="line">web.run_app(app, host=<span class="string">"0.0.0.0"</span>, port=args.port, path=args.path)</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="nginx-supervisor重启命令"><a href="#nginx-supervisor重启命令" class="headerlink" title="nginx supervisor重启命令"></a>nginx supervisor重启命令</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo /etc/init.d/nginx restart</span><br><span class="line">sudo supervisorctl reload</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cjlx17y240028tgo0oyeplwgj" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deploy/">deploy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ubuntu/">ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-java-socket编程" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/06/08/java-socket编程/" class="article-date">
@@ -95,7 +200,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cjl52f4c7000n5go0334w91lf" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cjlx17y0x0015tgo0qcwdjcxz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/socket/">socket</a></li></ul>
@@ -341,7 +446,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjl52f4cb000u5go02444dnvi" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjlx17y19001ctgo03lgn1f8k" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -415,7 +520,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjl52f4ca000r5go06ojhccc8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjlx17y15001atgo0ruyby5e9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/package/">package</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
@@ -486,7 +591,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cjl52f4cn00195go0jrs22dzo" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cjlx17y1y001ztgo0qai0f86i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ORM/">ORM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
@@ -548,7 +653,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cjl52f4f000465go05qhhhdx7" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cjlx17y2w0042tgo05n2e90vn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/backend/">backend</a></li></ul>
@@ -623,7 +728,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/22/自制简易图片云盘/" data-id="cjl52f4el003z5go0jsd94c2f" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/22/自制简易图片云盘/" data-id="cjlx17y230026tgo0kkeqms2k" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/git/">git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/image/">image</a></li></ul>
@@ -676,7 +781,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/16/sqlalchemy一些常见概念/" data-id="cjl52f4cf000y5go0i9cza4gb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/16/sqlalchemy一些常见概念/" data-id="cjlx17y1e001htgo00m9dch9e" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li></ul>
@@ -794,7 +899,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cjl52f4cv001l5go0g1nqicxr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cjlx17y1z0022tgo09an6tik6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
@@ -854,92 +959,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/" data-id="cjl52f4cq001d5go0y3nbc9ew" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/" data-id="cjlx17y1c001ftgo0mn9qtxvp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/requests/">requests</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-上传和展示pdf以及markdown" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/15/上传和展示pdf以及markdown/" class="article-date">
-  <time datetime="2018-05-15T14:57:44.000Z" itemprop="datePublished">2018-05-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/15/上传和展示pdf以及markdown/">上传和展示pdf以及markdown</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <hr>
-<h2 id="demo"><a href="#demo" class="headerlink" title="demo"></a>demo</h2><p><a href="http://138.68.235.123/upload" target="_blank" rel="noopener">查看地址</a></p>
-<p><a href="http://138.68.235.123/show?file_name=readme.pdf" target="_blank" rel="noopener">pdf版本readme地址</a></p>
-<hr>
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这个是开学前跟别人赌气写下的一个很小的web app，功能是上传pdf文件，然后获得这个文件在线浏览的url，需求很简单。之前为了方便只是把上传到服务器的文件存在flask static文件夹下，会有不便于管理等等问题。这个周末做了如下改进：使用mysql进行存储文件，进行模块的细化。</p>
-<p align="right">郭柱明 2018/3/25</p>
-
-
-<hr>
-<h2 id="可行性分析"><a href="#可行性分析" class="headerlink" title="可行性分析"></a>可行性分析</h2><blockquote>
-<p>从需求上而言，这个web app仅仅有上传，展示两个功能。<br>我一个人可以进行开发，但是在人力物力上已经绰绰有余。<br>在app的服务器部署上，我有一个digital ocean vps可以用来部署，所以部署上也没有太大问题。</p>
-</blockquote>
-<hr>
-<h2 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h2><ol>
-<li>上传pdf文件</li>
-<li>获得在线浏览此pdf文件的url</li>
-<li>打开这个url可以进行文件的预览</li>
-</ol>
-<hr>
-<h2 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h2><p>###大概设计###</p>
-<p><img src="http://static.zybuluo.com/gzm1997/5de0ll4jozkxxzntxo20ni2x/struction.png" alt="struction.png-12.1kB"></p>
-<p>整个结构呈现cs结构，server我使用nginx，server使用wsgi接口调用flask app</p>
-<p>###详细设计###</p>
-<ul>
-<li>包-pdf(整个web app打包为一个包)<ul>
-<li>db.py模块(定义一个包含数据库链接的类以及初始化数据库的函数)</li>
-<li>f.py模块(定义File类)</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h2><blockquote>
-<p>编码情况详细见<a href="https://github.com/gzm1997/pdf" target="_blank" rel="noopener">github</a></p>
-</blockquote>
-<hr>
-<h2 id="测试与运行"><a href="#测试与运行" class="headerlink" title="测试与运行"></a>测试与运行</h2><p><img src="http://static.zybuluo.com/gzm1997/v93gqdz11aenv30kisr64r41/pdf.gif" alt="pdf.gif-631.7kB"></p>
-<hr>
-<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><blockquote>
-<p>部署有个问题：无法从事先设置的环境变量中加载出mysql的账号和密码，在服务器上调试没问题，但是一旦部署上去就会在这部分出问题，无奈下只能在代码使用mysql的账号密码，有一定的安全风险。</p>
-</blockquote>
-<hr>
-<h2 id="后期改进"><a href="#后期改进" class="headerlink" title="后期改进"></a>后期改进</h2><blockquote>
-<p>增加了上传和预览markdown文件的功能，具有改进为博客系统的潜质</p>
-</blockquote>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/上传和展示pdf以及markdown/" data-id="cjl52f4cl00185go0rr308t4t" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask/">flask</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
 
     </footer>
   </div>
@@ -966,7 +989,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -976,7 +999,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -985,7 +1008,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
     </div>
   </div>
 
@@ -996,6 +1019,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2018/09/11/基于容器的开发/">基于容器的开发</a>
+          </li>
         
           <li>
             <a href="/2018/08/22/goroutine与工作池/">goroutine与工作池</a>
@@ -1011,10 +1038,6 @@
         
           <li>
             <a href="/2018/08/09/图数据库跟传统数据库以及图算法/">图数据库跟传统数据库以及图算法</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/08/使用rabbitMQ作为缓存队列/">使用rabbitMQ作为缓存队列</a>
           </li>
         
       </ul>

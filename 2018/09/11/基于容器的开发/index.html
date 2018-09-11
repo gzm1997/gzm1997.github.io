@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>基于容器的开发 | gzm&#39;s blogs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="郭柱明  背景虚拟化技术在服务端开发中越来越常用 docker就是常用的一种虚拟化技术 docker的虚拟化并不是系统级别的虚拟化 而是进程级别的虚拟化 他把一个进程相关的代码文件 环境变量 第三方包等等相关都打包进一个”容器”之中 可以  实现对运行环境版本控制 提供一次性地测试环境 动态扩容或者缩容 有利于实现微服务架构   一种基于容器的开发模式花了一个多星期时间 暂时是为了实现以下开发的一">
+<meta name="keywords" content="docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于容器的开发">
+<meta property="og:url" content="http://yoursite.com/2018/09/11/基于容器的开发/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="郭柱明  背景虚拟化技术在服务端开发中越来越常用 docker就是常用的一种虚拟化技术 docker的虚拟化并不是系统级别的虚拟化 而是进程级别的虚拟化 他把一个进程相关的代码文件 环境变量 第三方包等等相关都打包进一个”容器”之中 可以  实现对运行环境版本控制 提供一次性地测试环境 动态扩容或者缩容 有利于实现微服务架构   一种基于容器的开发模式花了一个多星期时间 暂时是为了实现以下开发的一">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/00eldqhzofxgr8zaicfl2cmd/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910212550.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/gko9avqzyu1i28joqdh4s96n/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910221816.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/vmx01k3i53shmw9bscxj3bwa/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910223243.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/3aac0hodckcvfbo8xkg02t6o/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910223809.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/fq1q35zwsy3ggh7436wl3e5s/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910224321.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/60juaky6upa44p3fq1h3asmg/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910224438.png">
+<meta property="og:updated_time" content="2018-09-11T01:22:55.490Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="基于容器的开发">
+<meta name="twitter:description" content="郭柱明  背景虚拟化技术在服务端开发中越来越常用 docker就是常用的一种虚拟化技术 docker的虚拟化并不是系统级别的虚拟化 而是进程级别的虚拟化 他把一个进程相关的代码文件 环境变量 第三方包等等相关都打包进一个”容器”之中 可以  实现对运行环境版本控制 提供一次性地测试环境 动态扩容或者缩容 有利于实现微服务架构   一种基于容器的开发模式花了一个多星期时间 暂时是为了实现以下开发的一">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/00eldqhzofxgr8zaicfl2cmd/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910212550.png">
+  
+    <link rel="alternate" href="/atom.xml" title="gzm&#39;s blogs" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">gzm&#39;s blogs</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-基于容器的开发" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/11/基于容器的开发/" class="article-date">
+  <time datetime="2018-09-11T01:19:46.000Z" itemprop="datePublished">2018-09-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      基于容器的开发
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>郭柱明</p>
+<hr>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>虚拟化技术在服务端开发中越来越常用 docker就是常用的一种虚拟化技术 docker的虚拟化并不是系统级别的虚拟化 而是进程级别的虚拟化 他把一个进程相关的代码文件 环境变量 第三方包等等相关都打包进一个”容器”之中 可以</p>
+<ul>
+<li>实现对运行环境版本控制</li>
+<li>提供一次性地测试环境</li>
+<li>动态扩容或者缩容</li>
+<li>有利于实现微服务架构</li>
+</ul>
+<hr>
+<h2 id="一种基于容器的开发模式"><a href="#一种基于容器的开发模式" class="headerlink" title="一种基于容器的开发模式"></a>一种基于容器的开发模式</h2><p>花了一个多星期时间 暂时是为了实现以下开发的一种设计模式<br><img src="http://static.zybuluo.com/gzm1997/00eldqhzofxgr8zaicfl2cmd/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910212550.png" alt="微信图片_20180910212550.png-55.1kB"><br>在开发环境 我们只需要按照系统的功能将系统划分为多个模块 分别将这些模块打包为docker镜像 然后推送至远程仓库 </p>
+<p>在部署和测试环境 只需要安装了go语言 docker 以及封装了docker remote api的go第三方包go docker client 在这边只需要运行我们预先写好的启动文件(这个稍后会详细介绍) 从远程仓库中拉取我们需要的每个小模块的镜像 分别生成容器 运行各个容器 各个容器之间相互协同工作 我们<strong>在部署测试这边 我们不需要关注每个容器内部是如何工作的 我们只需要关注在顶层如何调度这些子模块进行协同工作</strong></p>
+<hr>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>我现在做的一个demo其实非常简单 就是以mongo为数据库 以beego为框架 写一个简单的用户注册登录页面 登陆之后才有权限浏览一个特殊的页面<br><a href="http://ksogit.kingsoft.net/s_guozhuming/severInDocker" target="_blank" rel="noopener">gitlab地址</a></p>
+<ol>
+<li>注册一个新的用户 将用户的名字 id 密码存进mongo的一个表</li>
+<li>登录的时候使用名字和密码进行登录 使用session跟踪用户 session实现方式为借用cookie</li>
+<li>如果登录成功自动跳转到一个display页面 如果没有登录那么提醒用户需要登录</li>
+</ol>
+<p>基本逻辑功能实现非常简单了 所以不多说</p>
+<p>然后是测试上 在</p>
+<ul>
+<li>注册</li>
+<li>登录</li>
+<li>display页面</li>
+</ul>
+<p>三个小模块上 都编写了单元测试<br><a href="http://ksogit.kingsoft.net/s_guozhuming/severInDocker/blob/master/tests/signup_test.go" target="_blank" rel="noopener">注册测试</a> <a href="http://ksogit.kingsoft.net/s_guozhuming/severInDocker/blob/master/tests/login_test.go" target="_blank" rel="noopener">登录测试</a> <a href="http://ksogit.kingsoft.net/s_guozhuming/severInDocker/blob/master/tests/display_test.go" target="_blank" rel="noopener">display页面测试(需要登录权限)</a><br>以及对上诉各个小模块串联起来测试的集成测试<a href="http://ksogit.kingsoft.net/s_guozhuming/severInDocker/blob/master/web_test.go#L16-72" target="_blank" rel="noopener">集成测试</a></p>
+<p>煞费苦心写单元测试和集成测试的原因有 我们可以在容器运行的时候让容器自动运行所有的单元测试和集成测试 所有测试都是在容器中进行的 可以借机利用容器可以为我们的测试提供一次性环境的优点来运行测试 试想一下：我们每次在自动化部署项目到服务器之后 肯定是希望我们的单元测试和集成测试都可以自动跑一次 来来检验 这是很方便的 更何况如果是使用容器来运行这些测试 那么测试完成之后 容器被删除 测试过程在持久层产生的数据也会被删除干净 不对整个服务造成其他干扰</p>
+<hr>
+<h2 id="打包镜像"><a href="#打包镜像" class="headerlink" title="打包镜像"></a>打包镜像</h2><p>根据我们上面的设计 我们可以将整个demo划分为两个模块 一个mongo 一个写好的beego server</p>
+<p>mongo已经有人将它打包为镜像 并且推送至远程仓库dockerhub上去了 所以我们可以直接使用 不需要自己打包 那么我们只需要打包上面写好的beego server</p>
+<p>docker镜像的打包方式有三种</p>
+<ul>
+<li>Dockerfile配置文件</li>
+<li>docker remote api</li>
+<li>封装了docker remote api的第三方包</li>
+</ul>
+<p>开发过程中打包镜像推荐使用<strong>第一种方式</strong> 不推荐使用第二第三种方式 第二第三中方式适合拉取已经构造好的远程镜像到本地生成容器来运行</p>
+<p>我们来看一下我们的beego server的Dockerfile配置文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">FROM golang:1.10.3</span><br><span class="line">COPY . /go/src/hello</span><br><span class="line">WORKDIR /go/src/hello</span><br><span class="line">RUN go get github.com/astaxie/beego</span><br><span class="line">RUN go get github.com/smartystreets/goconvey</span><br><span class="line">RUN go get gopkg.in/mgo.v2</span><br><span class="line">RUN go build</span><br><span class="line">RUN tr -d &quot;\r&quot; &lt; run.sh &gt; run.sh</span><br><span class="line">RUN chmod -R 777 run.sh</span><br><span class="line">EXPOSE 8080</span><br><span class="line">EXPOSE 27017</span><br><span class="line">CMD sh run.sh</span><br></pre></td></tr></table></figure></p>
+<p>Dockerfile一些详细的使用可以大家可以看一下旭升之前写的docker入门 这里我只简单说一下我这里的dockerfile的大概含义</p>
+<pre><code>FROM golang:1.10.3
+</code></pre><p>基于golang作为基础镜像来构造我们的镜像</p>
+<pre><code>COPY . /go/src/hello
+</code></pre><p>将我们这个demo的除了<strong>.dockerignore</strong>上标记的文件都拷贝到go镜像的<strong>/go/src/hello</strong>文件夹下</p>
+<pre><code>WORKDIR /go/src/hello
+</code></pre><p>工作路径为<strong>/go/src/hello</strong></p>
+<pre><code>RUN go get github.com/astaxie/beego
+RUN go get github.com/smartystreets/goconvey
+RUN go get gopkg.in/mgo.v2
+RUN go build
+</code></pre><p>下载需要的go第三方包 并对demo进行编译 生成了demo名字相同的hello可执行文件</p>
+<pre><code>RUN tr -d &quot;\r&quot; &lt; run.sh &gt; run.sh
+</code></pre><p>因为一个Dockerfile文件中只可以有一个CMD命令 我们既需要运行测试文件 又需要运行服务 那么我们只可以将运行服务和测试都写进一个sh脚本里面 然后在dockfile中只需要运行这个sh脚本就可以了 上面的命令只是为了去除脚本的”\r” 使得sh文件中可以cd ..</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">./hello &amp;</span><br><span class="line">cd tests &amp;&amp; go test -v &amp;&amp; cd ..</span><br><span class="line">go test -v -tags integration</span><br><span class="line">wait</span><br></pre></td></tr></table></figure>
+<p>正如上面所说 run.sh这个脚本做的内容有</p>
+<ul>
+<li>运行之前编译生成的可执行文件</li>
+<li>进入tests文件夹 执行所有的单元测试</li>
+<li>从tests文件夹出来 执行集成测试</li>
+</ul>
+<p>我们可以在dockerfile文件所在的根目录下使用</p>
+<pre><code>docker image build -t 镜像名字:标签名字 .
+</code></pre><p>命令来生成打包好的镜像</p>
+<p>至此 我们要做的beego server镜像打包好了 <strong>我们的镜像根据Dockerfile上所配置的而言：这个镜像被下载到本地 生成容器 之后运行 这个容器会自动运行我们的server服务 并且自动执行所有的单元测试和集成测试</strong></p>
+<p>使用</p>
+<pre><code>docker push 镜像名字:标签名字
+</code></pre><p>将这个镜像推送至你的远程dockerhub仓库里面(实现需要进行docker login进行登录)</p>
+<p>那么 我们已经完成了一半的工作量 如下<br><img src="http://static.zybuluo.com/gzm1997/gko9avqzyu1i28joqdh4s96n/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910221816.png" alt="微信图片_20180910221816.png-30.6kB"></p>
+<hr>
+<h2 id="拉取镜像"><a href="#拉取镜像" class="headerlink" title="拉取镜像"></a>拉取镜像</h2><p>我们剩下来的一半工作就是编写拉取远程仓库中的镜像到本地 生成相应的容器 协调各个容器之间的工作 使得整个服务运行起来</p>
+<p>上面说到 在使用docker的方式中我们有三种</p>
+<ol>
+<li>Dockerfile</li>
+<li>docker remote api</li>
+<li>封装了remote api的第三包</li>
+</ol>
+<p>在拉取镜像这部分 我们是推荐使用第三种方式的 因为设想一下 如果使用这种方式 我们在部署测试的时候只需要那边的环境安装了go和docker以及封装了remote api的第三包 那么需要起这个服务只需要简单de地运行我们写好的这个go启动脚本 那么当给让测试的同学来起我们的服务的时候 他们甚至不需要懂得docker的命令 只需要知道怎么运行go文件就可以了</p>
+<p>完整的启动文件<a href="http://ksogit.kingsoft.net/s_guozhuming/severInDocker/blob/master/startUp.go" target="_blank" rel="noopener">startUp.go</a><br>对于每一个子模块或者说每一个镜像 我们都需要经历下面的过程 才可以将这个子模块在本地的一个docker容器中进行运行<br><img src="http://static.zybuluo.com/gzm1997/vmx01k3i53shmw9bscxj3bwa/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910223243.png" alt="微信图片_20180910223243.png-9.7kB"></p>
+<ol>
+<li>构造Config和HostConfig等等 会定义与镜像和容器相关的配置 Config一般包含基本信息 名字内存等等 HostConfig一般是与ip和端口等相关</li>
+<li>PullImage下载远程镜像到本地</li>
+<li>CreateContainer根据镜像和上诉的配置构造容器</li>
+<li>StartContainer启动容器</li>
+<li>InspectContainer监视容器</li>
+</ol>
+<hr>
+<h2 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h2><p>我们可以来看一下 当我们的环境中只安装了go和docker以及封装了go docker client这个第三方包的时候 运行我们的启动文件startUp.go将整个服务启动起来<br><img src="http://static.zybuluo.com/gzm1997/3aac0hodckcvfbo8xkg02t6o/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910223809.png" alt="微信图片_20180910223809.png-53.5kB"></p>
+<p>注意上诉运行的本质就是</p>
+<ol>
+<li>拉取mongo远程镜像到本地</li>
+<li>生成一个mongo容器进行运行 返回容器所在的IP地址和端口以备beego server连接mongo数据库</li>
+<li>拉取我们之前打包好的beego server镜像到本地</li>
+<li>生成beego server容器 并且将mongo容器运行返回的IP地址和端口作为环境变量传进beego server容器中以供连接数据库</li>
+<li>beego server容器运行之后自动运行所有单元测试和集成测试(这部分已经打包在Dockerfile中了成为镜像本身的一部分)</li>
+</ol>
+<p>我们可以看一下这两个容器的运行情况<br><img src="http://static.zybuluo.com/gzm1997/fq1q35zwsy3ggh7436wl3e5s/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910224321.png" alt="微信图片_20180910224321.png-25.5kB"></p>
+<p>在查看一下 我们的beego server容器中自动运行单元测试集成测试的结果输出 需要在docker logs命令中指定容器的名字<br><img src="http://static.zybuluo.com/gzm1997/60juaky6upa44p3fq1h3asmg/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910224438.png" alt="微信图片_20180910224438.png-54.7kB"></p>
+<hr>
+<h2 id="微服务架构"><a href="#微服务架构" class="headerlink" title="微服务架构"></a>微服务架构</h2><p>说了这些可能会觉得莫名其妙 为什么要这样做呢 其实喔自己觉得这都是为了<strong>微服务架构</strong>做准备</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjlx17y1u001xtgo0whauddka" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/08/22/goroutine与工作池/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">goroutine与工作池</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/09/11/基于容器的开发/">基于容器的开发</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/22/goroutine与工作池/">goroutine与工作池</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/20/cayley原理2/">cayley原理2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/15/cayley原理一-获取查询结果/">cayley原理一(获取查询结果)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/09/图数据库跟传统数据库以及图算法/">图数据库跟传统数据库以及图算法</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 gzm1997<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
