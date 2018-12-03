@@ -62,6 +62,174 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-servlet登录demo" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/16/servlet登录demo/" class="article-date">
+  <time datetime="2018-06-16T05:27:36.000Z" itemprop="datePublished">2018-06-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/16/servlet登录demo/">servlet登录demo</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><a href="https://github.com/gzm1997/servletLogin" target="_blank" rel="noopener">源代码地址</a><br>因为最近这段时间在看java web开发的一些东西 因为spring mvc框架是封装了servlet而来的 所以觉得很有必要学习一下servlet 以便后面如果学习spring mvc等框架的时候可以有助于理解 进而写了一个包含mysql连接 cookies设置 session attribute设置和检验的简单demo</p>
+<p>servlet架构<br><img src="http://www.runoob.com/wp-content/uploads/2014/07/servlet-arch.jpg" alt="servlet架构"></p>
+<p>servlet生命周期<br><img src="http://static.zybuluo.com/gzm1997/aymbru82ndv4nfyd37n4252g/image_1cg3glqm518pqbbo11jn190i145p4r.png" alt="image_1cg3glqm518pqbbo11jn190i145p4r.png-20.8kB"></p>
+<ol>
+<li>第一个到达服务器的 HTTP 请求被委派到 Servlet 容器。</li>
+<li>Servlet 容器在调用 service() 方法之前加载 Servlet。</li>
+<li>然后 Servlet 容器处理由多个线程产生的多个请求，每个线程执行一个单一的 Servlet 实例的 service() 方法。</li>
+</ol>
+<p><img src="http://www.runoob.com/wp-content/uploads/2014/07/Servlet-LifeCycle.jpg" alt="架构"></p>
+<p>使用了tomcat作为<strong>servlet容器</strong> </p>
+<blockquote>
+<p>tomcat实现了对servlet和jsp的支持 并提供了作为web服务器的一些特有功能<br>如Tomcat管理和控制平台、安全域管理和Tomcat阀等 由于tomcat内置了一个http服务器 它也可以被单独视为一个web服务器<br>但是不能将tomcat和apache http web服务器混淆 这两个http web服务器不是捆绑在一起的<br>tomcat的可以通过xml文件格式的配置文件进行配置</p>
+</blockquote>
+<hr>
+<h2 id="在intellij-idea进行tomcat-server运行配置"><a href="#在intellij-idea进行tomcat-server运行配置" class="headerlink" title="在intellij idea进行tomcat server运行配置"></a>在intellij idea进行tomcat server运行配置</h2><p>这个在网上找到一个博客写的很详尽 这里就不重复了<br><a href="https://blog.csdn.net/yhao2014/article/details/45740111" target="_blank" rel="noopener">tomcat server运行配置</a></p>
+<hr>
+<h2 id="login-demo"><a href="#login-demo" class="headerlink" title="login demo"></a>login demo</h2><p>文件结构<br><img src="http://static.zybuluo.com/gzm1997/73f3jnpbm8dinpgn9uwiyn9q/image_1cg3ea5e41vtr11mj1po41hps12e313.png" alt="image_1cg3ea5e41vtr11mj1po41hps12e313.png-27kB"></p>
+<p>数据库<br>在mysql中设置一个如下结构的表(因为仅仅是写一个简单的登录demo 所以没有考虑密码哈希之类的问题)<br><img src="http://static.zybuluo.com/gzm1997/g9nfvb6vx2rfn9won6t9b87o/image_1cg3e73p61b2dtiafpiejlbd99.png" alt="image_1cg3e73p61b2dtiafpiejlbd99.png-93.1kB"><br>添加一个实例<br><img src="http://static.zybuluo.com/gzm1997/h9lx71tb1efxybh4th3ka3n9/image_1cg3e861fmdd692ca71oup149pm.png" alt="image_1cg3e861fmdd692ca71oup149pm.png-68.7kB"></p>
+<p>数据库连接<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> servletPackage;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.sql.Connection;</span><br><span class="line"><span class="keyword">import</span> java.sql.DriverManager;</span><br><span class="line"><span class="keyword">import</span> java.sql.ResultSet;</span><br><span class="line"><span class="keyword">import</span> java.sql.Statement;</span><br><span class="line"><span class="keyword">import</span> java.sql.ResultSet;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FindPsw</span> </span>&#123;</span><br><span class="line"><span class="comment">//    加载JDBC引擎的路径</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String JDBC_DRIVER = <span class="string">"com.mysql.jdbc.Driver"</span>;</span><br><span class="line"><span class="comment">//    数据库链接的URI</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String DB_URL = <span class="string">"jdbc:mysql://localhost:3306/javaTest"</span>;</span><br><span class="line"><span class="comment">//    连接数据库的用户名</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String USER = <span class="string">"root"</span>;</span><br><span class="line"><span class="comment">//    数据库密码</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String PSW = <span class="string">"Gzm20125"</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getPsw</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line"><span class="comment">//        数据库连接对象</span></span><br><span class="line">        Connection conn;</span><br><span class="line"><span class="comment">//        执行语句的statement对象 类似于python-connector的cursor</span></span><br><span class="line">        Statement stmt;</span><br><span class="line">        String psw;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line"><span class="comment">//            加载JDBC引擎</span></span><br><span class="line">            Class.forName(JDBC_DRIVER);</span><br><span class="line"><span class="comment">//            建立数据库链接</span></span><br><span class="line">            conn = DriverManager.getConnection(DB_URL, USER, PSW);</span><br><span class="line"><span class="comment">//            获取statement</span></span><br><span class="line">            stmt = conn.createStatement();</span><br><span class="line">            String stmtToExec = String.format(<span class="string">"select psw from testUser where name = '%s';"</span>, name);</span><br><span class="line">            System.out.println(<span class="string">"exec string is "</span> + stmtToExec);</span><br><span class="line"><span class="comment">//            执行查询语句 返回结果</span></span><br><span class="line">            ResultSet rs = stmt.executeQuery(stmtToExec);</span><br><span class="line">            <span class="keyword">if</span> (rs.next()) &#123;</span><br><span class="line">                psw = rs.getString(<span class="string">"psw"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                psw = <span class="string">""</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            rs.close();</span><br><span class="line">            stmt.close();</span><br><span class="line">            conn.close();</span><br><span class="line">            <span class="keyword">return</span> psw;</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>登录页面<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> servletPackage;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.annotation.WebServlet;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServlet;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletRequest;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletResponse;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.PrintWriter;</span><br><span class="line"><span class="comment">/* 声明/login资源 使用Login这个类作作为视图类 */</span></span><br><span class="line"><span class="meta">@WebServlet</span>(<span class="string">"/login"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Login</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span> </span>&#123;</span><br><span class="line"><span class="comment">//    重写doGet方法 处理get请求</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line"><span class="comment">//        在response中写入一个登录form</span></span><br><span class="line">        PrintWriter out = resp.getWriter();</span><br><span class="line">        out.println(<span class="string">"&lt;!DOCTYPE html&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;html lang='en-US'&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;head&gt;\n"</span> +</span><br><span class="line">                <span class="string">"    &lt;meta charset='utf-8'&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;/head&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;body&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;h1&gt;login&lt;/h1&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;form action='/postDeal' method='post'&gt;\n"</span> +</span><br><span class="line">                <span class="string">"    &lt;input type='text' name='user'&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;br&gt;"</span> +</span><br><span class="line">                <span class="string">"    &lt;input type='text' name='password'&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;br&gt;"</span> +</span><br><span class="line">                <span class="string">"    &lt;input type='submit'&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;/form&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;/body&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;/html&gt;"</span></span><br><span class="line">        );</span><br><span class="line">        out.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>表单 cookies session的处理<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> servletPackage;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.annotation.WebServlet;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.*;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.PrintWriter;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@WebServlet</span>(<span class="string">"/postDeal"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PostDeal</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line"><span class="comment">//        获取表单中的用户和密码</span></span><br><span class="line">        String user = req.getParameter(<span class="string">"user"</span>);</span><br><span class="line">        String psw = req.getParameter(<span class="string">"password"</span>);</span><br><span class="line"><span class="comment">//        使用刚刚数据库连接的类进行数据库查询 获取正确密码</span></span><br><span class="line">        FindPsw f = <span class="keyword">new</span> FindPsw();</span><br><span class="line">        String rightPsw = f.getPsw(user);</span><br><span class="line">        System.out.println(<span class="string">"right psw is "</span> + rightPsw);</span><br><span class="line">        PrintWriter out = resp.getWriter();</span><br><span class="line"><span class="comment">//        如果密码正确</span></span><br><span class="line">        <span class="keyword">if</span> (psw.equals(rightPsw)) &#123;</span><br><span class="line"><span class="comment">//            add cookies</span></span><br><span class="line">            Cookie login = <span class="keyword">new</span> Cookie(<span class="string">"login"</span>, <span class="string">"mylogin"</span>);</span><br><span class="line">            resp.addCookie(login);</span><br><span class="line"></span><br><span class="line"><span class="comment">//            add session attribute</span></span><br><span class="line">            HttpSession session = req.getSession();</span><br><span class="line">            session.setAttribute(<span class="string">"login"</span>, <span class="string">"this is my login session"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//            add response text</span></span><br><span class="line">            out.println(</span><br><span class="line">                    <span class="string">"&lt;p&gt;login successfully user "</span> + user + <span class="string">" psw is "</span> + psw + <span class="string">"&lt;/p&gt;"</span> +</span><br><span class="line">                    <span class="string">"&lt;a href='/checkSession'&gt;this is a page to check whether set session attribute&lt;/a&gt;"</span></span><br><span class="line">            );</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            out.println(<span class="string">"&lt;p&gt;psw is error&lt;/p&gt;"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 登录表单提交过来这个书图类之后 doPost函数首先接受到请求 随之转发给doGet函数 由doGet函数进行处理</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doPost</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        doGet(req, resp);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>检查session attribute是否被成功设置<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> servletPackage;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.ServletException;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.annotation.WebServlet;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServlet;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletRequest;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletResponse;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpSession;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.PrintWriter;</span><br><span class="line"></span><br><span class="line"><span class="comment">//这个视图用来测试客户端是否被成功设置了session attribute</span></span><br><span class="line"><span class="meta">@WebServlet</span>(<span class="string">"/checkSession"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">checkSession</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line"><span class="comment">//        获取客户端的session</span></span><br><span class="line">        HttpSession session = req.getSession();</span><br><span class="line"><span class="comment">//        获取session attribute</span></span><br><span class="line">        String login = (String) session.getAttribute(<span class="string">"login"</span>);</span><br><span class="line">        System.out.println(<span class="string">"login session is "</span> + login);</span><br><span class="line">        PrintWriter out = resp.getWriter();</span><br><span class="line">        out.println(<span class="string">"login session is "</span> + login);</span><br><span class="line">        out.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h2><p>登录</p>
+<p><img src="http://static.zybuluo.com/gzm1997/eguchcsom6t3n75nvgs08m4x/image_1cg3fmvge1e441h2c16ep19pvgb51g.png" alt="image_1cg3fmvge1e441h2c16ep19pvgb51g.png-19.2kB"></p>
+<hr>
+<p>登录成功</p>
+<p><img src="http://static.zybuluo.com/gzm1997/7q5z6ijpf21c8efh36vf5b0y/image_1cg3frqlm1r3bnr315g2oc8gdl1t.png" alt="image_1cg3frqlm1r3bnr315g2oc8gdl1t.png-71.7kB"></p>
+<hr>
+<p>登录失败</p>
+<p><img src="http://static.zybuluo.com/gzm1997/h4queqwp124mgz26un4tsdim/image_1cg3fsovg1h0r6c8nj41rft1k8q2a.png" alt="image_1cg3fsovg1h0r6c8nj41rft1k8q2a.png-62.4kB"></p>
+<hr>
+<p>检测session attribute</p>
+<p><img src="http://static.zybuluo.com/gzm1997/2wvtj6w7e3ot8ahcopapkmap/image_1cg3ftt2f1jm9eo3phe12vvh0r2n.png" alt="image_1cg3ftt2f1jm9eo3phe12vvh0r2n.png-67.6kB"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/16/servlet登录demo/" data-id="cjp7yr3y90016rco0l7tsxlda" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/servlet/">servlet</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tomcat/">tomcat</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-aiohttp-session" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/13/aiohttp-session/" class="article-date">
+  <time datetime="2018-06-13T02:50:05.000Z" itemprop="datePublished">2018-06-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/13/aiohttp-session/">aiohttp session</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="cookie和session"><a href="#cookie和session" class="headerlink" title="cookie和session"></a>cookie和session</h2><p>服务端和客户端之间的联系一般是根据http协议来进行的 但是http协议是无状态的 无状态会有状态的概念大概如下</p>
+<p>有状态</p>
+<ol>
+<li>甲：你吃午饭了吗</li>
+<li>乙：吃了</li>
+<li>甲：吃了什么菜</li>
+<li>乙：吃了鸡蛋</li>
+</ol>
+<p>无状态</p>
+<ol>
+<li>甲：你吃午饭了吗</li>
+<li>乙：吃了</li>
+<li>甲：吃了什么菜</li>
+<li>乙：你说什么时候吃什么菜 早饭？午饭？还是晚饭</li>
+</ol>
+<p>因此服务端和客户端之间需要一种机制来记录用户的状态 这种机制在客户端那边是cookies 在服务端那边是session<br>cookies可以存储在磁盘 内存里面 session可以存储在内存 缓存 redis甚至磁盘中</p>
+<hr>
+<h2 id="aiohttp-session"><a href="#aiohttp-session" class="headerlink" title="aiohttp session"></a>aiohttp session</h2><p>flask框架具有内置的session机制 我以前用起来觉得非常方便以至于我觉得这个不重要 aiohttp不具有内置的session机制 但是具有第三方模块支持 aiohttp_session</p>
+<p>安装这个第三方模块真的挺费事 因为依赖模块实在太多了 而且aiohttp_session是可以依赖redis作为缓存的 还需要安装redis和一些相关模块 下面的开始的实例我没有使用redis作为存储位置 而是使用了EncryptedCookieStorage 后面附加了使用redis存储session的例子</p>
+<p>dependencies</p>
+<ul>
+<li>python3.5.3+</li>
+<li>cryptography </li>
+<li>aioredis</li>
+</ul>
+<p>安装模块</p>
+<ul>
+<li>pip3 install cryptography(必要时进行upgrade 可能版本太低)</li>
+<li>pip3 install aiohttp_session[secure]</li>
+<li>pip3 install aiohttp_session[aioredis] (需要安装redis libhiredis-dev hiredis libssl-dev)</li>
+<li>pip3 install aiohttp_session[aiomcache]</li>
+<li><p>pip3 install aiohttp_sessionsss</p>
+<p>上面的安装问题真的太多 谷歌好几次才解决</p>
+</li>
+</ul>
+<hr>
+<h2 id="存储位置选择"><a href="#存储位置选择" class="headerlink" title="存储位置选择"></a>存储位置选择</h2><p>所有仓库是使用名为AIOHTTP_COOKIE_SESSION的对象来进行存储数据的</p>
+<p>可以使用的仓库有</p>
+<ul>
+<li>SimpleCookieStorage 把session数据以明文json字符串的格式存在cookies body中 只用来测试 非常不安全</li>
+<li>EncryptedCookieStorage 存储数据在cookie中的格式跟SimpleCookieStorage一样 但是使用了cryptography的Fernet cipher加密算法进行加密</li>
+<li>RedisStorage 存json化的数据到redis中 格式是name+reids key</li>
+<li>MemcachedStorage 跟RedisStorage类似 但是使用memcache数据库进行存储</li>
+</ul>
+<hr>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>使用上跟flask的session大同小异 但是需要在init app阶段将session安装到app上 设定一个32位bytes作为加密密钥 跟flask session的secret key类似</p>
+<p>session是一个dict like的对象</p>
+<p>设定session<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"><span class="keyword">from</span> aiohttp_session <span class="keyword">import</span> get_session</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">login</span><span class="params">(request)</span>:</span></span><br><span class="line">    engine = <span class="keyword">await</span> aio_engine.init_engine()</span><br><span class="line">    data = <span class="keyword">await</span> request.json()</span><br><span class="line">    print(<span class="string">"data"</span>, data)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"name"</span> <span class="keyword">not</span> <span class="keyword">in</span> data <span class="keyword">or</span> <span class="string">"psw"</span> <span class="keyword">not</span> <span class="keyword">in</span> data:</span><br><span class="line">        <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">            <span class="string">"status"</span>: <span class="keyword">False</span></span><br><span class="line">        &#125;)</span><br><span class="line">    name = data[<span class="string">"name"</span>]</span><br><span class="line">    psw = data[<span class="string">"psw"</span>]</span><br><span class="line">    verify = <span class="keyword">await</span> keeper.verify(engine, name = name, psw = psw)</span><br><span class="line">    <span class="keyword">if</span> verify:</span><br><span class="line">        session = <span class="keyword">await</span> get_session(request)</span><br><span class="line">        session[<span class="string">"ooad"</span>] = name</span><br><span class="line">        session[<span class="string">"login"</span>] = psw</span><br><span class="line">        session[<span class="string">"time"</span>] = str(datetime.datetime.now())</span><br><span class="line">        <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">            <span class="string">"status"</span>: <span class="keyword">True</span></span><br><span class="line">        &#125;)</span><br><span class="line">    <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">        <span class="string">"status"</span>: <span class="keyword">False</span></span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure></p>
+<p>检查是否含有具体session字段值<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"><span class="keyword">from</span> aiohttp_session <span class="keyword">import</span> get_session</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">need_cookies_page</span><span class="params">(request)</span>:</span></span><br><span class="line">    engine = <span class="keyword">await</span> aio_engine.init_engine()</span><br><span class="line">    session = <span class="keyword">await</span> get_session(request)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"ooad"</span> <span class="keyword">not</span> <span class="keyword">in</span> session <span class="keyword">or</span> <span class="string">"login"</span> <span class="keyword">not</span> <span class="keyword">in</span> session <span class="keyword">or</span> <span class="string">"time"</span> <span class="keyword">not</span> <span class="keyword">in</span> session:</span><br><span class="line">        <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">            <span class="string">"status"</span>: <span class="keyword">False</span></span><br><span class="line">        &#125;)</span><br><span class="line">    name = session[<span class="string">"ooad"</span>]</span><br><span class="line">    psw = session[<span class="string">"login"</span>]</span><br><span class="line">    r = <span class="keyword">await</span> keeper.verify(engine, name = name, psw = psw)</span><br><span class="line">    <span class="keyword">if</span> r:</span><br><span class="line">        <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">            <span class="string">"status"</span>: <span class="keyword">True</span></span><br><span class="line">        &#125;)</span><br><span class="line">    <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">        <span class="string">"status"</span>: <span class="keyword">False</span></span><br><span class="line">    &#125;)</span><br><span class="line">`</span><br></pre></td></tr></table></figure></p>
+<p>setup app<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setup(app, EncryptedCookieStorage(<span class="string">b'Thirty  two  length  bytes  key.'</span>))</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h2><p>login result<br><img src="http://static.zybuluo.com/gzm1997/jkg1fhumdt69h3ycqy4jn5um/image_1cfrgldqfjrht9n1gva149ocj423.png" alt="image_1cfrgldqfjrht9n1gva149ocj423.png-72.7kB"><br>login cookies<br><img src="http://static.zybuluo.com/gzm1997/wopqky454vfub9ksx4zwrxuy/image_1cfrgm0d8nov172b2mj10ta4g62g.png" alt="image_1cfrgm0d8nov172b2mj10ta4g62g.png-46.1kB"><br>cookies check<br><img src="http://static.zybuluo.com/gzm1997/rez3qy3mv69mkbvfsf9956v8/image_1cfrgn8mh1vf717qu1elcqdv8ur2t.png" alt="image_1cfrgn8mh1vf717qu1elcqdv8ur2t.png-43.3kB"></p>
+<hr>
+<h2 id="使用redis存储session"><a href="#使用redis存储session" class="headerlink" title="使用redis存储session"></a>使用redis存储session</h2><p>这里有个问题 就是aiohttp本事内置一个asyncio event loop执行所有跟app相关的协程了 但是当我们使用redis作为仓库进行存储session的时候需要使用到aioredis进行支持 但是这个也是异步io连接模块 因此我们初始化redis pool的时候也需要一个event loop进行运行这个初始化的协程 一旦这个event loop跟web.run_app混在一起就会报错 event loop is already run</p>
+<p>正确的做法是分开 并且在执行redis pool连接的event loop run_until_complete处获取返回值 得到需要的storage</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> aiohttp_session <span class="keyword">import</span> setup, redis_storage</span><br><span class="line"><span class="keyword">import</span> aioredis</span><br><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">get_storage</span><span class="params">()</span>:</span></span><br><span class="line">    redis = <span class="keyword">await</span> aioredis.create_pool((<span class="string">"localhost"</span>, <span class="number">6379</span>))</span><br><span class="line">    <span class="keyword">return</span>  redis_storage.RedisStorage(redis)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">setup_session_support</span><span class="params">(app)</span>:</span></span><br><span class="line">    storage = asyncio.get_event_loop().run_until_complete(get_storage())</span><br><span class="line">    setup(app, storage)</span><br><span class="line">    <span class="keyword">return</span> app</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app = session_redis.setup_session_support(app)</span><br></pre></td></tr></table></figure>
+<p>效果<br>可以看到生成的cookies值确实存在了redis中<br>postman中获取的cookies<br><img src="http://static.zybuluo.com/gzm1997/scr363l8y5g6lbig4pwa41d1/image_1cfs5ia7pm0mke1hcn13edld9m.png" alt="image_1cfs5ia7pm0mke1hcn13edld9m.png-18.6kB"><br>redis中也存有一样的cookies<br><img src="http://static.zybuluo.com/gzm1997/f7wpnf2du5q1spknuypy56dc/image_1cfs5h8s6st01coa4491gh0bic9.png" alt="image_1cfs5h8s6st01coa4491gh0bic9.png-20kB"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/13/aiohttp-session/" data-id="cjp7yr3wv0000rco0kgzal7t6" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-aiohttp的跨域问题" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/06/10/aiohttp的跨域问题/" class="article-date">
@@ -169,7 +337,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/10/aiohttp的跨域问题/" data-id="cjp7ykwsj000xjwo0py1zs94o" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/10/aiohttp的跨域问题/" data-id="cjp7yr3x20001rco0y4g45fi0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cors/">cors</a></li></ul>
@@ -274,7 +442,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cjp7ykwsy001fjwo0yv0qv46r" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/nginx-supervisor部署aiohttp/" data-id="cjp7yr3y60012rco0akm7cnfm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deploy/">deploy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ubuntu/">ubuntu</a></li></ul>
@@ -319,7 +487,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cjp7ykwse000qjwo02jwtv3rv" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/java-socket编程/" data-id="cjp7yr3xz000qrco0z33zkr5n" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/socket/">socket</a></li></ul>
@@ -565,7 +733,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjp7ykwsn0011jwo0gogb6vup" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/04/java基础知识/" data-id="cjp7yr3y0000rrco0ihpdg2bs" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -639,7 +807,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjp7ykwsh000ujwo0zlbyrbo6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/python包调用问题/" data-id="cjp7yr3y80014rco02h0t25nt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/package/">package</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
@@ -710,7 +878,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cjp7ykwsz001hjwo0ufmmwey6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cjp7yr3yj001krco0jkqx9jac" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ORM/">ORM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
@@ -772,7 +940,7 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cjp7ykwrd0000jwo0r5dy9il2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cjp7yr3x60003rco02sgflpqi" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/backend/">backend</a></li></ul>
@@ -847,181 +1015,10 @@ user=www-data
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/22/自制简易图片云盘/" data-id="cjp7ykwu50046jwo0b7p7wvao" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/22/自制简易图片云盘/" data-id="cjp7yr3ys001zrco01t6pnh1y" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/git/">git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/image/">image</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-sqlalchemy一些常见概念" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/16/sqlalchemy一些常见概念/" class="article-date">
-  <time datetime="2018-05-16T08:00:53.000Z" itemprop="datePublished">2018-05-16</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/16/sqlalchemy一些常见概念/">sqlalchemy一些常见概念</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="metadata"><a href="#metadata" class="headerlink" title="metadata"></a>metadata</h2><p>官方文档解释</p>
-<blockquote>
-<p>The MetaData is a registry which includes the ability to emit a limited set of schema generation commands to the database. As our SQLite database does not actually have a users table present, we can use MetaData to issue CREATE TABLE statements to the database for all tables that don’t yet exist. Below, we call the MetaData.create_all() method, passing in our Engine as a source of database connectivity</p>
-</blockquote>
-<p>metadata是一个注册器，里面包含一些数据库的模式生成命令，可以调用metadata发起create table命令来创建这个表</p>
-<p><img src="http://static.zybuluo.com/gzm1997/y94c7jye04to8blqvbn15su3/image_1cdjqt91j1hpr34cos1euqodr9.png" alt="image_1cdjqt91j1hpr34cos1euqodr9.png-5.9kB"></p>
-<hr>
-<h2 id="mapper"><a href="#mapper" class="headerlink" title="mapper"></a>mapper</h2><p>sqlalchemy中创建一个继承declarative_base的类的本质是，创建一个class的同时生成一个同名的Table对象，并且使用一个mapper对象将两个对象映射在一起。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">'my_table'</span></span><br><span class="line">    id = Column(Integer, primary_key=<span class="keyword">True</span>)</span><br><span class="line">    type = Column(String(<span class="number">50</span>))</span><br><span class="line">    alt = Column(<span class="string">"some_alt"</span>, Integer)</span><br><span class="line"></span><br><span class="line">    __mapper_args__ = &#123;</span><br><span class="line">        <span class="string">'polymorphic_on'</span> : type</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>上述代码跟下面效果是一样的<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">my_table = Table(<span class="string">"my_table"</span>, metadata,</span><br><span class="line">    Column(<span class="string">'id'</span>, Integer, primary_key=<span class="keyword">True</span>),</span><br><span class="line">    Column(<span class="string">'type'</span>, String(<span class="number">50</span>)),</span><br><span class="line">    Column(<span class="string">"some_alt"</span>, Integer)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">mapper(MyClass, my_table,</span><br><span class="line">    polymorphic_on=my_table.c.type,</span><br><span class="line">    properties=&#123;</span><br><span class="line">        <span class="string">'alt'</span>:my_table.c.some_alt</span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="对象状态转换"><a href="#对象状态转换" class="headerlink" title="对象状态转换"></a>对象状态转换</h2><p><img src="http://static.zybuluo.com/gzm1997/j5p2qxy0l2s5t54tvk4jx59y/image_1cdjs8hm616i15k3vss1r6u17ju3j.png" alt="image_1cdjs8hm616i15k3vss1r6u17ju3j.png-14.2kB"></p>
-<p>值得一提的是，当class被add到session中，但是没有commit，此时这个class并没有被写入数据库，但是此时进行query查询这个class是可以被查询出来的，因为当执行query时，执行了flush操作，调用了sql语句，这个class对应的row被生成。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sqlalchemy <span class="keyword">import</span> Column, String, Integer, ForeignKey, create_engine</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.orm <span class="keyword">import</span> sessionmaker, relationship, backref</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.ext.declarative <span class="keyword">import</span> declarative_base</span><br><span class="line">Base = declarative_base()</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span><span class="params">(Base)</span>:</span></span><br><span class="line">    __tablename__ = <span class="string">"user"</span></span><br><span class="line">    id = Column(Integer, primary_key = <span class="keyword">True</span>)</span><br><span class="line">    name = Column(String(<span class="number">20</span>))</span><br><span class="line"></span><br><span class="line">engine = create_engine(<span class="string">'mysql+mysqlconnector://root:Gzm20125@localhost:3306/test'</span>)</span><br><span class="line">DBSession = sessionmaker(bind = engine)</span><br><span class="line"></span><br><span class="line">Base.metadata.drop_all(engine)</span><br><span class="line">Base.metadata.create_all(engine)</span><br><span class="line"><span class="comment"># 创建session对象:</span></span><br><span class="line"></span><br><span class="line">session = DBSession()</span><br><span class="line"></span><br><span class="line">u = User(id = <span class="number">1</span>, name = <span class="string">"gzm"</span>)</span><br><span class="line">session.add(u)</span><br><span class="line">print(session.query(User).filter_by(id = <span class="number">1</span>).first())</span><br></pre></td></tr></table></figure>
-<p>输出<br><img src="http://static.zybuluo.com/gzm1997/2uovj0ildc954przw50hrcia/image_1cdjsg49k1qk49j6192o1vmd1vdp40.png" alt="image_1cdjsg49k1qk49j6192o1vmd1vdp40.png-13.5kB"></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/16/sqlalchemy一些常见概念/" data-id="cjp7ykwsq0015jwo0wjs840j1" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-软件生命周期" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/15/软件生命周期/" class="article-date">
-  <time datetime="2018-05-15T15:02:50.000Z" itemprop="datePublished">2018-05-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/15/软件生命周期/">软件生命周期</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
-<p>这几天我都在深深地反思，发现自己的确是一个很功利的人，从框架的工具化就可以看出来。越是患得患失就越容易失去。我觉得我这段时间可以多写点代码，并且这不能很以往一样，一个劲地写，应该从工程上开始考量所有问题。</p>
-</blockquote>
-<hr>
-<h2 id="软件生命周期6大阶段"><a href="#软件生命周期6大阶段" class="headerlink" title="软件生命周期6大阶段"></a>软件生命周期6大阶段</h2><ol>
-<li>可行性分析和计划阶段<ul>
-<li>确定软件开发的总体目标，给出功能，性能，可靠性，接口等方面的要求，进行可行性分析</li>
-<li>估计可利用的资源(硬件，软件，人力等)，成本，效益，开发进度，进行投资收益分析，制定开发计划</li>
-<li>提交可行性分析报告，开发计划等文档</li>
-</ul>
-</li>
-<li>需求分析阶段<ul>
-<li>分析用户提出的要求，给出需求详细定义，确定软件系统的各项功能，性能需求和设计约束，确定对文档的编制的要求</li>
-<li>提交软件需求说明，软件规格说明，数据要求说明等文档和初步用户手册</li>
-</ul>
-</li>
-<li>设计阶段<ul>
-<li>概要设计：将各项需求转换为软件的体系结构。软件的每一组成部分都是意义明确的模块，每个模块和某些需求相对应</li>
-<li>详细设计：对没一个模块要完成的工作进行具体的描述，提供源编程编写的直接依据</li>
-<li>提交结构设计说明，详细设计说明和测试计划初稿等文稿</li>
-</ul>
-</li>
-<li>实现阶段<ul>
-<li>实现源码编码，编译，和排错调试，得到没有语法错误的程序清单。程序结构良好，清晰易读，且与设计想一致</li>
-<li>编写进度日报，周报，和月报</li>
-<li>提交用户手册，操作手册等面向用户的文档的编写工作</li>
-<li>编写测试计划</li>
-</ul>
-</li>
-<li>测试阶段<ul>
-<li>全面测试目标软件系统，并检查审阅已编制的文档，提交测试分析报告。逐项评价所生产的程序、文档以及开发工作本身，提交项目开发总结报告</li>
-<li>在整个开发过程中 (即前五个阶段中)，开发集体需要按月编写<br>开发进度月报。</li>
-</ul>
-</li>
-<li>运行与维护阶段<ul>
-<li>软件提交给用户后，在运行使用中得到持续维护，根据用户新<br>提出的需求进行必要而且可能的扩充、删改、更新和升级。</li>
-<li>软件维护包括改正性维护 (发现错误)、适应性维护 (适应运行<br>环境变化) 和完善性维护 (增强功能)。</li>
-</ul>
-</li>
-</ol>
-<hr>
-<h2 id="常见软件生命周期模型"><a href="#常见软件生命周期模型" class="headerlink" title="常见软件生命周期模型"></a>常见软件生命周期模型</h2><blockquote>
-<p>软件开发过程一般应该采用某种类型的软件生命周期模型，按<br>照一定的开发方法，使用相应的工具系统实现。</p>
-</blockquote>
-<p>常见模型</p>
-<ul>
-<li>瀑布模型 (Waterfall Model)</li>
-<li>V-W 模型 (V Model and W Model)</li>
-<li>快速应用开发模型 (RAD Model)</li>
-<li>原型模型 (Prototype Model)</li>
-<li>增量/演化/迭代模型 (Incremental Model)</li>
-<li>螺旋模型 (Spiral Model)</li>
-<li>喷泉模型 (Fountain Model, Object-Oriented Model)</li>
-<li>基于构件的开发模型 (CBSD Model)</li>
-<li>Rational 统一过程模型 (RUP Model)</li>
-<li>*敏捷开发模型与极限编程 (Agile Modeling and XP)</li>
-</ul>
-<hr>
-<h2 id="瀑布模型"><a href="#瀑布模型" class="headerlink" title="瀑布模型"></a>瀑布模型</h2><p><img src="http://static.zybuluo.com/gzm1997/ovwgmbl03ugmj2l9sm1p0jfy/image_1c8ias8gck9c5rmro9cihae89.png" alt="image_1c8ias8gck9c5rmro9cihae89.png-96.4kB"></p>
-<p>特征</p>
-<ul>
-<li>每一阶段工作对象来自于上一阶段的输出</li>
-<li>根据本阶段的活动规程执行相应的任务</li>
-<li>本阶段产生相关软件工件，作为下一阶段活动的输入</li>
-<li>对本阶段的活动情况进行评审</li>
-</ul>
-<p>优点</p>
-<ul>
-<li>降低软件开发的复杂程度，提高软件开发过程的透明性，提高软件开发过程的可管理性</li>
-<li>推迟软件实现，强调在软件实现前必须进行分析和设计工作</li>
-<li>以项目的阶段评审和文档控制为手段有效地对整个开发过程进行指导，保证了阶段之间的正确衔接，能够及时发现并纠正开发过程中存在的缺陷，使产品达到预期的质量要求</li>
-</ul>
-<p>缺点</p>
-<ul>
-<li>强调过程活动的线性顺序</li>
-<li>缺乏灵活性，特别是无法解决软件需求不明确或不准确的问题</li>
-<li>风险控制能力较弱</li>
-<li>瀑布模型中的软件活动是文档驱动的，当阶段之间规定过多的文档时，会极大地增加系统的工作量</li>
-<li>管理人员如果仅仅以文档的完成情况来评估项目完成进度，往往会产生错误的结论</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cjp7ykwu30045jwo081ci0u6e" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
 
     </footer>
   </div>
@@ -1048,7 +1045,7 @@ user=www-data
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/subgraph/">subgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -1058,7 +1055,7 @@ user=www-data
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 17.5px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 17.5px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 12.5px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/gremlin/" style="font-size: 10px;">gremlin</a> <a href="/tags/hugegraph/" style="font-size: 10px;">hugegraph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 17.5px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/subgraph/" style="font-size: 10px;">subgraph</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -1080,6 +1077,14 @@ user=www-data
       <ul>
         
           <li>
+            <a href="/2018/12/03/subgraph概况/">subgraph概况</a>
+          </li>
+        
+          <li>
+            <a href="/2018/12/03/docker在测试中的作用/">docker在测试中的作用</a>
+          </li>
+        
+          <li>
             <a href="/2018/12/03/java基础：入职华为前的重启/">java基础：入职华为前的重启</a>
           </li>
         
@@ -1089,14 +1094,6 @@ user=www-data
         
           <li>
             <a href="/2018/08/22/goroutine与工作池/">goroutine与工作池</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/20/cayley原理2/">cayley原理2</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/15/cayley原理一-获取查询结果/">cayley原理一(获取查询结果)</a>
           </li>
         
       </ul>

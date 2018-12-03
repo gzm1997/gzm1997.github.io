@@ -62,6 +62,160 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-subgraph概况" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/12/03/subgraph概况/" class="article-date">
+  <time datetime="2018-12-03T06:57:02.000Z" itemprop="datePublished">2018-12-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/12/03/subgraph概况/">subgraph概况</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>因为我们现在使用的图数据库都有一个瓶颈就是<strong>不支持图数据库集群</strong> 在图数据库的使用上我们只可以使用单点 如果使用多点 那么就会有很多缓存不一致等问题 因为现在开源的图数据库d很多都是企业内部图数据库的阉割版 都是不支持图数据库层面的集群的 所以不可以做上线版本的 那么<strong>离线分析</strong>可以作为一个方向</p>
+<hr>
+<h2 id="离线数据"><a href="#离线数据" class="headerlink" title="离线数据"></a>离线数据</h2><p><img src="http://static.zybuluo.com/gzm1997/174wxmwfn5iwgon89z0g1oys/image_1crhbqje41b356it1sb361o1ujo9.png" alt="image_1crhbqje41b356it1sb361o1ujo9.png-20.9kB"></p>
+<p> 都是csv格式的文件 文件中每一行的格式都很单一 就是</p>
+<pre><code>userid,fileid
+</code></pre><p>例如</p>
+<pre><code>311915299,10437872764
+</code></pre><p>每一条数据意味着某个用户id读了某个文件id</p>
+<p>而且这些数据所有都是fileid具有约束条件<strong>pv&lt;6</strong>的 这次离线分析的思想很简单就是： 物以类聚 人以群分 想通过以fileid为中心形成很多子图 而且pv&lt;6使得这些文件都不是属于烂大街的文件和具有普适性的 比如文档教程之类 过于烂大街的文件形成的子图对于我们来说没有什么价值 因为它们无法为我们的用户画像带来帮助 那么这些文件的属性大概率可以表明这些子图中用户的身份 比如以简历为中心的子图中的用户大概率是应届毕业生之类的 思路是很简单的</p>
+<hr>
+<h2 id="schema和graph"><a href="#schema和graph" class="headerlink" title="schema和graph"></a>schema和graph</h2><p>所有的代码都在<a href="http://ksogit.kingsoft.net/wpsyun/relation-graph/tree/gzm/subgraph" target="_blank" rel="noopener">subgraph</a><br>构建子图部分如下：<br><img src="http://static.zybuluo.com/gzm1997/ecow1zzi4x0corwax41snnhd/image_1crhd07pqg6ldu7sqo1bp8kna1m.png" alt="image_1crhd07pqg6ldu7sqo1bp8kna1m.png-31.4kB"></p>
+<p>构建图的思路很简单<br><img src="http://static.zybuluo.com/gzm1997/xx9i7j0h8hv26eq73ruegid6/image_1crhdmvi8s2bgfohrl1h3cgg23.png" alt="image_1crhdmvi8s2bgfohrl1h3cgg23.png-23.3kB"><br>在hugegraph里面上面的创建其实是分为两部分的</p>
+<ol>
+<li>schema </li>
+<li>graph</li>
+</ol>
+<p>对应上面图中<br><img src="http://static.zybuluo.com/gzm1997/qteo7bofu3rkhjxy27m191lt/image_1crhe6s8c1khm16t61hcmmtj1ldj40.png" alt="image_1crhe6s8c1khm16t61hcmmtj1ldj40.png-32.2kB"></p>
+<p>分别对应项目中如下两部分<br><img src="http://static.zybuluo.com/gzm1997/s3v79cx1e034kd5s7nbrlld5/image_1crhebmsdu8cpbk1dsiboj17la4t.png" alt="image_1crhebmsdu8cpbk1dsiboj17la4t.png-62.5kB"></p>
+<p>这里有必要说一下我代码里面一些单元测试 单元测试在我的代码里面很重要 在这里我基本是写一个函数就对应写一个单元测试 这样你看我的代码 看我的单元测试就知道这些函数是怎样使用的了 所以<strong>看我的代码 看我的单元测试是关键</strong></p>
+<p>代码中schema文件夹下schema.go就是用来构建schema中propertyKey vertexLabel edgeLabel中的函数 在schema_test.go中可以看到这些对应函数的使用方法 同时也有部分注释<br>代码中schema文件夹跟上面类似</p>
+<hr>
+<h2 id="读取csv数据构造图"><a href="#读取csv数据构造图" class="headerlink" title="读取csv数据构造图"></a>读取csv数据构造图</h2><p>入口在如下main函数<br><img src="http://static.zybuluo.com/gzm1997/r6x6wei7uv0qbl56agcte8yv/image_1crjbgkh718351l79195c13r1f179.png" alt="image_1crjbgkh718351l79195c13r1f179.png-49.3kB"></p>
+<p><a href="http://ksogit.kingsoft.net/wpsyun/relation-graph/blob/gzm/subgraph/construct/constructWholeGraph.go#L17" target="_blank" rel="noopener">ConstructGraph函数</a>每一次读取一个csv文件 迭代处理每一行 对于每一行</p>
+<pre><code>userid, fileid
+</code></pre><p>先生成一个user的点和一个file的点 以及生成一条从user指向file类型为connect的边 一直重复上述操作 直至数据被处理完</p>
+<p>上述的操作有两点要注意的地方：</p>
+<ol>
+<li>我是单线程同步构造图的 但是73哥csv耗时上并不是太长 可以接受</li>
+<li>如果对构造图有耗时上的要求 那么推荐使用无gremlin的纯graph api(restful api)</li>
+</ol>
+<hr>
+<h2 id="查询子图"><a href="#查询子图" class="headerlink" title="查询子图"></a>查询子图</h2><p><img src="http://static.zybuluo.com/gzm1997/ig8vj46wz3ix43vddv8c0uqh/image_1crjblvqejc1hqpham11ebm5q1m.png" alt="image_1crjblvqejc1hqpham11ebm5q1m.png-39.5kB"><br>查询的函数和单元测试都写在上面的红色部分内 入口在下面的绿色部分内</p>
+<p>查询就是使用gremlin api发送gremlin语句过去 这里真的是一句gremlin用到烂 主要用的一句gremlin就是</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> SubGraphGremlin = <span class="string">"sg = g.V().hasLabel('file').has('fileid','%s').repeat(bothE().subgraph('sg').otherV().simplePath()).until(bothE().count().is(0)).cap('sg').next();sg = sg.traversal();r=sg.V().choose(hasLabel('user'), count(), values('fileid'));r"</span></span><br></pre></td></tr></table></figure>
+<p>我们在hugegraph上进行查询大多数情况都是<strong>在gremlin上做文章</strong> 对于gremlin的语法我们需要很注意 所以这里是说一下上面这段gremlin是什么意思</p>
+<p>可以分为四部分</p>
+<p>1.</p>
+<pre><code>sg = g.V().hasLabel(&apos;file&apos;).has(&apos;fileid&apos;,&apos;%s&apos;).repeat(bothE().subgraph(&apos;sg&apos;).otherV().simplePath()).until(bothE().count().is(0)).cap(&apos;sg&apos;).next();
+</code></pre><p>g是一个全局Traversal(全局遍历器) 理论上使用这个全局遍历器awo我们可以首先定位到图里面的某个点或者某部分点 并且以这些点作为我们迭代查询的始点 要注意g其实是这个全局遍历器的别名 在代码里面使用gremlin api post发送gremlin语句的时候需要加上这个别名 否则无法识别g是什么 比如我在在子图的代码里是这样写的<br><img src="http://static.zybuluo.com/gzm1997/0a9wnz322pst3cravx8nl5sx/image_1crjckhir1sio1ec91dvn3sri9n2j.png" alt="image_1crjckhir1sio1ec91dvn3sri9n2j.png-39.9kB"></p>
+<p>详细解释如下<br><img src="http://static.zybuluo.com/gzm1997/ph2r9d85ys31axb7zy354ee5/image_1crjdr1gcbdk1sen1r2el5knd30.png" alt="image_1crjdr1gcbdk1sen1r2el5knd30.png-65.8kB"></p>
+<p>2.</p>
+<pre><code>sg = sg.traversal();
+</code></pre><p>对上一个步骤获取的子图sg 获取这个子图的一个遍历器</p>
+<p>3.</p>
+<pre><code>r=sg.V().choose(hasLabel(&apos;user&apos;), count(), values(&apos;fileid&apos;));
+</code></pre><p>通过这个遍历器 通过choose语句 choose语句相当于if else逻辑 满足第一个参数条件 则执行第二个参数 否则执行第三个参数</p>
+<p>所以上面的意思是如果子图里面的点是有user的label的话 那么返回这些点的数量(子图中用户数量) 否则(就是file的点) 返回浙西file的fileid属性 并且将上诉结果都放到一个r变量中</p>
+<p>4.</p>
+<pre><code>r
+</code></pre><p>返回查询结果</p>
+<hr>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/12/03/subgraph概况/" data-id="cjp7yr3ye001drco0mba58yfb" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/subgraph/">subgraph</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-docker在测试中的作用" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/12/03/docker在测试中的作用/" class="article-date">
+  <time datetime="2018-12-03T06:54:52.000Z" itemprop="datePublished">2018-12-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/12/03/docker在测试中的作用/">docker在测试中的作用</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>郭柱明</p>
+<hr>
+<h2 id="cayley与docker"><a href="#cayley与docker" class="headerlink" title="cayley与docker"></a>cayley与docker</h2><p>cayley是一个用go语言编写的很规范的图数据库 他的设计方式很值得我们学习 这篇文章我们简单聊一聊docker在cayley这个图数据库中的应用</p>
+<p>docker主要在cayley中有两处使用</p>
+<ul>
+<li>将整个cayley作为一个应用打包为一个docker镜像</li>
+<li>在每一个涉及持久层操作的单元测试和集成测试中 使用docker生成一个一次性数据库供数据存储</li>
+</ul>
+<p>第一点很常见 就是使用dockerfile的方式将应用打包成镜像 这样我们可以通过docker很简单地安装和运行cayley<br><img src="http://static.zybuluo.com/gzm1997/jac2d2yvc3wbw3zf5b167836/image_1crovr4t31hmc14814cdg3qmtd9.png" alt="image_1crovr4t31hmc14814cdg3qmtd9.png-172.6kB"><br>但是第二点真的很少见 cayley在第二点上算是非常创新的做法 现在主要讨论第二点</p>
+<hr>
+<h2 id="docker在测试中的使用"><a href="#docker在测试中的使用" class="headerlink" title="docker在测试中的使用"></a>docker在测试中的使用</h2><p>docker的使用情景有很多种 我们可以看一下阮一峰博客上说的<br><img src="http://static.zybuluo.com/gzm1997/q1ab5aqsk234npm1uutkiixw/image_1crp006g81526bpjoll1t61kk3m.png" alt="image_1crp006g81526bpjoll1t61kk3m.png-24.8kB"></p>
+<blockquote>
+<p>cayley在这里正是第一种情况 使用docker提供一次性环境 </p>
+</blockquote>
+<blockquote>
+<p>因为cayley是支持多种数据库作为底层存储 如果在开发测试过程 对每一种数据都进行本地安装 本地系统环境等因素一定会让操作很麻烦 所以cayley选择在各种测试进行的时候使用docker镜像生成一个需要的数据库容器 并且将这个容器运行起来 返回这个容器运行在的IP地址和端口 这样就可以提供给测试的代码进行连接 注意整个测试并不是发生在容器内部的 仅仅是数据库在容器内部</p>
+</blockquote>
+<blockquote>
+<p>当我们操作完需要的持久层操作之后 就可以彻底删除这个容器 也不会导致测试的数据遗留</p>
+</blockquote>
+<p>如果现在不熟悉docker的基本使用 可以先看一下阮一峰<a href="http://www.ruanyifeng.com/blog/2018/02/docker-tutorial.html" target="_blank" rel="noopener">这篇博客</a>先了解简单的docker helloworld</p>
+<hr>
+<p>cayley使用一个封装了docker remote api的第三方包go docker client生成一个数据库容器的步骤如下<br><img src="http://static.zybuluo.com/gzm1997/vmx01k3i53shmw9bscxj3bwa/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910223243.png" alt="生成一个数据库容器"></p>
+<p>注意 cayley是原本缺失第二步pullimage的 所以导致原来运行cayley所有的测试都会导致设计持久层的测试被skip 正就是我帮cayley修复那个bug 扬哥因此送了我一瓶红酒 commit详情在<a href="https://github.com/cayleygraph/cayley/commit/6da908eaad0216479791aa58806b66672ab7c18f" target="_blank" rel="noopener">pull image from remote repository if there is not image at local machine</a> 这是我人生第一次给比较大的开源项目贡献代码。。</p>
+<p>下面是我看了cayley的代码后 整理的一个hello world 生成一个可用的mongo的容器 运行 并且返回mongo的IP地址和端口进行连接 因为下面我已经写了尽可能多的注释了 所以不一一解释了<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"github.com/fsouza/go-dockerclient"</span></span><br><span class="line">	<span class="string">"time"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"bytes"</span></span><br><span class="line">	<span class="string">"runtime"</span></span><br><span class="line">	<span class="string">"strconv"</span></span><br><span class="line">	<span class="string">"net"</span></span><br><span class="line">	<span class="string">"math/rand"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//配置</span></span><br><span class="line"><span class="keyword">type</span> fullConfig <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">//主要是镜像的配置</span></span><br><span class="line">	docker.Config</span><br><span class="line">	<span class="comment">//主要是容器的配置</span></span><br><span class="line">	docker.HostConfig</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//检测IP地址和端口是否可用 可连接</span></span><br><span class="line"><span class="keyword">const</span> wait = time.Second * <span class="number">5</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">waitPort</span><span class="params">(addr <span class="keyword">string</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	start := time.Now()</span><br><span class="line">	c, err := net.DialTimeout(<span class="string">"tcp"</span>, addr, wait)</span><br><span class="line">	<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">		c.Close()</span><br><span class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> dt := time.Since(start); dt &lt; wait &#123;</span><br><span class="line">		time.Sleep(wait - dt)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> err == <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//随机选择可用的端口</span></span><br><span class="line"><span class="keyword">const</span> localhost = <span class="string">"127.0.0.1"</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">randPort</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">const</span> (</span><br><span class="line">		min = <span class="number">10000</span></span><br><span class="line">		max = <span class="number">30000</span></span><br><span class="line">	)</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		port := min + rand.Intn(max-min)</span><br><span class="line">		c, err := net.DialTimeout(<span class="string">"tcp"</span>, fmt.Sprintf(<span class="string">"%s:%d"</span>, localhost, port), time.Second)</span><br><span class="line">		<span class="keyword">if</span> c != <span class="literal">nil</span> &#123;</span><br><span class="line">			c.Close()</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="comment">// <span class="doctag">TODO:</span> check for a specific error</span></span><br><span class="line">			<span class="keyword">return</span> port</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">//一般通过以下sock文件初始化docker client</span></span><br><span class="line">	Address := <span class="string">`unix:///var/run/docker.sock`</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//初始化镜像和容器的配置</span></span><br><span class="line">	<span class="keyword">var</span> conf docker.Config</span><br><span class="line">	port := <span class="string">"27017"</span></span><br><span class="line">	<span class="comment">//镜像的名字叫mongo</span></span><br><span class="line">	conf.Image = <span class="string">"mongo"</span></span><br><span class="line">	conf.OpenStdin = <span class="literal">true</span></span><br><span class="line">	conf.Tty = <span class="literal">true</span></span><br><span class="line">	<span class="comment">//容器暴露出27017这个端口</span></span><br><span class="line">	conf.ExposedPorts = <span class="keyword">map</span>[docker.Port]<span class="keyword">struct</span>&#123;&#125; &#123;</span><br><span class="line">		<span class="string">"27017/tcp"</span>: &#123;&#125;,</span><br><span class="line">	&#125;</span><br><span class="line">	fconf := fullConfig&#123;</span><br><span class="line">		Config: conf,</span><br><span class="line">		HostConfig: docker.HostConfig&#123;</span><br><span class="line">			<span class="comment">//端口映射 容器的27017端口映射到本地的27017端口</span></span><br><span class="line">			PortBindings: <span class="keyword">map</span>[docker.Port][]docker.PortBinding&#123;</span><br><span class="line">				<span class="string">"27017/tcp"</span>: &#123;</span><br><span class="line">					&#123;</span><br><span class="line">						HostIP:   <span class="string">"0.0.0.0"</span>,</span><br><span class="line">						HostPort: port,</span><br><span class="line">					&#125;,</span><br><span class="line">				&#125;,</span><br><span class="line">			&#125;,</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//在linux系统下 可以原生地运行docker 但是在其他系统下需要特殊处理 随机选择可用的端口进行映射</span></span><br><span class="line">	<span class="keyword">if</span> runtime.GOOS != <span class="string">"linux"</span> &#123;</span><br><span class="line">		log.Println(<span class="string">"this is not linux"</span>)</span><br><span class="line">		lport := strconv.Itoa(randPort())</span><br><span class="line">		<span class="comment">// nothing except Linux runs Docker natively,</span></span><br><span class="line">		<span class="comment">// so we randomize the port and expose it on Docker VM</span></span><br><span class="line">		fconf.PortBindings = <span class="keyword">map</span>[docker.Port][]docker.PortBinding&#123;</span><br><span class="line">			docker.Port(port + <span class="string">"/tcp"</span>): &#123;&#123;</span><br><span class="line">				HostIP:   localhost,</span><br><span class="line">				HostPort: lport,</span><br><span class="line">			&#125;&#125;,</span><br><span class="line">		&#125;</span><br><span class="line">		port = lport</span><br><span class="line">		log.Println(<span class="string">"this is not linux env, change the port to"</span>, lport)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//初始化docker client</span></span><br><span class="line">	cli, err := docker.NewClient(Address)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//从远程拉取指定的docker镜像 如果本地已经存在指定镜像 那么操作被跳过</span></span><br><span class="line">	<span class="keyword">var</span> buf bytes.Buffer</span><br><span class="line">	<span class="keyword">if</span> err := cli.PullImage(docker.PullImageOptions&#123;</span><br><span class="line">		<span class="comment">//通过 镜像所在组/镜像名称:镜像标签 来指定特定的镜像</span></span><br><span class="line">		Repository:   <span class="string">"docker.io/mongo:latest"</span>,</span><br><span class="line">		<span class="comment">//指定输出位置</span></span><br><span class="line">		OutputStream: &amp;buf,</span><br><span class="line">	&#125;, docker.AuthConfiguration&#123;&#125;); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(<span class="string">"pull 容器失败"</span>)</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	log.Println(<span class="string">"buf"</span>, buf.String())</span><br><span class="line"></span><br><span class="line">	<span class="comment">//从上面的镜像中生成一个docker容器</span></span><br><span class="line">	cont, err := cli.CreateContainer(docker.CreateContainerOptions&#123;</span><br><span class="line">		Config: &amp;fconf.Config,</span><br><span class="line">		HostConfig: &amp;fconf.HostConfig,</span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(<span class="string">"创建容器失败"</span>)</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//生成一个强制移除容器的关闭函数</span></span><br><span class="line">	closer := <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		cli.RemoveContainer(docker.RemoveContainerOptions&#123;</span><br><span class="line">			ID: cont.ID,</span><br><span class="line">			Force: <span class="literal">true</span>,</span><br><span class="line">		&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> closer()</span><br><span class="line"></span><br><span class="line">	<span class="comment">//启动容器</span></span><br><span class="line">	<span class="keyword">if</span> err := cli.StartContainer(cont.ID, &amp;fconf.HostConfig); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(<span class="string">"启动容器失败"</span>)</span><br><span class="line">		closer()</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//监听容器是否启动成功</span></span><br><span class="line">	info, err := cli.InspectContainer(cont.ID)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(<span class="string">"监视容器失败"</span>)</span><br><span class="line">		closer()</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//获取容器运行在的IP地址和端口 这里默认使用的是 bridge的网络模式</span></span><br><span class="line">	addr := info.NetworkSettings.IPAddress</span><br><span class="line">	addr += <span class="string">":"</span> + port</span><br><span class="line"></span><br><span class="line">	<span class="comment">//在10机会监听数据库的连接url是否可用</span></span><br><span class="line">	ok := <span class="literal">false</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span> &amp;&amp; !ok; i++ &#123;</span><br><span class="line">		ok = waitPort(addr)</span><br><span class="line">		<span class="keyword">if</span> !ok &#123;</span><br><span class="line">			time.Sleep(time.Second * <span class="number">2</span>)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !ok &#123;</span><br><span class="line">		log.Println(<span class="string">"一直连接失败"</span>)</span><br><span class="line">		closer()</span><br><span class="line">		log.Fatal(<span class="string">"tcp connect fail"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">"addr"</span>, addr)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>cayley将上面的常用操作都封装成函数在<a href="https://github.com/cayleygraph/cayley/blob/master/internal/dock/dock.go" target="_blank" rel="noopener">docker操作</a> 这些使用docker生成一次性数据库并使用的一个例子可见<a href="https://github.com/cayleygraph/cayley/blob/master/graph/nosql/mongo/mongo_test.go" target="_blank" rel="noopener">mongo_test</a></p>
+<p><strong>cayley在这一点上做的很精彩 也很创新 非常值得我们学习</strong></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/12/03/docker在测试中的作用/" data-id="cjp7yr3xk000frco06eqza8eq" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-java基础：入职华为前的重启" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/12/03/java基础：入职华为前的重启/" class="article-date">
@@ -114,7 +268,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjp7ykws6000ijwo0e2n050ra" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjp7yr3y1000srco0flgid142" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -251,7 +405,7 @@ RUN go build
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjp7ykwsw001cjwo08j669zpk" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjp7yr3yn001qrco05ag4xcz8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -328,7 +482,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjp7ykws0000bjwo0tgho0siv" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjp7yr3xv000krco00x3bza7j" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/线程/">线程</a></li></ul>
@@ -420,7 +574,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjp7ykwrr0004jwo021989ji3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjp7yr3xb0007rco0iwuqnecm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li></ul>
@@ -474,7 +628,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/15/cayley原理一-获取查询结果/" data-id="cjp7ykwrt0005jwo0fpwcykgg" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/15/cayley原理一-获取查询结果/" data-id="cjp7yr3xg000arco0ykz1ac6c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
@@ -572,7 +726,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/09/图数据库跟传统数据库以及图算法/" data-id="cjp7ykwst0018jwo0pdo9p2yz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/09/图数据库跟传统数据库以及图算法/" data-id="cjp7yr3yl001prco0jfdnfoey" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图算法/">图算法</a></li></ul>
@@ -683,7 +837,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/08/使用rabbitMQ作为缓存队列/" data-id="cjp7ykwsv001ajwo05pcbwgg8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/08/使用rabbitMQ作为缓存队列/" data-id="cjp7yr3yh001hrco0x45mzi2o" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li></ul>
@@ -781,187 +935,10 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/mux学习/" data-id="cjp7ykwsb000njwo0v8jei08y" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/mux学习/" data-id="cjp7yr3y3000xrco0vq5l66d9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mux/">mux</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-go-web" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/08/06/go-web/" class="article-date">
-  <time datetime="2018-08-06T08:18:40.000Z" itemprop="datePublished">2018-08-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/06/go-web/">go web</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><a href="https://golang.org/doc/articles/wiki/ttps://golang.org/doc/articles/wiki/" target="_blank" rel="noopener">参考链接</a><br>这个教程是原生的库<strong>net/http</strong>来进行web服务端开发的 教程中使用了<strong>html/template</strong>来加载HTML模板 模板的语法也跟Python的jinja2的数据绑定很类似 但是我们清楚这种前后端不分离的方式其实不再合适未来的趋势</p>
-<hr>
-<h2 id="视图函数"><a href="#视图函数" class="headerlink" title="视图函数"></a>视图函数</h2><p>go原生的<strong>net/http</strong>比较有意思 它的视图函数没有返回值也是可以的 它的<strong>http.HandleFunc</strong>这个装饰器可以默认返回空 不会报错 相反Python的一些框架就不行</p>
-<p>一般视图函数格式 <strong>http.ResponseWriter</strong>用来写入返回给客户端的头部信息或者[]byte类型数据 <strong>*http.Request</strong>注意是一个指针类型 其实这里我有点不是很明白 怎么request是按照指针传递 response是按照值传递？</p>
-<blockquote>
-<p>我自己觉得应该是在go语言中 response是从开发人员自己生命定义的handle视图函数开始就被一层一层的wrapper包装 所以response是不断被层层包裹被修改的 在每一层wrapper中response都不一样 所以按值传递就可以 但是requestsh1i是在各层wrapper或者redirect过程中都需要保持不变的 因为request是的参数被修改的话会影响http response这样没有太大意义 所以request最好使用指针传递 原来的request该怎样就怎样</p>
-</blockquote>
-<p>stackoverflow的上关于这个问题的解释是</p>
-<ul>
-<li>http.request是一个很大的结构 值拷贝的话花销非常大</li>
-<li>http.request是含有一些状态state的 如果被拷贝的话具有一定的迷惑性</li>
-</ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">handler</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span>  &#123;</span><br><span class="line">	p := r.URL.Path</span><br><span class="line">	fmt.Println(<span class="string">"path"</span>, p)</span><br><span class="line">	w.Write([]<span class="keyword">byte</span>(<span class="string">"lalallallala"</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="注册视图函数"><a href="#注册视图函数" class="headerlink" title="注册视图函数"></a>注册视图函数</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http.HandleFunc(<span class="string">"/"</span>, handler)</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="运行web后端app"><a href="#运行web后端app" class="headerlink" title="运行web后端app"></a>运行web后端app</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http.ListenAndServe(<span class="string">":8080"</span>, <span class="literal">nil</span>)</span><br></pre></td></tr></table></figure>
-<p>上面是不会打印输出任何内容的 所以一般下面这样运行<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">log.Fatal(http.ListenAndServe(<span class="string">":8080"</span>, <span class="literal">nil</span>))</span><br></pre></td></tr></table></figure></p>
-<p>一般ip地址是可以被忽略的 默认是本机的IP地址</p>
-<p>一般来说我们希望运行多个实例 然后在nginx上可以设置负载均衡 但是刚刚说上面那个监听运行语句是阻塞的 所以go语言这种天生支持多线程的的语言的优势就派上用场了</p>
-<p>可以使用goroutine多开线程运行多个web app<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for i := 0; i &lt; 4; i++ &#123;</span><br><span class="line">	go func() &#123;</span><br><span class="line">		log.Fatal(http.ListenAndServe(&quot;:808&quot; + string(i), nil))</span><br><span class="line">	&#125;()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>html模板加载和渲染就不记录了 就是使用原生的html/template这个库 语法非常类似Python的jinja2 感觉这部分在日益前后端分离的今天有点不合时宜了 所以只是看了看 没有多加记录</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/go-web/" data-id="cjp7ykwrz000ajwo02vdmdx6v" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web/">web</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-go多线程" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/08/06/go多线程/" class="article-date">
-  <time datetime="2018-08-06T08:17:50.000Z" itemprop="datePublished">2018-08-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/06/go多线程/">go多线程</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><blockquote>
-<p><strong>go是默认一个核只在一个时间点只可以运行一个线程</strong> 如果要实现并发 需要告诉go我们允许同时使用多个核 这样才可以实现真正意义上的并发</p>
-</blockquote>
-<hr>
-<h2 id="goroutine"><a href="#goroutine" class="headerlink" title="goroutine"></a>goroutine</h2><blockquote>
-<p>go语言可以使用go开始执行一个新的线程 完果没有go的语句就跟正常一样 当所有的代码执行完毕而还有goroutine还没执行完 那么那些线程都会被终止 </p>
-</blockquote>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	<span class="keyword">go</span> fmt.Println(<span class="string">"lalala"</span>)</span><br><span class="line">	fmt.Println(<span class="string">"hahaha"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面的情况是 其实只用了一个核 所有这不是并行 这是并发 那么输出结果是取决于那个goroutine结束最快 第二行输出结束最快(这里跟异步的感觉有点像) 那么输出是第二行 然后第二行运行结束之后 就终止了所有的goroutine 这时候第一行就来不及执行了 第一行等不到结束就被终止了</p>
-<p>如果需要两行都输出 那么需要sleep一下 当第二行执行完的时候 这时候sleep会释放出CPU资源 这时候第一行可以使用CPU资源进行执行输出结果<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	<span class="keyword">go</span> fmt.Println(<span class="string">"lalala"</span>)</span><br><span class="line">	fmt.Println(<span class="string">"hahaha"</span>)</span><br><span class="line">	time.Sleep(<span class="number">4</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>输出<br><img src="http://static.zybuluo.com/gzm1997/27at0en69mz01xnc8wmqb7dl/image_1chi83vnr1r2417ginpa12s9118c9.png" alt="image_1chi83vnr1r2417ginpa12s9118c9.png-14kB"></p>
-<p>goroutine应用在func上<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">publicMews</span><span class="params">(text <span class="keyword">string</span>, delay time.Duration)</span></span>  &#123;</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		time.Sleep(delay)</span><br><span class="line">		fmt.Println(<span class="string">"breaking news"</span>, text)</span><br><span class="line">	&#125;()</span><br><span class="line">	fmt.Println(<span class="string">"after func"</span>)</span><br><span class="line">	time.Sleep(<span class="number">3</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	publicMews(<span class="string">"world cup"</span>, <span class="number">12</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>结果跟上面类似</p>
-<hr>
-<h2 id="管道的基本使用"><a href="#管道的基本使用" class="headerlink" title="管道的基本使用"></a>管道的基本使用</h2><p>声明管道</p>
-<p>声明双向的无缓存管道</p>
-<pre><code>test := make(chan int)
-</code></pre><p>声明双向的有缓存管道</p>
-<pre><code>test2 := make(chan int, 10)
-</code></pre><p>创建只写管道</p>
-<pre><code>test3 := make(chan &lt;- int)
-</code></pre><p>创建只读管道</p>
-<pre><code>test4 := make(&lt;- chan int)
-</code></pre><p>也可以声明通道是指针类型</p>
-<pre><code>test5 := make(&lt;- chan *int)
-</code></pre><hr>
-<h2 id="使用管道在线程之间进行通信"><a href="#使用管道在线程之间进行通信" class="headerlink" title="使用管道在线程之间进行通信"></a>使用管道在线程之间进行通信</h2><blockquote>
-<p>当一个管道被声明之后 它是开着的 如果没有信息传进去 那么等待管道的线程一直等不到输出 会陷入<strong>死锁</strong></p>
-</blockquote>
-<p>只要另外一个线程的管道没有被正确关闭 那么主线程会一直等待 这样会陷入死锁</p>
-<p>像下面这样<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>)</span><br><span class="line">fmt.Println(&lt;- ch)</span><br></pre></td></tr></table></figure></p>
-<p>输出显示死锁<br><img src="http://static.zybuluo.com/gzm1997/5vwb6qowab7adku5ydxei5n4/image_1chiabekv14kl1lat12lm1nqkmlf1m.png" alt="image_1chiabekv14kl1lat12lm1nqkmlf1m.png-31.7kB"></p>
-<p>但是即使我们没有在管道中输入信息 但是及时关闭了管道 这样是可以避免出现死锁的出现的</p>
-<p>像下面这样<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>)</span><br><span class="line"><span class="built_in">close</span>(ch)</span><br><span class="line">fmt.Println(&lt;- ch)</span><br></pre></td></tr></table></figure></p>
-<p>这样就没有造成死锁问题了</p>
-<p>下面的例子 第一次发送之后我们关闭这个管道 那么第一次接受是可以接受到发送过来的内容的 然后因为我们关闭了这个管道 那么接下来的输出都是输出空字符串 同时因为已经正确关闭了管道 所以不会出现上述的死锁问题<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		ch &lt;- <span class="string">"lalalalla"</span></span><br><span class="line">		<span class="built_in">close</span>(ch)</span><br><span class="line">	&#125;()</span><br><span class="line">	fmt.Println(&lt;- ch)</span><br><span class="line">	fmt.Println(&lt;- ch)</span><br><span class="line">	fmt.Println(&lt;- ch)</span><br><span class="line">	a, b := &lt;- ch</span><br><span class="line">	fmt.Println(<span class="string">"a"</span>, a, <span class="string">"b"</span>, b)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>输出<br><img src="http://static.zybuluo.com/gzm1997/psk23n5ldscvz2xf6ftctez3/image_1chib44pt1faa1t1crb81v2a22j23.png" alt="image_1chib44pt1faa1t1crb81v2a22j23.png-16.9kB"></p>
-<p>管道使用的时候一定要注意发送方和接受方一定要处于两个不同的线程 如果处于一个线程 会有一个莫名其妙的死锁报错</p>
-<p>像下面这样<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">sendMsgToCh</span><span class="params">(ch <span class="keyword">chan</span> <span class="keyword">int</span>)</span> <span class="title">chan</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">4</span>; i++ &#123;</span><br><span class="line">			ch &lt;- i</span><br><span class="line">			<span class="built_in">close</span>(ch)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;()</span><br><span class="line">	<span class="keyword">return</span> ch</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">	r := sendMsgToCh(ch)</span><br><span class="line">	<span class="keyword">for</span> c := <span class="keyword">range</span> r &#123;</span><br><span class="line">		fmt.Println(<span class="string">"receive value"</span>, c)</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>报错<br><img src="http://static.zybuluo.com/gzm1997/4rubaa0xtc5om2akc66vdvn5/image_1chk2d6gp1ffs16mg1o0hniitqe39.png" alt="image_1chk2d6gp1ffs16mg1o0hniitqe39.png-164.9kB"></p>
-<hr>
-<h2 id="数据竞争"><a href="#数据竞争" class="headerlink" title="数据竞争"></a>数据竞争</h2><p>其实就是公有变量的互斥性访问问题 这个设置互斥锁问题</p>
-<p>例如下面<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">	n := <span class="number">0</span></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		n++</span><br><span class="line">		<span class="built_in">close</span>(ch)</span><br><span class="line">	&#125;()</span><br><span class="line">	n++</span><br><span class="line">	time.Sleep(<span class="number">3</span>)</span><br><span class="line">	fmt.Println(n)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>输出结果是 如果没有sleep三秒 那么输出一般都是1的 如果sleep之后输出是2 所以可见两个线程都是在做自增n的操作的</p>
-<p><strong>避免数据竞争的唯一方式是线程间同步访问所有的共享可变数据</strong></p>
-<p>在go语言中 这一般都是使用</p>
-<ul>
-<li>管道</li>
-<li>锁</li>
-</ul>
-<p>有句话说的好 </p>
-<blockquote>
-<p>不要通过共享内存来通讯 而是通过通讯来共享内存(共享变量)</p>
-</blockquote>
-<p>通过管道来实现两个线程同步修改公有变量<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">	n := <span class="number">0</span></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		n++</span><br><span class="line">		ch &lt;- n</span><br><span class="line">		<span class="built_in">close</span>(ch)</span><br><span class="line">	&#125;()</span><br><span class="line">	r := &lt;- ch</span><br><span class="line">	r++</span><br><span class="line">	fmt.Println(r)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="同步锁"><a href="#同步锁" class="headerlink" title="同步锁"></a>同步锁</h2><p>向上面说的 出了使用管道来在进程间进行数据传输 还可以使用同步锁实现公有变量的互斥访问</p>
-<p>下面是使用同步锁来让两个线程都自增一个公有变量<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"sync"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> AutomicInt <span class="keyword">struct</span> &#123;</span><br><span class="line">	mu sync.Mutex</span><br><span class="line">	val <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *AutomicInt)</span> <span class="title">add</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a.mu.Lock()</span><br><span class="line">	a.val++</span><br><span class="line">	a.mu.Unlock()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a AutomicInt)</span> <span class="title">get</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	a.mu.Lock()</span><br><span class="line">	r := a.val</span><br><span class="line">	a.mu.Unlock()</span><br><span class="line">	<span class="keyword">return</span> r</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	mu := sync.Mutex&#123;&#125;</span><br><span class="line">	a := AutomicInt&#123;mu, <span class="number">0</span>&#125;</span><br><span class="line">	wait := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		a.add()</span><br><span class="line">		<span class="built_in">close</span>(wait)</span><br><span class="line">	&#125;()</span><br><span class="line">	a.add()</span><br><span class="line">	&lt;- wait</span><br><span class="line">	r := a.get()</span><br><span class="line">	fmt.Println(r)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>输出<br><img src="http://static.zybuluo.com/gzm1997/0rh0ahsjyrgn7qttciu9nnhd/image_1chk4qjrm2d31ljs4ve1nq56cf9.png" alt="image_1chk4qjrm2d31ljs4ve1nq56cf9.png-15.8kB"></p>
-<hr>
-<p>WaitGroup<br>相当于Python asyncio的eventloop 都是讲线程添加到一个队列进行阻塞运行 直至运行完毕 有几个函数要注意一下</p>
-<p>声明一个waitgroup 并制定可以放1五个线程进去</p>
-<pre><code>wg := sync.WaitGroup{}
-wg.Add(5)
-</code></pre><p>上面这样声明之后 这个waitgroup的计数器就是5了 每当我们执行一个线程 需要在后面加上</p>
-<pre><code>wg.Done()
-</code></pre><p>done函数会使得计数器-1 计数器减少到0之后就执行完毕</p>
-<p>使用waitgroup进行多个线程互斥访问公有变量<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">race</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	wg := sync.WaitGroup&#123;&#125;</span><br><span class="line">	wg.Add(<span class="number">5</span>)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">5</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			fmt.Println(<span class="string">"i"</span>, i)</span><br><span class="line">			wg.Done()</span><br><span class="line">		&#125;()</span><br><span class="line">	&#125;</span><br><span class="line">	wg.Wait()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	race()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>输出是55555 这个结果很显然的了 就是for循环上的自增是先被执行的 后面的线程才被执行 那么所有线程输出的i都是5</p>
-<p>可以在线程的匿名函数参数表chuan将公有变量作为参数穿进去 这样输出的结果才是对的 但是顺序肯定是乱的 因为线程的执行真的是顺序根本不确定的</p>
-<p>如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">race</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	wg := sync.WaitGroup&#123;&#125;</span><br><span class="line">	wg.Add(<span class="number">5</span>)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">5</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(i <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">			fmt.Println(<span class="string">"i"</span>, i)</span><br><span class="line">			wg.Done()</span><br><span class="line">		&#125;(i)</span><br><span class="line">	&#125;</span><br><span class="line">	wg.Wait()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	race()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>输出结果<br><img src="http://static.zybuluo.com/gzm1997/sdcsknbhgi8fdo50m65zlvk1/image_1chk5lond1u2k1vh68oj12glooq1m.png" alt="image_1chk5lond1u2k1vh68oj12glooq1m.png-15.8kB"></p>
-<hr>
-<h2 id="select语句"><a href="#select语句" class="headerlink" title="select语句"></a>select语句</h2><p>golang的select跟select poll epoll相似 就是监听io操作 当思io操作发生时 触发相应的动作</p>
-<p>注意select代码形式跟switch非常相似 但是select的case里操作语句只能是io操作</p>
-<p>例子<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	c1, c2 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>), <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">	<span class="comment">//var i1, i2 int</span></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		c1 &lt;- <span class="number">12</span></span><br><span class="line">		<span class="built_in">close</span>(c1)</span><br><span class="line">	&#125;()</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		c2 &lt;- <span class="number">23</span></span><br><span class="line">		<span class="built_in">close</span>(c2)</span><br><span class="line">	&#125;()</span><br><span class="line">	<span class="keyword">select</span> &#123;</span><br><span class="line">	<span class="keyword">case</span> i1 := &lt;- c1: fmt.Println(<span class="string">"r 1"</span>, i1)</span><br><span class="line">	<span class="keyword">case</span> i2 := &lt;- c2: fmt.Println(<span class="string">"r 2"</span>, i2)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>上面的代码可以输出第一个 也可以额输出第二个 这样取决于哪个线程最先完成 select是一定要等到其中一个case有io操作 就是有数据传输过来的 再次之前一直阻塞</p>
-<p>但是一直没有io语句执行成功 而且select含有default语句的时候 会执行default</p>
-<p>select的作用感觉非常大 因为可以想象一个场景 一个服务器上有一个服务 这个服务有个处理入口 每个请求过来我们轮训select上每个io能否进行操作 如果有那么处理这个请求 如果没有那么去到default那里返回系统繁忙请稍后操作的提示 我们可以使用select轻易实现这个需求</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/go多线程/" data-id="cjp7ykws2000djwo0xsmd7uix" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/多线程/">多线程</a></li></ul>
 
     </footer>
   </div>
@@ -988,7 +965,7 @@ wg.Add(5)
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/subgraph/">subgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -998,7 +975,7 @@ wg.Add(5)
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 17.5px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 17.5px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 12.5px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/gremlin/" style="font-size: 10px;">gremlin</a> <a href="/tags/hugegraph/" style="font-size: 10px;">hugegraph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 17.5px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/subgraph/" style="font-size: 10px;">subgraph</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -1020,6 +997,14 @@ wg.Add(5)
       <ul>
         
           <li>
+            <a href="/2018/12/03/subgraph概况/">subgraph概况</a>
+          </li>
+        
+          <li>
+            <a href="/2018/12/03/docker在测试中的作用/">docker在测试中的作用</a>
+          </li>
+        
+          <li>
             <a href="/2018/12/03/java基础：入职华为前的重启/">java基础：入职华为前的重启</a>
           </li>
         
@@ -1029,14 +1014,6 @@ wg.Add(5)
         
           <li>
             <a href="/2018/08/22/goroutine与工作池/">goroutine与工作池</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/20/cayley原理2/">cayley原理2</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/15/cayley原理一-获取查询结果/">cayley原理一(获取查询结果)</a>
           </li>
         
       </ul>

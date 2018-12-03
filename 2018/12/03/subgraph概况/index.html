@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>subgraph概况 | gzm&#39;s blogs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="背景因为我们现在使用的图数据库都有一个瓶颈就是不支持图数据库集群 在图数据库的使用上我们只可以使用单点 如果使用多点 那么就会有很多缓存不一致等问题 因为现在开源的图数据库d很多都是企业内部图数据库的阉割版 都是不支持图数据库层面的集群的 所以不可以做上线版本的 那么离线分析可以作为一个方向  离线数据  都是csv格式的文件 文件中每一行的格式都很单一 就是 userid,fileid 例如 3">
+<meta name="keywords" content="subgraph,hugegraph,gremlin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="subgraph概况">
+<meta property="og:url" content="http://yoursite.com/2018/12/03/subgraph概况/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="背景因为我们现在使用的图数据库都有一个瓶颈就是不支持图数据库集群 在图数据库的使用上我们只可以使用单点 如果使用多点 那么就会有很多缓存不一致等问题 因为现在开源的图数据库d很多都是企业内部图数据库的阉割版 都是不支持图数据库层面的集群的 所以不可以做上线版本的 那么离线分析可以作为一个方向  离线数据  都是csv格式的文件 文件中每一行的格式都很单一 就是 userid,fileid 例如 3">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/174wxmwfn5iwgon89z0g1oys/image_1crhbqje41b356it1sb361o1ujo9.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/ecow1zzi4x0corwax41snnhd/image_1crhd07pqg6ldu7sqo1bp8kna1m.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/xx9i7j0h8hv26eq73ruegid6/image_1crhdmvi8s2bgfohrl1h3cgg23.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/qteo7bofu3rkhjxy27m191lt/image_1crhe6s8c1khm16t61hcmmtj1ldj40.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/s3v79cx1e034kd5s7nbrlld5/image_1crhebmsdu8cpbk1dsiboj17la4t.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/r6x6wei7uv0qbl56agcte8yv/image_1crjbgkh718351l79195c13r1f179.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/ig8vj46wz3ix43vddv8c0uqh/image_1crjblvqejc1hqpham11ebm5q1m.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/0a9wnz322pst3cravx8nl5sx/image_1crjckhir1sio1ec91dvn3sri9n2j.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/ph2r9d85ys31axb7zy354ee5/image_1crjdr1gcbdk1sen1r2el5knd30.png">
+<meta property="og:updated_time" content="2018-12-03T06:57:30.723Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="subgraph概况">
+<meta name="twitter:description" content="背景因为我们现在使用的图数据库都有一个瓶颈就是不支持图数据库集群 在图数据库的使用上我们只可以使用单点 如果使用多点 那么就会有很多缓存不一致等问题 因为现在开源的图数据库d很多都是企业内部图数据库的阉割版 都是不支持图数据库层面的集群的 所以不可以做上线版本的 那么离线分析可以作为一个方向  离线数据  都是csv格式的文件 文件中每一行的格式都很单一 就是 userid,fileid 例如 3">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/174wxmwfn5iwgon89z0g1oys/image_1crhbqje41b356it1sb361o1ujo9.png">
+  
+    <link rel="alternate" href="/atom.xml" title="gzm&#39;s blogs" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">gzm&#39;s blogs</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-subgraph概况" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/12/03/subgraph概况/" class="article-date">
+  <time datetime="2018-12-03T06:57:02.000Z" itemprop="datePublished">2018-12-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      subgraph概况
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>因为我们现在使用的图数据库都有一个瓶颈就是<strong>不支持图数据库集群</strong> 在图数据库的使用上我们只可以使用单点 如果使用多点 那么就会有很多缓存不一致等问题 因为现在开源的图数据库d很多都是企业内部图数据库的阉割版 都是不支持图数据库层面的集群的 所以不可以做上线版本的 那么<strong>离线分析</strong>可以作为一个方向</p>
+<hr>
+<h2 id="离线数据"><a href="#离线数据" class="headerlink" title="离线数据"></a>离线数据</h2><p><img src="http://static.zybuluo.com/gzm1997/174wxmwfn5iwgon89z0g1oys/image_1crhbqje41b356it1sb361o1ujo9.png" alt="image_1crhbqje41b356it1sb361o1ujo9.png-20.9kB"></p>
+<p> 都是csv格式的文件 文件中每一行的格式都很单一 就是</p>
+<pre><code>userid,fileid
+</code></pre><p>例如</p>
+<pre><code>311915299,10437872764
+</code></pre><p>每一条数据意味着某个用户id读了某个文件id</p>
+<p>而且这些数据所有都是fileid具有约束条件<strong>pv&lt;6</strong>的 这次离线分析的思想很简单就是： 物以类聚 人以群分 想通过以fileid为中心形成很多子图 而且pv&lt;6使得这些文件都不是属于烂大街的文件和具有普适性的 比如文档教程之类 过于烂大街的文件形成的子图对于我们来说没有什么价值 因为它们无法为我们的用户画像带来帮助 那么这些文件的属性大概率可以表明这些子图中用户的身份 比如以简历为中心的子图中的用户大概率是应届毕业生之类的 思路是很简单的</p>
+<hr>
+<h2 id="schema和graph"><a href="#schema和graph" class="headerlink" title="schema和graph"></a>schema和graph</h2><p>所有的代码都在<a href="http://ksogit.kingsoft.net/wpsyun/relation-graph/tree/gzm/subgraph" target="_blank" rel="noopener">subgraph</a><br>构建子图部分如下：<br><img src="http://static.zybuluo.com/gzm1997/ecow1zzi4x0corwax41snnhd/image_1crhd07pqg6ldu7sqo1bp8kna1m.png" alt="image_1crhd07pqg6ldu7sqo1bp8kna1m.png-31.4kB"></p>
+<p>构建图的思路很简单<br><img src="http://static.zybuluo.com/gzm1997/xx9i7j0h8hv26eq73ruegid6/image_1crhdmvi8s2bgfohrl1h3cgg23.png" alt="image_1crhdmvi8s2bgfohrl1h3cgg23.png-23.3kB"><br>在hugegraph里面上面的创建其实是分为两部分的</p>
+<ol>
+<li>schema </li>
+<li>graph</li>
+</ol>
+<p>对应上面图中<br><img src="http://static.zybuluo.com/gzm1997/qteo7bofu3rkhjxy27m191lt/image_1crhe6s8c1khm16t61hcmmtj1ldj40.png" alt="image_1crhe6s8c1khm16t61hcmmtj1ldj40.png-32.2kB"></p>
+<p>分别对应项目中如下两部分<br><img src="http://static.zybuluo.com/gzm1997/s3v79cx1e034kd5s7nbrlld5/image_1crhebmsdu8cpbk1dsiboj17la4t.png" alt="image_1crhebmsdu8cpbk1dsiboj17la4t.png-62.5kB"></p>
+<p>这里有必要说一下我代码里面一些单元测试 单元测试在我的代码里面很重要 在这里我基本是写一个函数就对应写一个单元测试 这样你看我的代码 看我的单元测试就知道这些函数是怎样使用的了 所以<strong>看我的代码 看我的单元测试是关键</strong></p>
+<p>代码中schema文件夹下schema.go就是用来构建schema中propertyKey vertexLabel edgeLabel中的函数 在schema_test.go中可以看到这些对应函数的使用方法 同时也有部分注释<br>代码中schema文件夹跟上面类似</p>
+<hr>
+<h2 id="读取csv数据构造图"><a href="#读取csv数据构造图" class="headerlink" title="读取csv数据构造图"></a>读取csv数据构造图</h2><p>入口在如下main函数<br><img src="http://static.zybuluo.com/gzm1997/r6x6wei7uv0qbl56agcte8yv/image_1crjbgkh718351l79195c13r1f179.png" alt="image_1crjbgkh718351l79195c13r1f179.png-49.3kB"></p>
+<p><a href="http://ksogit.kingsoft.net/wpsyun/relation-graph/blob/gzm/subgraph/construct/constructWholeGraph.go#L17" target="_blank" rel="noopener">ConstructGraph函数</a>每一次读取一个csv文件 迭代处理每一行 对于每一行</p>
+<pre><code>userid, fileid
+</code></pre><p>先生成一个user的点和一个file的点 以及生成一条从user指向file类型为connect的边 一直重复上述操作 直至数据被处理完</p>
+<p>上述的操作有两点要注意的地方：</p>
+<ol>
+<li>我是单线程同步构造图的 但是73哥csv耗时上并不是太长 可以接受</li>
+<li>如果对构造图有耗时上的要求 那么推荐使用无gremlin的纯graph api(restful api)</li>
+</ol>
+<hr>
+<h2 id="查询子图"><a href="#查询子图" class="headerlink" title="查询子图"></a>查询子图</h2><p><img src="http://static.zybuluo.com/gzm1997/ig8vj46wz3ix43vddv8c0uqh/image_1crjblvqejc1hqpham11ebm5q1m.png" alt="image_1crjblvqejc1hqpham11ebm5q1m.png-39.5kB"><br>查询的函数和单元测试都写在上面的红色部分内 入口在下面的绿色部分内</p>
+<p>查询就是使用gremlin api发送gremlin语句过去 这里真的是一句gremlin用到烂 主要用的一句gremlin就是</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> SubGraphGremlin = <span class="string">"sg = g.V().hasLabel('file').has('fileid','%s').repeat(bothE().subgraph('sg').otherV().simplePath()).until(bothE().count().is(0)).cap('sg').next();sg = sg.traversal();r=sg.V().choose(hasLabel('user'), count(), values('fileid'));r"</span></span><br></pre></td></tr></table></figure>
+<p>我们在hugegraph上进行查询大多数情况都是<strong>在gremlin上做文章</strong> 对于gremlin的语法我们需要很注意 所以这里是说一下上面这段gremlin是什么意思</p>
+<p>可以分为四部分</p>
+<p>1.</p>
+<pre><code>sg = g.V().hasLabel(&apos;file&apos;).has(&apos;fileid&apos;,&apos;%s&apos;).repeat(bothE().subgraph(&apos;sg&apos;).otherV().simplePath()).until(bothE().count().is(0)).cap(&apos;sg&apos;).next();
+</code></pre><p>g是一个全局Traversal(全局遍历器) 理论上使用这个全局遍历器awo我们可以首先定位到图里面的某个点或者某部分点 并且以这些点作为我们迭代查询的始点 要注意g其实是这个全局遍历器的别名 在代码里面使用gremlin api post发送gremlin语句的时候需要加上这个别名 否则无法识别g是什么 比如我在在子图的代码里是这样写的<br><img src="http://static.zybuluo.com/gzm1997/0a9wnz322pst3cravx8nl5sx/image_1crjckhir1sio1ec91dvn3sri9n2j.png" alt="image_1crjckhir1sio1ec91dvn3sri9n2j.png-39.9kB"></p>
+<p>详细解释如下<br><img src="http://static.zybuluo.com/gzm1997/ph2r9d85ys31axb7zy354ee5/image_1crjdr1gcbdk1sen1r2el5knd30.png" alt="image_1crjdr1gcbdk1sen1r2el5knd30.png-65.8kB"></p>
+<p>2.</p>
+<pre><code>sg = sg.traversal();
+</code></pre><p>对上一个步骤获取的子图sg 获取这个子图的一个遍历器</p>
+<p>3.</p>
+<pre><code>r=sg.V().choose(hasLabel(&apos;user&apos;), count(), values(&apos;fileid&apos;));
+</code></pre><p>通过这个遍历器 通过choose语句 choose语句相当于if else逻辑 满足第一个参数条件 则执行第二个参数 否则执行第三个参数</p>
+<p>所以上面的意思是如果子图里面的点是有user的label的话 那么返回这些点的数量(子图中用户数量) 否则(就是file的点) 返回浙西file的fileid属性 并且将上诉结果都放到一个r变量中</p>
+<p>4.</p>
+<pre><code>r
+</code></pre><p>返回查询结果</p>
+<hr>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/12/03/subgraph概况/" data-id="cjp7yr3ye001drco0mba58yfb" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/subgraph/">subgraph</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/12/03/docker在测试中的作用/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">docker在测试中的作用</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/subgraph/">subgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 17.5px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 12.5px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/gremlin/" style="font-size: 10px;">gremlin</a> <a href="/tags/hugegraph/" style="font-size: 10px;">hugegraph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 17.5px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/subgraph/" style="font-size: 10px;">subgraph</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/03/subgraph概况/">subgraph概况</a>
+          </li>
+        
+          <li>
+            <a href="/2018/12/03/docker在测试中的作用/">docker在测试中的作用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/12/03/java基础：入职华为前的重启/">java基础：入职华为前的重启</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/11/基于容器的开发/">基于容器的开发</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/22/goroutine与工作池/">goroutine与工作池</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 gzm1997<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

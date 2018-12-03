@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>docker在测试中的作用 | gzm&#39;s blogs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="郭柱明  cayley与dockercayley是一个用go语言编写的很规范的图数据库 他的设计方式很值得我们学习 这篇文章我们简单聊一聊docker在cayley这个图数据库中的应用 docker主要在cayley中有两处使用  将整个cayley作为一个应用打包为一个docker镜像 在每一个涉及持久层操作的单元测试和集成测试中 使用docker生成一个一次性数据库供数据存储  第一点很常见">
+<meta name="keywords" content="cayley,docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker在测试中的作用">
+<meta property="og:url" content="http://yoursite.com/2018/12/03/docker在测试中的作用/index.html">
+<meta property="og:site_name" content="gzm&#39;s blogs">
+<meta property="og:description" content="郭柱明  cayley与dockercayley是一个用go语言编写的很规范的图数据库 他的设计方式很值得我们学习 这篇文章我们简单聊一聊docker在cayley这个图数据库中的应用 docker主要在cayley中有两处使用  将整个cayley作为一个应用打包为一个docker镜像 在每一个涉及持久层操作的单元测试和集成测试中 使用docker生成一个一次性数据库供数据存储  第一点很常见">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/jac2d2yvc3wbw3zf5b167836/image_1crovr4t31hmc14814cdg3qmtd9.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/q1ab5aqsk234npm1uutkiixw/image_1crp006g81526bpjoll1t61kk3m.png">
+<meta property="og:image" content="http://static.zybuluo.com/gzm1997/vmx01k3i53shmw9bscxj3bwa/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910223243.png">
+<meta property="og:updated_time" content="2018-12-03T06:55:44.370Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="docker在测试中的作用">
+<meta name="twitter:description" content="郭柱明  cayley与dockercayley是一个用go语言编写的很规范的图数据库 他的设计方式很值得我们学习 这篇文章我们简单聊一聊docker在cayley这个图数据库中的应用 docker主要在cayley中有两处使用  将整个cayley作为一个应用打包为一个docker镜像 在每一个涉及持久层操作的单元测试和集成测试中 使用docker生成一个一次性数据库供数据存储  第一点很常见">
+<meta name="twitter:image" content="http://static.zybuluo.com/gzm1997/jac2d2yvc3wbw3zf5b167836/image_1crovr4t31hmc14814cdg3qmtd9.png">
+  
+    <link rel="alternate" href="/atom.xml" title="gzm&#39;s blogs" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">gzm&#39;s blogs</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-docker在测试中的作用" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/12/03/docker在测试中的作用/" class="article-date">
+  <time datetime="2018-12-03T06:54:52.000Z" itemprop="datePublished">2018-12-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      docker在测试中的作用
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>郭柱明</p>
+<hr>
+<h2 id="cayley与docker"><a href="#cayley与docker" class="headerlink" title="cayley与docker"></a>cayley与docker</h2><p>cayley是一个用go语言编写的很规范的图数据库 他的设计方式很值得我们学习 这篇文章我们简单聊一聊docker在cayley这个图数据库中的应用</p>
+<p>docker主要在cayley中有两处使用</p>
+<ul>
+<li>将整个cayley作为一个应用打包为一个docker镜像</li>
+<li>在每一个涉及持久层操作的单元测试和集成测试中 使用docker生成一个一次性数据库供数据存储</li>
+</ul>
+<p>第一点很常见 就是使用dockerfile的方式将应用打包成镜像 这样我们可以通过docker很简单地安装和运行cayley<br><img src="http://static.zybuluo.com/gzm1997/jac2d2yvc3wbw3zf5b167836/image_1crovr4t31hmc14814cdg3qmtd9.png" alt="image_1crovr4t31hmc14814cdg3qmtd9.png-172.6kB"><br>但是第二点真的很少见 cayley在第二点上算是非常创新的做法 现在主要讨论第二点</p>
+<hr>
+<h2 id="docker在测试中的使用"><a href="#docker在测试中的使用" class="headerlink" title="docker在测试中的使用"></a>docker在测试中的使用</h2><p>docker的使用情景有很多种 我们可以看一下阮一峰博客上说的<br><img src="http://static.zybuluo.com/gzm1997/q1ab5aqsk234npm1uutkiixw/image_1crp006g81526bpjoll1t61kk3m.png" alt="image_1crp006g81526bpjoll1t61kk3m.png-24.8kB"></p>
+<blockquote>
+<p>cayley在这里正是第一种情况 使用docker提供一次性环境 </p>
+</blockquote>
+<blockquote>
+<p>因为cayley是支持多种数据库作为底层存储 如果在开发测试过程 对每一种数据都进行本地安装 本地系统环境等因素一定会让操作很麻烦 所以cayley选择在各种测试进行的时候使用docker镜像生成一个需要的数据库容器 并且将这个容器运行起来 返回这个容器运行在的IP地址和端口 这样就可以提供给测试的代码进行连接 注意整个测试并不是发生在容器内部的 仅仅是数据库在容器内部</p>
+</blockquote>
+<blockquote>
+<p>当我们操作完需要的持久层操作之后 就可以彻底删除这个容器 也不会导致测试的数据遗留</p>
+</blockquote>
+<p>如果现在不熟悉docker的基本使用 可以先看一下阮一峰<a href="http://www.ruanyifeng.com/blog/2018/02/docker-tutorial.html" target="_blank" rel="noopener">这篇博客</a>先了解简单的docker helloworld</p>
+<hr>
+<p>cayley使用一个封装了docker remote api的第三方包go docker client生成一个数据库容器的步骤如下<br><img src="http://static.zybuluo.com/gzm1997/vmx01k3i53shmw9bscxj3bwa/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180910223243.png" alt="生成一个数据库容器"></p>
+<p>注意 cayley是原本缺失第二步pullimage的 所以导致原来运行cayley所有的测试都会导致设计持久层的测试被skip 正就是我帮cayley修复那个bug 扬哥因此送了我一瓶红酒 commit详情在<a href="https://github.com/cayleygraph/cayley/commit/6da908eaad0216479791aa58806b66672ab7c18f" target="_blank" rel="noopener">pull image from remote repository if there is not image at local machine</a> 这是我人生第一次给比较大的开源项目贡献代码。。</p>
+<p>下面是我看了cayley的代码后 整理的一个hello world 生成一个可用的mongo的容器 运行 并且返回mongo的IP地址和端口进行连接 因为下面我已经写了尽可能多的注释了 所以不一一解释了<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"github.com/fsouza/go-dockerclient"</span></span><br><span class="line">	<span class="string">"time"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"bytes"</span></span><br><span class="line">	<span class="string">"runtime"</span></span><br><span class="line">	<span class="string">"strconv"</span></span><br><span class="line">	<span class="string">"net"</span></span><br><span class="line">	<span class="string">"math/rand"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//配置</span></span><br><span class="line"><span class="keyword">type</span> fullConfig <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">//主要是镜像的配置</span></span><br><span class="line">	docker.Config</span><br><span class="line">	<span class="comment">//主要是容器的配置</span></span><br><span class="line">	docker.HostConfig</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//检测IP地址和端口是否可用 可连接</span></span><br><span class="line"><span class="keyword">const</span> wait = time.Second * <span class="number">5</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">waitPort</span><span class="params">(addr <span class="keyword">string</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	start := time.Now()</span><br><span class="line">	c, err := net.DialTimeout(<span class="string">"tcp"</span>, addr, wait)</span><br><span class="line">	<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">		c.Close()</span><br><span class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> dt := time.Since(start); dt &lt; wait &#123;</span><br><span class="line">		time.Sleep(wait - dt)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> err == <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//随机选择可用的端口</span></span><br><span class="line"><span class="keyword">const</span> localhost = <span class="string">"127.0.0.1"</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">randPort</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">const</span> (</span><br><span class="line">		min = <span class="number">10000</span></span><br><span class="line">		max = <span class="number">30000</span></span><br><span class="line">	)</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		port := min + rand.Intn(max-min)</span><br><span class="line">		c, err := net.DialTimeout(<span class="string">"tcp"</span>, fmt.Sprintf(<span class="string">"%s:%d"</span>, localhost, port), time.Second)</span><br><span class="line">		<span class="keyword">if</span> c != <span class="literal">nil</span> &#123;</span><br><span class="line">			c.Close()</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="comment">// <span class="doctag">TODO:</span> check for a specific error</span></span><br><span class="line">			<span class="keyword">return</span> port</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">//一般通过以下sock文件初始化docker client</span></span><br><span class="line">	Address := <span class="string">`unix:///var/run/docker.sock`</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//初始化镜像和容器的配置</span></span><br><span class="line">	<span class="keyword">var</span> conf docker.Config</span><br><span class="line">	port := <span class="string">"27017"</span></span><br><span class="line">	<span class="comment">//镜像的名字叫mongo</span></span><br><span class="line">	conf.Image = <span class="string">"mongo"</span></span><br><span class="line">	conf.OpenStdin = <span class="literal">true</span></span><br><span class="line">	conf.Tty = <span class="literal">true</span></span><br><span class="line">	<span class="comment">//容器暴露出27017这个端口</span></span><br><span class="line">	conf.ExposedPorts = <span class="keyword">map</span>[docker.Port]<span class="keyword">struct</span>&#123;&#125; &#123;</span><br><span class="line">		<span class="string">"27017/tcp"</span>: &#123;&#125;,</span><br><span class="line">	&#125;</span><br><span class="line">	fconf := fullConfig&#123;</span><br><span class="line">		Config: conf,</span><br><span class="line">		HostConfig: docker.HostConfig&#123;</span><br><span class="line">			<span class="comment">//端口映射 容器的27017端口映射到本地的27017端口</span></span><br><span class="line">			PortBindings: <span class="keyword">map</span>[docker.Port][]docker.PortBinding&#123;</span><br><span class="line">				<span class="string">"27017/tcp"</span>: &#123;</span><br><span class="line">					&#123;</span><br><span class="line">						HostIP:   <span class="string">"0.0.0.0"</span>,</span><br><span class="line">						HostPort: port,</span><br><span class="line">					&#125;,</span><br><span class="line">				&#125;,</span><br><span class="line">			&#125;,</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//在linux系统下 可以原生地运行docker 但是在其他系统下需要特殊处理 随机选择可用的端口进行映射</span></span><br><span class="line">	<span class="keyword">if</span> runtime.GOOS != <span class="string">"linux"</span> &#123;</span><br><span class="line">		log.Println(<span class="string">"this is not linux"</span>)</span><br><span class="line">		lport := strconv.Itoa(randPort())</span><br><span class="line">		<span class="comment">// nothing except Linux runs Docker natively,</span></span><br><span class="line">		<span class="comment">// so we randomize the port and expose it on Docker VM</span></span><br><span class="line">		fconf.PortBindings = <span class="keyword">map</span>[docker.Port][]docker.PortBinding&#123;</span><br><span class="line">			docker.Port(port + <span class="string">"/tcp"</span>): &#123;&#123;</span><br><span class="line">				HostIP:   localhost,</span><br><span class="line">				HostPort: lport,</span><br><span class="line">			&#125;&#125;,</span><br><span class="line">		&#125;</span><br><span class="line">		port = lport</span><br><span class="line">		log.Println(<span class="string">"this is not linux env, change the port to"</span>, lport)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//初始化docker client</span></span><br><span class="line">	cli, err := docker.NewClient(Address)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//从远程拉取指定的docker镜像 如果本地已经存在指定镜像 那么操作被跳过</span></span><br><span class="line">	<span class="keyword">var</span> buf bytes.Buffer</span><br><span class="line">	<span class="keyword">if</span> err := cli.PullImage(docker.PullImageOptions&#123;</span><br><span class="line">		<span class="comment">//通过 镜像所在组/镜像名称:镜像标签 来指定特定的镜像</span></span><br><span class="line">		Repository:   <span class="string">"docker.io/mongo:latest"</span>,</span><br><span class="line">		<span class="comment">//指定输出位置</span></span><br><span class="line">		OutputStream: &amp;buf,</span><br><span class="line">	&#125;, docker.AuthConfiguration&#123;&#125;); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(<span class="string">"pull 容器失败"</span>)</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	log.Println(<span class="string">"buf"</span>, buf.String())</span><br><span class="line"></span><br><span class="line">	<span class="comment">//从上面的镜像中生成一个docker容器</span></span><br><span class="line">	cont, err := cli.CreateContainer(docker.CreateContainerOptions&#123;</span><br><span class="line">		Config: &amp;fconf.Config,</span><br><span class="line">		HostConfig: &amp;fconf.HostConfig,</span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(<span class="string">"创建容器失败"</span>)</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//生成一个强制移除容器的关闭函数</span></span><br><span class="line">	closer := <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		cli.RemoveContainer(docker.RemoveContainerOptions&#123;</span><br><span class="line">			ID: cont.ID,</span><br><span class="line">			Force: <span class="literal">true</span>,</span><br><span class="line">		&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> closer()</span><br><span class="line"></span><br><span class="line">	<span class="comment">//启动容器</span></span><br><span class="line">	<span class="keyword">if</span> err := cli.StartContainer(cont.ID, &amp;fconf.HostConfig); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(<span class="string">"启动容器失败"</span>)</span><br><span class="line">		closer()</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//监听容器是否启动成功</span></span><br><span class="line">	info, err := cli.InspectContainer(cont.ID)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(<span class="string">"监视容器失败"</span>)</span><br><span class="line">		closer()</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//获取容器运行在的IP地址和端口 这里默认使用的是 bridge的网络模式</span></span><br><span class="line">	addr := info.NetworkSettings.IPAddress</span><br><span class="line">	addr += <span class="string">":"</span> + port</span><br><span class="line"></span><br><span class="line">	<span class="comment">//在10机会监听数据库的连接url是否可用</span></span><br><span class="line">	ok := <span class="literal">false</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span> &amp;&amp; !ok; i++ &#123;</span><br><span class="line">		ok = waitPort(addr)</span><br><span class="line">		<span class="keyword">if</span> !ok &#123;</span><br><span class="line">			time.Sleep(time.Second * <span class="number">2</span>)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !ok &#123;</span><br><span class="line">		log.Println(<span class="string">"一直连接失败"</span>)</span><br><span class="line">		closer()</span><br><span class="line">		log.Fatal(<span class="string">"tcp connect fail"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">"addr"</span>, addr)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>cayley将上面的常用操作都封装成函数在<a href="https://github.com/cayleygraph/cayley/blob/master/internal/dock/dock.go" target="_blank" rel="noopener">docker操作</a> 这些使用docker生成一次性数据库并使用的一个例子可见<a href="https://github.com/cayleygraph/cayley/blob/master/graph/nosql/mongo/mongo_test.go" target="_blank" rel="noopener">mongo_test</a></p>
+<p><strong>cayley在这一点上做的很精彩 也很创新 非常值得我们学习</strong></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/12/03/docker在测试中的作用/" data-id="cjp7yr3xk000frco06eqza8eq" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/12/03/subgraph概况/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          subgraph概况
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/12/03/java基础：入职华为前的重启/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">java基础：入职华为前的重启</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/subgraph/">subgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 17.5px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 12.5px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/gremlin/" style="font-size: 10px;">gremlin</a> <a href="/tags/hugegraph/" style="font-size: 10px;">hugegraph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 17.5px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/subgraph/" style="font-size: 10px;">subgraph</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/03/subgraph概况/">subgraph概况</a>
+          </li>
+        
+          <li>
+            <a href="/2018/12/03/docker在测试中的作用/">docker在测试中的作用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/12/03/java基础：入职华为前的重启/">java基础：入职华为前的重启</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/11/基于容器的开发/">基于容器的开发</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/22/goroutine与工作池/">goroutine与工作池</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 gzm1997<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

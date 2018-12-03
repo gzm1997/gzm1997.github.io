@@ -62,6 +62,183 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-go-web" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/06/go-web/" class="article-date">
+  <time datetime="2018-08-06T08:18:40.000Z" itemprop="datePublished">2018-08-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/06/go-web/">go web</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><a href="https://golang.org/doc/articles/wiki/ttps://golang.org/doc/articles/wiki/" target="_blank" rel="noopener">参考链接</a><br>这个教程是原生的库<strong>net/http</strong>来进行web服务端开发的 教程中使用了<strong>html/template</strong>来加载HTML模板 模板的语法也跟Python的jinja2的数据绑定很类似 但是我们清楚这种前后端不分离的方式其实不再合适未来的趋势</p>
+<hr>
+<h2 id="视图函数"><a href="#视图函数" class="headerlink" title="视图函数"></a>视图函数</h2><p>go原生的<strong>net/http</strong>比较有意思 它的视图函数没有返回值也是可以的 它的<strong>http.HandleFunc</strong>这个装饰器可以默认返回空 不会报错 相反Python的一些框架就不行</p>
+<p>一般视图函数格式 <strong>http.ResponseWriter</strong>用来写入返回给客户端的头部信息或者[]byte类型数据 <strong>*http.Request</strong>注意是一个指针类型 其实这里我有点不是很明白 怎么request是按照指针传递 response是按照值传递？</p>
+<blockquote>
+<p>我自己觉得应该是在go语言中 response是从开发人员自己生命定义的handle视图函数开始就被一层一层的wrapper包装 所以response是不断被层层包裹被修改的 在每一层wrapper中response都不一样 所以按值传递就可以 但是requestsh1i是在各层wrapper或者redirect过程中都需要保持不变的 因为request是的参数被修改的话会影响http response这样没有太大意义 所以request最好使用指针传递 原来的request该怎样就怎样</p>
+</blockquote>
+<p>stackoverflow的上关于这个问题的解释是</p>
+<ul>
+<li>http.request是一个很大的结构 值拷贝的话花销非常大</li>
+<li>http.request是含有一些状态state的 如果被拷贝的话具有一定的迷惑性</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">handler</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span>  &#123;</span><br><span class="line">	p := r.URL.Path</span><br><span class="line">	fmt.Println(<span class="string">"path"</span>, p)</span><br><span class="line">	w.Write([]<span class="keyword">byte</span>(<span class="string">"lalallallala"</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="注册视图函数"><a href="#注册视图函数" class="headerlink" title="注册视图函数"></a>注册视图函数</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http.HandleFunc(<span class="string">"/"</span>, handler)</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="运行web后端app"><a href="#运行web后端app" class="headerlink" title="运行web后端app"></a>运行web后端app</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http.ListenAndServe(<span class="string">":8080"</span>, <span class="literal">nil</span>)</span><br></pre></td></tr></table></figure>
+<p>上面是不会打印输出任何内容的 所以一般下面这样运行<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">log.Fatal(http.ListenAndServe(<span class="string">":8080"</span>, <span class="literal">nil</span>))</span><br></pre></td></tr></table></figure></p>
+<p>一般ip地址是可以被忽略的 默认是本机的IP地址</p>
+<p>一般来说我们希望运行多个实例 然后在nginx上可以设置负载均衡 但是刚刚说上面那个监听运行语句是阻塞的 所以go语言这种天生支持多线程的的语言的优势就派上用场了</p>
+<p>可以使用goroutine多开线程运行多个web app<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for i := 0; i &lt; 4; i++ &#123;</span><br><span class="line">	go func() &#123;</span><br><span class="line">		log.Fatal(http.ListenAndServe(&quot;:808&quot; + string(i), nil))</span><br><span class="line">	&#125;()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>html模板加载和渲染就不记录了 就是使用原生的html/template这个库 语法非常类似Python的jinja2 感觉这部分在日益前后端分离的今天有点不合时宜了 所以只是看了看 没有多加记录</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/06/go-web/" data-id="cjp7yr3xu000irco0gyvcjrwq" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web/">web</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-go多线程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/06/go多线程/" class="article-date">
+  <time datetime="2018-08-06T08:17:50.000Z" itemprop="datePublished">2018-08-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/06/go多线程/">go多线程</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><blockquote>
+<p><strong>go是默认一个核只在一个时间点只可以运行一个线程</strong> 如果要实现并发 需要告诉go我们允许同时使用多个核 这样才可以实现真正意义上的并发</p>
+</blockquote>
+<hr>
+<h2 id="goroutine"><a href="#goroutine" class="headerlink" title="goroutine"></a>goroutine</h2><blockquote>
+<p>go语言可以使用go开始执行一个新的线程 完果没有go的语句就跟正常一样 当所有的代码执行完毕而还有goroutine还没执行完 那么那些线程都会被终止 </p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	<span class="keyword">go</span> fmt.Println(<span class="string">"lalala"</span>)</span><br><span class="line">	fmt.Println(<span class="string">"hahaha"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的情况是 其实只用了一个核 所有这不是并行 这是并发 那么输出结果是取决于那个goroutine结束最快 第二行输出结束最快(这里跟异步的感觉有点像) 那么输出是第二行 然后第二行运行结束之后 就终止了所有的goroutine 这时候第一行就来不及执行了 第一行等不到结束就被终止了</p>
+<p>如果需要两行都输出 那么需要sleep一下 当第二行执行完的时候 这时候sleep会释放出CPU资源 这时候第一行可以使用CPU资源进行执行输出结果<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	<span class="keyword">go</span> fmt.Println(<span class="string">"lalala"</span>)</span><br><span class="line">	fmt.Println(<span class="string">"hahaha"</span>)</span><br><span class="line">	time.Sleep(<span class="number">4</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>输出<br><img src="http://static.zybuluo.com/gzm1997/27at0en69mz01xnc8wmqb7dl/image_1chi83vnr1r2417ginpa12s9118c9.png" alt="image_1chi83vnr1r2417ginpa12s9118c9.png-14kB"></p>
+<p>goroutine应用在func上<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">publicMews</span><span class="params">(text <span class="keyword">string</span>, delay time.Duration)</span></span>  &#123;</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		time.Sleep(delay)</span><br><span class="line">		fmt.Println(<span class="string">"breaking news"</span>, text)</span><br><span class="line">	&#125;()</span><br><span class="line">	fmt.Println(<span class="string">"after func"</span>)</span><br><span class="line">	time.Sleep(<span class="number">3</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	publicMews(<span class="string">"world cup"</span>, <span class="number">12</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>结果跟上面类似</p>
+<hr>
+<h2 id="管道的基本使用"><a href="#管道的基本使用" class="headerlink" title="管道的基本使用"></a>管道的基本使用</h2><p>声明管道</p>
+<p>声明双向的无缓存管道</p>
+<pre><code>test := make(chan int)
+</code></pre><p>声明双向的有缓存管道</p>
+<pre><code>test2 := make(chan int, 10)
+</code></pre><p>创建只写管道</p>
+<pre><code>test3 := make(chan &lt;- int)
+</code></pre><p>创建只读管道</p>
+<pre><code>test4 := make(&lt;- chan int)
+</code></pre><p>也可以声明通道是指针类型</p>
+<pre><code>test5 := make(&lt;- chan *int)
+</code></pre><hr>
+<h2 id="使用管道在线程之间进行通信"><a href="#使用管道在线程之间进行通信" class="headerlink" title="使用管道在线程之间进行通信"></a>使用管道在线程之间进行通信</h2><blockquote>
+<p>当一个管道被声明之后 它是开着的 如果没有信息传进去 那么等待管道的线程一直等不到输出 会陷入<strong>死锁</strong></p>
+</blockquote>
+<p>只要另外一个线程的管道没有被正确关闭 那么主线程会一直等待 这样会陷入死锁</p>
+<p>像下面这样<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>)</span><br><span class="line">fmt.Println(&lt;- ch)</span><br></pre></td></tr></table></figure></p>
+<p>输出显示死锁<br><img src="http://static.zybuluo.com/gzm1997/5vwb6qowab7adku5ydxei5n4/image_1chiabekv14kl1lat12lm1nqkmlf1m.png" alt="image_1chiabekv14kl1lat12lm1nqkmlf1m.png-31.7kB"></p>
+<p>但是即使我们没有在管道中输入信息 但是及时关闭了管道 这样是可以避免出现死锁的出现的</p>
+<p>像下面这样<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>)</span><br><span class="line"><span class="built_in">close</span>(ch)</span><br><span class="line">fmt.Println(&lt;- ch)</span><br></pre></td></tr></table></figure></p>
+<p>这样就没有造成死锁问题了</p>
+<p>下面的例子 第一次发送之后我们关闭这个管道 那么第一次接受是可以接受到发送过来的内容的 然后因为我们关闭了这个管道 那么接下来的输出都是输出空字符串 同时因为已经正确关闭了管道 所以不会出现上述的死锁问题<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		ch &lt;- <span class="string">"lalalalla"</span></span><br><span class="line">		<span class="built_in">close</span>(ch)</span><br><span class="line">	&#125;()</span><br><span class="line">	fmt.Println(&lt;- ch)</span><br><span class="line">	fmt.Println(&lt;- ch)</span><br><span class="line">	fmt.Println(&lt;- ch)</span><br><span class="line">	a, b := &lt;- ch</span><br><span class="line">	fmt.Println(<span class="string">"a"</span>, a, <span class="string">"b"</span>, b)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>输出<br><img src="http://static.zybuluo.com/gzm1997/psk23n5ldscvz2xf6ftctez3/image_1chib44pt1faa1t1crb81v2a22j23.png" alt="image_1chib44pt1faa1t1crb81v2a22j23.png-16.9kB"></p>
+<p>管道使用的时候一定要注意发送方和接受方一定要处于两个不同的线程 如果处于一个线程 会有一个莫名其妙的死锁报错</p>
+<p>像下面这样<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">sendMsgToCh</span><span class="params">(ch <span class="keyword">chan</span> <span class="keyword">int</span>)</span> <span class="title">chan</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">4</span>; i++ &#123;</span><br><span class="line">			ch &lt;- i</span><br><span class="line">			<span class="built_in">close</span>(ch)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;()</span><br><span class="line">	<span class="keyword">return</span> ch</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">	r := sendMsgToCh(ch)</span><br><span class="line">	<span class="keyword">for</span> c := <span class="keyword">range</span> r &#123;</span><br><span class="line">		fmt.Println(<span class="string">"receive value"</span>, c)</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>报错<br><img src="http://static.zybuluo.com/gzm1997/4rubaa0xtc5om2akc66vdvn5/image_1chk2d6gp1ffs16mg1o0hniitqe39.png" alt="image_1chk2d6gp1ffs16mg1o0hniitqe39.png-164.9kB"></p>
+<hr>
+<h2 id="数据竞争"><a href="#数据竞争" class="headerlink" title="数据竞争"></a>数据竞争</h2><p>其实就是公有变量的互斥性访问问题 这个设置互斥锁问题</p>
+<p>例如下面<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">	n := <span class="number">0</span></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		n++</span><br><span class="line">		<span class="built_in">close</span>(ch)</span><br><span class="line">	&#125;()</span><br><span class="line">	n++</span><br><span class="line">	time.Sleep(<span class="number">3</span>)</span><br><span class="line">	fmt.Println(n)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>输出结果是 如果没有sleep三秒 那么输出一般都是1的 如果sleep之后输出是2 所以可见两个线程都是在做自增n的操作的</p>
+<p><strong>避免数据竞争的唯一方式是线程间同步访问所有的共享可变数据</strong></p>
+<p>在go语言中 这一般都是使用</p>
+<ul>
+<li>管道</li>
+<li>锁</li>
+</ul>
+<p>有句话说的好 </p>
+<blockquote>
+<p>不要通过共享内存来通讯 而是通过通讯来共享内存(共享变量)</p>
+</blockquote>
+<p>通过管道来实现两个线程同步修改公有变量<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">	n := <span class="number">0</span></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		n++</span><br><span class="line">		ch &lt;- n</span><br><span class="line">		<span class="built_in">close</span>(ch)</span><br><span class="line">	&#125;()</span><br><span class="line">	r := &lt;- ch</span><br><span class="line">	r++</span><br><span class="line">	fmt.Println(r)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="同步锁"><a href="#同步锁" class="headerlink" title="同步锁"></a>同步锁</h2><p>向上面说的 出了使用管道来在进程间进行数据传输 还可以使用同步锁实现公有变量的互斥访问</p>
+<p>下面是使用同步锁来让两个线程都自增一个公有变量<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"sync"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> AutomicInt <span class="keyword">struct</span> &#123;</span><br><span class="line">	mu sync.Mutex</span><br><span class="line">	val <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *AutomicInt)</span> <span class="title">add</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a.mu.Lock()</span><br><span class="line">	a.val++</span><br><span class="line">	a.mu.Unlock()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a AutomicInt)</span> <span class="title">get</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	a.mu.Lock()</span><br><span class="line">	r := a.val</span><br><span class="line">	a.mu.Unlock()</span><br><span class="line">	<span class="keyword">return</span> r</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	mu := sync.Mutex&#123;&#125;</span><br><span class="line">	a := AutomicInt&#123;mu, <span class="number">0</span>&#125;</span><br><span class="line">	wait := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		a.add()</span><br><span class="line">		<span class="built_in">close</span>(wait)</span><br><span class="line">	&#125;()</span><br><span class="line">	a.add()</span><br><span class="line">	&lt;- wait</span><br><span class="line">	r := a.get()</span><br><span class="line">	fmt.Println(r)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>输出<br><img src="http://static.zybuluo.com/gzm1997/0rh0ahsjyrgn7qttciu9nnhd/image_1chk4qjrm2d31ljs4ve1nq56cf9.png" alt="image_1chk4qjrm2d31ljs4ve1nq56cf9.png-15.8kB"></p>
+<hr>
+<p>WaitGroup<br>相当于Python asyncio的eventloop 都是讲线程添加到一个队列进行阻塞运行 直至运行完毕 有几个函数要注意一下</p>
+<p>声明一个waitgroup 并制定可以放1五个线程进去</p>
+<pre><code>wg := sync.WaitGroup{}
+wg.Add(5)
+</code></pre><p>上面这样声明之后 这个waitgroup的计数器就是5了 每当我们执行一个线程 需要在后面加上</p>
+<pre><code>wg.Done()
+</code></pre><p>done函数会使得计数器-1 计数器减少到0之后就执行完毕</p>
+<p>使用waitgroup进行多个线程互斥访问公有变量<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">race</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	wg := sync.WaitGroup&#123;&#125;</span><br><span class="line">	wg.Add(<span class="number">5</span>)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">5</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			fmt.Println(<span class="string">"i"</span>, i)</span><br><span class="line">			wg.Done()</span><br><span class="line">		&#125;()</span><br><span class="line">	&#125;</span><br><span class="line">	wg.Wait()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	race()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>输出是55555 这个结果很显然的了 就是for循环上的自增是先被执行的 后面的线程才被执行 那么所有线程输出的i都是5</p>
+<p>可以在线程的匿名函数参数表chuan将公有变量作为参数穿进去 这样输出的结果才是对的 但是顺序肯定是乱的 因为线程的执行真的是顺序根本不确定的</p>
+<p>如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">race</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	wg := sync.WaitGroup&#123;&#125;</span><br><span class="line">	wg.Add(<span class="number">5</span>)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">5</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(i <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">			fmt.Println(<span class="string">"i"</span>, i)</span><br><span class="line">			wg.Done()</span><br><span class="line">		&#125;(i)</span><br><span class="line">	&#125;</span><br><span class="line">	wg.Wait()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	race()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>输出结果<br><img src="http://static.zybuluo.com/gzm1997/sdcsknbhgi8fdo50m65zlvk1/image_1chk5lond1u2k1vh68oj12glooq1m.png" alt="image_1chk5lond1u2k1vh68oj12glooq1m.png-15.8kB"></p>
+<hr>
+<h2 id="select语句"><a href="#select语句" class="headerlink" title="select语句"></a>select语句</h2><p>golang的select跟select poll epoll相似 就是监听io操作 当思io操作发生时 触发相应的动作</p>
+<p>注意select代码形式跟switch非常相似 但是select的case里操作语句只能是io操作</p>
+<p>例子<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">	c1, c2 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>), <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">	<span class="comment">//var i1, i2 int</span></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		c1 &lt;- <span class="number">12</span></span><br><span class="line">		<span class="built_in">close</span>(c1)</span><br><span class="line">	&#125;()</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		c2 &lt;- <span class="number">23</span></span><br><span class="line">		<span class="built_in">close</span>(c2)</span><br><span class="line">	&#125;()</span><br><span class="line">	<span class="keyword">select</span> &#123;</span><br><span class="line">	<span class="keyword">case</span> i1 := &lt;- c1: fmt.Println(<span class="string">"r 1"</span>, i1)</span><br><span class="line">	<span class="keyword">case</span> i2 := &lt;- c2: fmt.Println(<span class="string">"r 2"</span>, i2)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面的代码可以输出第一个 也可以额输出第二个 这样取决于哪个线程最先完成 select是一定要等到其中一个case有io操作 就是有数据传输过来的 再次之前一直阻塞</p>
+<p>但是一直没有io语句执行成功 而且select含有default语句的时候 会执行default</p>
+<p>select的作用感觉非常大 因为可以想象一个场景 一个服务器上有一个服务 这个服务有个处理入口 每个请求过来我们轮训select上每个io能否进行操作 如果有那么处理这个请求 如果没有那么去到default那里返回系统繁忙请稍后操作的提示 我们可以使用select轻易实现这个需求</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/06/go多线程/" data-id="cjp7yr3xx000nrco0rdxkb8x2" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/多线程/">多线程</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-go注意要点" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/08/06/go注意要点/" class="article-date">
@@ -175,7 +352,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/go注意要点/" data-id="cjp7ykws4000fjwo0adfhin5i" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/go注意要点/" data-id="cjp7yr3xy000orco0vgfxof2w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
@@ -231,7 +408,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/mongodb入门/" data-id="cjp7ykws9000kjwo0aj6byo5d" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/mongodb入门/" data-id="cjp7yr3y2000vrco06t88oys4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/database/">database</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mongodb/">mongodb</a></li></ul>
@@ -433,7 +610,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/dgraph图数据库/" data-id="cjp7ykwrx0008jwo0wb46u6nj" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/dgraph图数据库/" data-id="cjp7yr3xh000crco0fma38l07" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dgraph/">dgraph</a></li></ul>
@@ -635,7 +812,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/cayley图数据库/" data-id="cjp7ykwrv0007jwo0yzffu0iz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/cayley图数据库/" data-id="cjp7yr3xd0008rco0to2nxv0t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/database/">database</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
@@ -713,7 +890,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/图数据库/" data-id="cjp7ykwss0017jwo0nh09s0m7" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/图数据库/" data-id="cjp7yr3yk001mrco0cu1y36it" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/database/">database</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/graph/">graph</a></li></ul>
@@ -782,7 +959,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/beego学习2/" data-id="cjp7ykwrq0003jwo0nhwo9ss4" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/beego学习2/" data-id="cjp7yr3xa0005rco05x9tnjq6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/beego/">beego</a></li></ul>
@@ -840,7 +1017,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/beego入门/" data-id="cjp7ykwrk0001jwo0y8se1k6w" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/beego入门/" data-id="cjp7yr3x80004rco0dkepnbhx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/beego/">beego</a></li></ul>
@@ -915,178 +1092,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/18/session和cookies关系和原理/" data-id="cjp7ykwso0014jwo0qp7gpaes" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/18/session和cookies关系和原理/" data-id="cjp7yr3yb0018rco08ldumi12" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cookies/">cookies</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-servlet登录demo" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/06/16/servlet登录demo/" class="article-date">
-  <time datetime="2018-06-16T05:27:36.000Z" itemprop="datePublished">2018-06-16</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/06/16/servlet登录demo/">servlet登录demo</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><a href="https://github.com/gzm1997/servletLogin" target="_blank" rel="noopener">源代码地址</a><br>因为最近这段时间在看java web开发的一些东西 因为spring mvc框架是封装了servlet而来的 所以觉得很有必要学习一下servlet 以便后面如果学习spring mvc等框架的时候可以有助于理解 进而写了一个包含mysql连接 cookies设置 session attribute设置和检验的简单demo</p>
-<p>servlet架构<br><img src="http://www.runoob.com/wp-content/uploads/2014/07/servlet-arch.jpg" alt="servlet架构"></p>
-<p>servlet生命周期<br><img src="http://static.zybuluo.com/gzm1997/aymbru82ndv4nfyd37n4252g/image_1cg3glqm518pqbbo11jn190i145p4r.png" alt="image_1cg3glqm518pqbbo11jn190i145p4r.png-20.8kB"></p>
-<ol>
-<li>第一个到达服务器的 HTTP 请求被委派到 Servlet 容器。</li>
-<li>Servlet 容器在调用 service() 方法之前加载 Servlet。</li>
-<li>然后 Servlet 容器处理由多个线程产生的多个请求，每个线程执行一个单一的 Servlet 实例的 service() 方法。</li>
-</ol>
-<p><img src="http://www.runoob.com/wp-content/uploads/2014/07/Servlet-LifeCycle.jpg" alt="架构"></p>
-<p>使用了tomcat作为<strong>servlet容器</strong> </p>
-<blockquote>
-<p>tomcat实现了对servlet和jsp的支持 并提供了作为web服务器的一些特有功能<br>如Tomcat管理和控制平台、安全域管理和Tomcat阀等 由于tomcat内置了一个http服务器 它也可以被单独视为一个web服务器<br>但是不能将tomcat和apache http web服务器混淆 这两个http web服务器不是捆绑在一起的<br>tomcat的可以通过xml文件格式的配置文件进行配置</p>
-</blockquote>
-<hr>
-<h2 id="在intellij-idea进行tomcat-server运行配置"><a href="#在intellij-idea进行tomcat-server运行配置" class="headerlink" title="在intellij idea进行tomcat server运行配置"></a>在intellij idea进行tomcat server运行配置</h2><p>这个在网上找到一个博客写的很详尽 这里就不重复了<br><a href="https://blog.csdn.net/yhao2014/article/details/45740111" target="_blank" rel="noopener">tomcat server运行配置</a></p>
-<hr>
-<h2 id="login-demo"><a href="#login-demo" class="headerlink" title="login demo"></a>login demo</h2><p>文件结构<br><img src="http://static.zybuluo.com/gzm1997/73f3jnpbm8dinpgn9uwiyn9q/image_1cg3ea5e41vtr11mj1po41hps12e313.png" alt="image_1cg3ea5e41vtr11mj1po41hps12e313.png-27kB"></p>
-<p>数据库<br>在mysql中设置一个如下结构的表(因为仅仅是写一个简单的登录demo 所以没有考虑密码哈希之类的问题)<br><img src="http://static.zybuluo.com/gzm1997/g9nfvb6vx2rfn9won6t9b87o/image_1cg3e73p61b2dtiafpiejlbd99.png" alt="image_1cg3e73p61b2dtiafpiejlbd99.png-93.1kB"><br>添加一个实例<br><img src="http://static.zybuluo.com/gzm1997/h9lx71tb1efxybh4th3ka3n9/image_1cg3e861fmdd692ca71oup149pm.png" alt="image_1cg3e861fmdd692ca71oup149pm.png-68.7kB"></p>
-<p>数据库连接<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> servletPackage;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.sql.Connection;</span><br><span class="line"><span class="keyword">import</span> java.sql.DriverManager;</span><br><span class="line"><span class="keyword">import</span> java.sql.ResultSet;</span><br><span class="line"><span class="keyword">import</span> java.sql.Statement;</span><br><span class="line"><span class="keyword">import</span> java.sql.ResultSet;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FindPsw</span> </span>&#123;</span><br><span class="line"><span class="comment">//    加载JDBC引擎的路径</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String JDBC_DRIVER = <span class="string">"com.mysql.jdbc.Driver"</span>;</span><br><span class="line"><span class="comment">//    数据库链接的URI</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String DB_URL = <span class="string">"jdbc:mysql://localhost:3306/javaTest"</span>;</span><br><span class="line"><span class="comment">//    连接数据库的用户名</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String USER = <span class="string">"root"</span>;</span><br><span class="line"><span class="comment">//    数据库密码</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String PSW = <span class="string">"Gzm20125"</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getPsw</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line"><span class="comment">//        数据库连接对象</span></span><br><span class="line">        Connection conn;</span><br><span class="line"><span class="comment">//        执行语句的statement对象 类似于python-connector的cursor</span></span><br><span class="line">        Statement stmt;</span><br><span class="line">        String psw;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line"><span class="comment">//            加载JDBC引擎</span></span><br><span class="line">            Class.forName(JDBC_DRIVER);</span><br><span class="line"><span class="comment">//            建立数据库链接</span></span><br><span class="line">            conn = DriverManager.getConnection(DB_URL, USER, PSW);</span><br><span class="line"><span class="comment">//            获取statement</span></span><br><span class="line">            stmt = conn.createStatement();</span><br><span class="line">            String stmtToExec = String.format(<span class="string">"select psw from testUser where name = '%s';"</span>, name);</span><br><span class="line">            System.out.println(<span class="string">"exec string is "</span> + stmtToExec);</span><br><span class="line"><span class="comment">//            执行查询语句 返回结果</span></span><br><span class="line">            ResultSet rs = stmt.executeQuery(stmtToExec);</span><br><span class="line">            <span class="keyword">if</span> (rs.next()) &#123;</span><br><span class="line">                psw = rs.getString(<span class="string">"psw"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                psw = <span class="string">""</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            rs.close();</span><br><span class="line">            stmt.close();</span><br><span class="line">            conn.close();</span><br><span class="line">            <span class="keyword">return</span> psw;</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>登录页面<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> servletPackage;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.annotation.WebServlet;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServlet;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletRequest;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletResponse;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.PrintWriter;</span><br><span class="line"><span class="comment">/* 声明/login资源 使用Login这个类作作为视图类 */</span></span><br><span class="line"><span class="meta">@WebServlet</span>(<span class="string">"/login"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Login</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span> </span>&#123;</span><br><span class="line"><span class="comment">//    重写doGet方法 处理get请求</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line"><span class="comment">//        在response中写入一个登录form</span></span><br><span class="line">        PrintWriter out = resp.getWriter();</span><br><span class="line">        out.println(<span class="string">"&lt;!DOCTYPE html&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;html lang='en-US'&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;head&gt;\n"</span> +</span><br><span class="line">                <span class="string">"    &lt;meta charset='utf-8'&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;/head&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;body&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;h1&gt;login&lt;/h1&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;form action='/postDeal' method='post'&gt;\n"</span> +</span><br><span class="line">                <span class="string">"    &lt;input type='text' name='user'&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;br&gt;"</span> +</span><br><span class="line">                <span class="string">"    &lt;input type='text' name='password'&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;br&gt;"</span> +</span><br><span class="line">                <span class="string">"    &lt;input type='submit'&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;/form&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;/body&gt;\n"</span> +</span><br><span class="line">                <span class="string">"&lt;/html&gt;"</span></span><br><span class="line">        );</span><br><span class="line">        out.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>表单 cookies session的处理<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> servletPackage;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.annotation.WebServlet;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.*;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.PrintWriter;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@WebServlet</span>(<span class="string">"/postDeal"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PostDeal</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line"><span class="comment">//        获取表单中的用户和密码</span></span><br><span class="line">        String user = req.getParameter(<span class="string">"user"</span>);</span><br><span class="line">        String psw = req.getParameter(<span class="string">"password"</span>);</span><br><span class="line"><span class="comment">//        使用刚刚数据库连接的类进行数据库查询 获取正确密码</span></span><br><span class="line">        FindPsw f = <span class="keyword">new</span> FindPsw();</span><br><span class="line">        String rightPsw = f.getPsw(user);</span><br><span class="line">        System.out.println(<span class="string">"right psw is "</span> + rightPsw);</span><br><span class="line">        PrintWriter out = resp.getWriter();</span><br><span class="line"><span class="comment">//        如果密码正确</span></span><br><span class="line">        <span class="keyword">if</span> (psw.equals(rightPsw)) &#123;</span><br><span class="line"><span class="comment">//            add cookies</span></span><br><span class="line">            Cookie login = <span class="keyword">new</span> Cookie(<span class="string">"login"</span>, <span class="string">"mylogin"</span>);</span><br><span class="line">            resp.addCookie(login);</span><br><span class="line"></span><br><span class="line"><span class="comment">//            add session attribute</span></span><br><span class="line">            HttpSession session = req.getSession();</span><br><span class="line">            session.setAttribute(<span class="string">"login"</span>, <span class="string">"this is my login session"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//            add response text</span></span><br><span class="line">            out.println(</span><br><span class="line">                    <span class="string">"&lt;p&gt;login successfully user "</span> + user + <span class="string">" psw is "</span> + psw + <span class="string">"&lt;/p&gt;"</span> +</span><br><span class="line">                    <span class="string">"&lt;a href='/checkSession'&gt;this is a page to check whether set session attribute&lt;/a&gt;"</span></span><br><span class="line">            );</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            out.println(<span class="string">"&lt;p&gt;psw is error&lt;/p&gt;"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 登录表单提交过来这个书图类之后 doPost函数首先接受到请求 随之转发给doGet函数 由doGet函数进行处理</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doPost</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        doGet(req, resp);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>检查session attribute是否被成功设置<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> servletPackage;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.ServletException;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.annotation.WebServlet;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServlet;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletRequest;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletResponse;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpSession;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.PrintWriter;</span><br><span class="line"></span><br><span class="line"><span class="comment">//这个视图用来测试客户端是否被成功设置了session attribute</span></span><br><span class="line"><span class="meta">@WebServlet</span>(<span class="string">"/checkSession"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">checkSession</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line"><span class="comment">//        获取客户端的session</span></span><br><span class="line">        HttpSession session = req.getSession();</span><br><span class="line"><span class="comment">//        获取session attribute</span></span><br><span class="line">        String login = (String) session.getAttribute(<span class="string">"login"</span>);</span><br><span class="line">        System.out.println(<span class="string">"login session is "</span> + login);</span><br><span class="line">        PrintWriter out = resp.getWriter();</span><br><span class="line">        out.println(<span class="string">"login session is "</span> + login);</span><br><span class="line">        out.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h2><p>登录</p>
-<p><img src="http://static.zybuluo.com/gzm1997/eguchcsom6t3n75nvgs08m4x/image_1cg3fmvge1e441h2c16ep19pvgb51g.png" alt="image_1cg3fmvge1e441h2c16ep19pvgb51g.png-19.2kB"></p>
-<hr>
-<p>登录成功</p>
-<p><img src="http://static.zybuluo.com/gzm1997/7q5z6ijpf21c8efh36vf5b0y/image_1cg3frqlm1r3bnr315g2oc8gdl1t.png" alt="image_1cg3frqlm1r3bnr315g2oc8gdl1t.png-71.7kB"></p>
-<hr>
-<p>登录失败</p>
-<p><img src="http://static.zybuluo.com/gzm1997/h4queqwp124mgz26un4tsdim/image_1cg3fsovg1h0r6c8nj41rft1k8q2a.png" alt="image_1cg3fsovg1h0r6c8nj41rft1k8q2a.png-62.4kB"></p>
-<hr>
-<p>检测session attribute</p>
-<p><img src="http://static.zybuluo.com/gzm1997/2wvtj6w7e3ot8ahcopapkmap/image_1cg3ftt2f1jm9eo3phe12vvh0r2n.png" alt="image_1cg3ftt2f1jm9eo3phe12vvh0r2n.png-67.6kB"></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/16/servlet登录demo/" data-id="cjp7ykwsl000zjwo0698rmxmx" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/servlet/">servlet</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tomcat/">tomcat</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-aiohttp-session" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/06/13/aiohttp-session/" class="article-date">
-  <time datetime="2018-06-13T02:50:05.000Z" itemprop="datePublished">2018-06-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/06/13/aiohttp-session/">aiohttp session</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="cookie和session"><a href="#cookie和session" class="headerlink" title="cookie和session"></a>cookie和session</h2><p>服务端和客户端之间的联系一般是根据http协议来进行的 但是http协议是无状态的 无状态会有状态的概念大概如下</p>
-<p>有状态</p>
-<ol>
-<li>甲：你吃午饭了吗</li>
-<li>乙：吃了</li>
-<li>甲：吃了什么菜</li>
-<li>乙：吃了鸡蛋</li>
-</ol>
-<p>无状态</p>
-<ol>
-<li>甲：你吃午饭了吗</li>
-<li>乙：吃了</li>
-<li>甲：吃了什么菜</li>
-<li>乙：你说什么时候吃什么菜 早饭？午饭？还是晚饭</li>
-</ol>
-<p>因此服务端和客户端之间需要一种机制来记录用户的状态 这种机制在客户端那边是cookies 在服务端那边是session<br>cookies可以存储在磁盘 内存里面 session可以存储在内存 缓存 redis甚至磁盘中</p>
-<hr>
-<h2 id="aiohttp-session"><a href="#aiohttp-session" class="headerlink" title="aiohttp session"></a>aiohttp session</h2><p>flask框架具有内置的session机制 我以前用起来觉得非常方便以至于我觉得这个不重要 aiohttp不具有内置的session机制 但是具有第三方模块支持 aiohttp_session</p>
-<p>安装这个第三方模块真的挺费事 因为依赖模块实在太多了 而且aiohttp_session是可以依赖redis作为缓存的 还需要安装redis和一些相关模块 下面的开始的实例我没有使用redis作为存储位置 而是使用了EncryptedCookieStorage 后面附加了使用redis存储session的例子</p>
-<p>dependencies</p>
-<ul>
-<li>python3.5.3+</li>
-<li>cryptography </li>
-<li>aioredis</li>
-</ul>
-<p>安装模块</p>
-<ul>
-<li>pip3 install cryptography(必要时进行upgrade 可能版本太低)</li>
-<li>pip3 install aiohttp_session[secure]</li>
-<li>pip3 install aiohttp_session[aioredis] (需要安装redis libhiredis-dev hiredis libssl-dev)</li>
-<li>pip3 install aiohttp_session[aiomcache]</li>
-<li><p>pip3 install aiohttp_sessionsss</p>
-<p>上面的安装问题真的太多 谷歌好几次才解决</p>
-</li>
-</ul>
-<hr>
-<h2 id="存储位置选择"><a href="#存储位置选择" class="headerlink" title="存储位置选择"></a>存储位置选择</h2><p>所有仓库是使用名为AIOHTTP_COOKIE_SESSION的对象来进行存储数据的</p>
-<p>可以使用的仓库有</p>
-<ul>
-<li>SimpleCookieStorage 把session数据以明文json字符串的格式存在cookies body中 只用来测试 非常不安全</li>
-<li>EncryptedCookieStorage 存储数据在cookie中的格式跟SimpleCookieStorage一样 但是使用了cryptography的Fernet cipher加密算法进行加密</li>
-<li>RedisStorage 存json化的数据到redis中 格式是name+reids key</li>
-<li>MemcachedStorage 跟RedisStorage类似 但是使用memcache数据库进行存储</li>
-</ul>
-<hr>
-<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>使用上跟flask的session大同小异 但是需要在init app阶段将session安装到app上 设定一个32位bytes作为加密密钥 跟flask session的secret key类似</p>
-<p>session是一个dict like的对象</p>
-<p>设定session<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"><span class="keyword">from</span> aiohttp_session <span class="keyword">import</span> get_session</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">login</span><span class="params">(request)</span>:</span></span><br><span class="line">    engine = <span class="keyword">await</span> aio_engine.init_engine()</span><br><span class="line">    data = <span class="keyword">await</span> request.json()</span><br><span class="line">    print(<span class="string">"data"</span>, data)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"name"</span> <span class="keyword">not</span> <span class="keyword">in</span> data <span class="keyword">or</span> <span class="string">"psw"</span> <span class="keyword">not</span> <span class="keyword">in</span> data:</span><br><span class="line">        <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">            <span class="string">"status"</span>: <span class="keyword">False</span></span><br><span class="line">        &#125;)</span><br><span class="line">    name = data[<span class="string">"name"</span>]</span><br><span class="line">    psw = data[<span class="string">"psw"</span>]</span><br><span class="line">    verify = <span class="keyword">await</span> keeper.verify(engine, name = name, psw = psw)</span><br><span class="line">    <span class="keyword">if</span> verify:</span><br><span class="line">        session = <span class="keyword">await</span> get_session(request)</span><br><span class="line">        session[<span class="string">"ooad"</span>] = name</span><br><span class="line">        session[<span class="string">"login"</span>] = psw</span><br><span class="line">        session[<span class="string">"time"</span>] = str(datetime.datetime.now())</span><br><span class="line">        <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">            <span class="string">"status"</span>: <span class="keyword">True</span></span><br><span class="line">        &#125;)</span><br><span class="line">    <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">        <span class="string">"status"</span>: <span class="keyword">False</span></span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure></p>
-<p>检查是否含有具体session字段值<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"><span class="keyword">from</span> aiohttp_session <span class="keyword">import</span> get_session</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">need_cookies_page</span><span class="params">(request)</span>:</span></span><br><span class="line">    engine = <span class="keyword">await</span> aio_engine.init_engine()</span><br><span class="line">    session = <span class="keyword">await</span> get_session(request)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"ooad"</span> <span class="keyword">not</span> <span class="keyword">in</span> session <span class="keyword">or</span> <span class="string">"login"</span> <span class="keyword">not</span> <span class="keyword">in</span> session <span class="keyword">or</span> <span class="string">"time"</span> <span class="keyword">not</span> <span class="keyword">in</span> session:</span><br><span class="line">        <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">            <span class="string">"status"</span>: <span class="keyword">False</span></span><br><span class="line">        &#125;)</span><br><span class="line">    name = session[<span class="string">"ooad"</span>]</span><br><span class="line">    psw = session[<span class="string">"login"</span>]</span><br><span class="line">    r = <span class="keyword">await</span> keeper.verify(engine, name = name, psw = psw)</span><br><span class="line">    <span class="keyword">if</span> r:</span><br><span class="line">        <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">            <span class="string">"status"</span>: <span class="keyword">True</span></span><br><span class="line">        &#125;)</span><br><span class="line">    <span class="keyword">return</span> web.json_response(&#123;</span><br><span class="line">        <span class="string">"status"</span>: <span class="keyword">False</span></span><br><span class="line">    &#125;)</span><br><span class="line">`</span><br></pre></td></tr></table></figure></p>
-<p>setup app<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setup(app, EncryptedCookieStorage(<span class="string">b'Thirty  two  length  bytes  key.'</span>))</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h2><p>login result<br><img src="http://static.zybuluo.com/gzm1997/jkg1fhumdt69h3ycqy4jn5um/image_1cfrgldqfjrht9n1gva149ocj423.png" alt="image_1cfrgldqfjrht9n1gva149ocj423.png-72.7kB"><br>login cookies<br><img src="http://static.zybuluo.com/gzm1997/wopqky454vfub9ksx4zwrxuy/image_1cfrgm0d8nov172b2mj10ta4g62g.png" alt="image_1cfrgm0d8nov172b2mj10ta4g62g.png-46.1kB"><br>cookies check<br><img src="http://static.zybuluo.com/gzm1997/rez3qy3mv69mkbvfsf9956v8/image_1cfrgn8mh1vf717qu1elcqdv8ur2t.png" alt="image_1cfrgn8mh1vf717qu1elcqdv8ur2t.png-43.3kB"></p>
-<hr>
-<h2 id="使用redis存储session"><a href="#使用redis存储session" class="headerlink" title="使用redis存储session"></a>使用redis存储session</h2><p>这里有个问题 就是aiohttp本事内置一个asyncio event loop执行所有跟app相关的协程了 但是当我们使用redis作为仓库进行存储session的时候需要使用到aioredis进行支持 但是这个也是异步io连接模块 因此我们初始化redis pool的时候也需要一个event loop进行运行这个初始化的协程 一旦这个event loop跟web.run_app混在一起就会报错 event loop is already run</p>
-<p>正确的做法是分开 并且在执行redis pool连接的event loop run_until_complete处获取返回值 得到需要的storage</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> aiohttp_session <span class="keyword">import</span> setup, redis_storage</span><br><span class="line"><span class="keyword">import</span> aioredis</span><br><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">get_storage</span><span class="params">()</span>:</span></span><br><span class="line">    redis = <span class="keyword">await</span> aioredis.create_pool((<span class="string">"localhost"</span>, <span class="number">6379</span>))</span><br><span class="line">    <span class="keyword">return</span>  redis_storage.RedisStorage(redis)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">setup_session_support</span><span class="params">(app)</span>:</span></span><br><span class="line">    storage = asyncio.get_event_loop().run_until_complete(get_storage())</span><br><span class="line">    setup(app, storage)</span><br><span class="line">    <span class="keyword">return</span> app</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app = session_redis.setup_session_support(app)</span><br></pre></td></tr></table></figure>
-<p>效果<br>可以看到生成的cookies值确实存在了redis中<br>postman中获取的cookies<br><img src="http://static.zybuluo.com/gzm1997/scr363l8y5g6lbig4pwa41d1/image_1cfs5ia7pm0mke1hcn13edld9m.png" alt="image_1cfs5ia7pm0mke1hcn13edld9m.png-18.6kB"><br>redis中也存有一样的cookies<br><img src="http://static.zybuluo.com/gzm1997/f7wpnf2du5q1spknuypy56dc/image_1cfs5h8s6st01coa4491gh0bic9.png" alt="image_1cfs5h8s6st01coa4491gh0bic9.png-20kB"></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/13/aiohttp-session/" data-id="cjp7ykwsd000pjwo0c3m32xvy" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li></ul>
 
     </footer>
   </div>
@@ -1113,7 +1122,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/subgraph/">subgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -1123,7 +1132,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 15px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 17.5px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 17.5px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 12.5px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/gremlin/" style="font-size: 10px;">gremlin</a> <a href="/tags/hugegraph/" style="font-size: 10px;">hugegraph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 17.5px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/subgraph/" style="font-size: 10px;">subgraph</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 10px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -1145,6 +1154,14 @@
       <ul>
         
           <li>
+            <a href="/2018/12/03/subgraph概况/">subgraph概况</a>
+          </li>
+        
+          <li>
+            <a href="/2018/12/03/docker在测试中的作用/">docker在测试中的作用</a>
+          </li>
+        
+          <li>
             <a href="/2018/12/03/java基础：入职华为前的重启/">java基础：入职华为前的重启</a>
           </li>
         
@@ -1154,14 +1171,6 @@
         
           <li>
             <a href="/2018/08/22/goroutine与工作池/">goroutine与工作池</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/20/cayley原理2/">cayley原理2</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/15/cayley原理一-获取查询结果/">cayley原理一(获取查询结果)</a>
           </li>
         
       </ul>
