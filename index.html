@@ -103,7 +103,7 @@
 <p>输出<br><img src="http://static.zybuluo.com/gzm1997/onhyhx1ntyojd6idtyotn0xe/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20181203143405.png" alt="微信图片_20181203143405.png-7.7kB"></p>
 <hr>
 <h2 id="覆写"><a href="#覆写" class="headerlink" title="覆写"></a>覆写</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> basics.override;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Father</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">DoSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"这是父类函数"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*子类覆写的四大要求：</span></span><br><span class="line"><span class="comment">* 1. 子类方法中的访问权限不得小于父类中的</span></span><br><span class="line"><span class="comment">* 2. 子类方法的返回类型必须可以向上转型为父类的返回类型</span></span><br><span class="line"><span class="comment">* 3. 子类方法的异常类型必须可以向上转型为父类的异常类型</span></span><br><span class="line"><span class="comment">* 4. 子类方法的方法签名 参数类型以及个数必须完全一样*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*覆写只可以针对：</span></span><br><span class="line"><span class="comment">* 1. 非静态</span></span><br><span class="line"><span class="comment">* 2. 非final</span></span><br><span class="line"><span class="comment">* 3. 非构造方法</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* 其实不可以覆写静态方法很容易理解 因为静态方法是属于类的 如果子类覆写了父类的静态方法 那么久存在两个名称相同的静态方法 两个都可以能被调用*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Son</span> <span class="keyword">extends</span> <span class="title">Father</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">DoSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"这是子类覆写的函数"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Father father = <span class="keyword">new</span> Son();</span><br><span class="line">        father.DoSomething();</span><br><span class="line">        <span class="comment">/*像下面这样向下转型是不可以的*/</span></span><br><span class="line"><span class="comment">//        Son son = new Father();</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>输出<br><img src="http://static.zybuluo.com/gzm1997/4m3osonijj2op0h0u79nnr6h/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20181203143456png" alt="微信图片_20181203143456.png-7.3kB"></p>
+<p>输出<br><img src="http://static.zybuluo.com/gzm1997/8m6mxnimsot5e1j205wkvj57/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20181203145213.png" alt="微信图片_20181203145213.png-7.7kB"></p>
 <hr>
 <h2 id="泛型"><a href="#泛型" class="headerlink" title="泛型"></a>泛型</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> basics.template;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Meat</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Meat"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Soup</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Soup"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*使用泛型的好处：</span></span><br><span class="line"><span class="comment">* 1. 避免使用重载写多种方法</span></span><br><span class="line"><span class="comment">* 2. 类型擦除 避免强制转换带来的风险</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* 什么是类型擦除:</span></span><br><span class="line"><span class="comment">* 所有的泛型参数都相当于转换为Object类型 进去是什么 出来就是什么 避免了类型强制转换带来的风险*/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/*任何在尖括号中的指代一种未知类型 即使放String在尖括号里面 这时候的String也不再是jav.lang.String不一样了*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Stove</span> </span>&#123;</span><br><span class="line">    <span class="comment">/*尖括号必须位于：</span></span><br><span class="line"><span class="comment">    1.类名之后 或者</span></span><br><span class="line"><span class="comment">    2.方法返回类型之前*/</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function"><span class="keyword">void</span> <span class="title">heat</span><span class="params">(T food)</span> </span>&#123;</span><br><span class="line">        System.out.println(food + <span class="string">" is done"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Meat meat = <span class="keyword">new</span> Meat();</span><br><span class="line">        Soup soup = <span class="keyword">new</span> Soup();</span><br><span class="line">        Stove.heat(meat);</span><br><span class="line">        Stove.heat(soup);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>输出<br><img src="http://static.zybuluo.com/gzm1997/9muxneag9y1fq6rbwetxzop8/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20181203143644.png" alt="微信图片_20181203143644.png-9.8kB"></p>
@@ -114,7 +114,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjp7y6xux000fd0o02df0wh7b" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjp7ykws6000ijwo0e2n050ra" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -251,7 +251,7 @@ RUN go build
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjp7y6xvj0019d0o0exop4ybi" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjp7ykwsw001cjwo08j669zpk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -328,7 +328,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjp7y6xur0009d0o0bjxps3i2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjp7ykws0000bjwo0tgho0siv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/线程/">线程</a></li></ul>
@@ -420,7 +420,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjp7y6xuj0003d0o0yi66ftnk" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjp7ykwrr0004jwo021989ji3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li></ul>
@@ -474,7 +474,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/15/cayley原理一-获取查询结果/" data-id="cjp7y6xum0005d0o0fghbxao2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/15/cayley原理一-获取查询结果/" data-id="cjp7ykwrt0005jwo0fpwcykgg" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
@@ -572,7 +572,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/09/图数据库跟传统数据库以及图算法/" data-id="cjp7y6xvl001bd0o0s7drxh11" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/09/图数据库跟传统数据库以及图算法/" data-id="cjp7ykwst0018jwo0pdo9p2yz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图算法/">图算法</a></li></ul>
@@ -683,7 +683,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/08/使用rabbitMQ作为缓存队列/" data-id="cjp7y6xve0012d0o0qhrd89ee" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/08/使用rabbitMQ作为缓存队列/" data-id="cjp7ykwsv001ajwo05pcbwgg8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li></ul>
@@ -781,7 +781,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/mux学习/" data-id="cjp7y6xv2000kd0o05yss1a9e" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/mux学习/" data-id="cjp7ykwsb000njwo0v8jei08y" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mux/">mux</a></li></ul>
@@ -841,7 +841,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/go-web/" data-id="cjp7y6xuu000dd0o0ejgoym6v" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/go-web/" data-id="cjp7ykwrz000ajwo02vdmdx6v" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web/">web</a></li></ul>
@@ -958,7 +958,7 @@ wg.Add(5)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/go多线程/" data-id="cjp7y6xuz000hd0o0ggdxb0ws" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/go多线程/" data-id="cjp7ykws2000djwo0xsmd7uix" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/多线程/">多线程</a></li></ul>
