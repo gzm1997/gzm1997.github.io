@@ -62,6 +62,87 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-java基础3：红黑树和AVL树" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/01/05/java基础3：红黑树和AVL树/" class="article-date">
+  <time datetime="2019-01-05T12:41:44.000Z" itemprop="datePublished">2019-01-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/01/05/java基础3：红黑树和AVL树/">java基础3：红黑树和AVL树</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="AVL树"><a href="#AVL树" class="headerlink" title="AVL树"></a>AVL树</h2><p>本质就是<strong>平衡二叉查找树</strong><br>特点：<br>增加和删除几点后通过树形旋转重新打到平衡 左子树根右子树之间的高度差不能超过1</p>
+<h2 id="红黑树"><a href="#红黑树" class="headerlink" title="红黑树"></a>红黑树</h2><p>主要特征是每个节点增加一个属性表示节点的颜色 可以是红色也可以是黑色 他追求的并不是绝对的平衡 而是<strong>保证从根节点到叶子节点的最长路径不超过最短路径的2倍</strong> 他的最坏运行时间复杂度是logn下面我会提供这个时间复杂度的证明</p>
+<p>红黑树有五个约束条件 虽然我都不知道这些条件为什么是这样 有什么用 但是还是觉得这就是人家定下来的规则吧 肯定有人家的道理(达到防止红黑树野蛮往一个方向生长的效果)</p>
+<ol>
+<li>节点只能是红色或者黑色</li>
+<li>根节点必须是黑色</li>
+<li>所有NIL结点都是黑色的 NIL就是叶子结点下挂着的两个虚节点</li>
+<li>一条路径上不能出现相邻的两个红色节点</li>
+<li>在任何递归子树内 根节点到叶子结点的所有路径上包含相同的黑色结点</li>
+</ol>
+<hr>
+<h2 id="旋转"><a href="#旋转" class="headerlink" title="旋转"></a>旋转</h2><p>无论是AVL树还是红黑书 旋转都是很常见的<br><img src="http://static.zybuluo.com/gzm1997/p1coff44xqyn63epmxyf7xxc/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20190105200323.jpg" alt="微信图片_20190105200323.jpg-67.3kB"></p>
+<hr>
+<h2 id="比较"><a href="#比较" class="headerlink" title="比较"></a>比较</h2><p>因为AVL树追求的是绝对的平衡 红黑树追求的是大致上的平衡 所以相同的情况下红黑树很有可能比AVL树更高 那么查找的次数更多 </p>
+<p>另一方面 AVL树在回溯的时间成本上最差可能为logn 而红黑树每次回溯的部署步长为2 成本更低</p>
+<p>所以</p>
+<ol>
+<li>AVL树更合适低频修改 大量查询</li>
+<li>红黑树频繁的插入和删除</li>
+</ol>
+<hr>
+<h2 id="红黑树时间复杂度"><a href="#红黑树时间复杂度" class="headerlink" title="红黑树时间复杂度"></a>红黑树时间复杂度</h2><p>我们知道红黑树插入和删除最差的时间复杂度都是logn 那么是怎样来的呢</p>
+<p>首先由红黑书最后两个约束条件：</p>
+<ol start="4">
+<li>一条路径上不能出现相邻的两个红色结点</li>
+<li>在任何递归子树内 根节点到叶子结点的所有路径上包含相同数目的黑色节点</li>
+</ol>
+<p>由上面两个条件可以知道红黑树中的黑色节点都是分部均匀的 但是极端的情况下可以是整棵红黑树都是黑色节点</p>
+<p>现在我们来认识一个新概念<strong>黑深度Black Depth</strong> 顾名思义就是当前节点到NIL节点途径上的黑色节点个数</p>
+<p>那么对于根节点和上面两个约束条件 我们知道：<br>$$Black Depth &gt;= height / 2$$</p>
+<p>因为约束条件导致黑深度分布均匀 而且因为红红不相连 所以黑深度是大于等于半个深度的</p>
+<p>我们假设红黑书的形状接近满二叉树的时候 假设有n个节点 高度为h 那么有：</p>
+<p>$$2 ^ h - 1 = n$$</p>
+<p>那么就有</p>
+<p>$$ h = log2(n + 1) $$</p>
+<p>当一棵红黑树全是黑色节点的时候 那么根节点的黑深度就等于上面的h了 那么就有</p>
+<p>$$ log2(n + 1) &gt;= height / 2 $$</p>
+<p>可以得到</p>
+<p>$$height &lt;= 2log2(n + 1)$$</p>
+<p>我们知道红黑树的插入 是从根节点找到NIL的过程 时间复杂度就是</p>
+<p>$$O(height) = O(2log2(n + 1)) = O(2log2(n + 1)) = O(2log2(2n)) = O(logn)$$</p>
+<p>所以综上所述 红黑树在查找 插入 删除等 最坏时间复杂度是O(logn)</p>
+<p>不知道上面的证明严谨不严谨 但是可以让我理解了 并且记忆深刻一点</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/01/05/java基础3：红黑树和AVL树/" data-id="cjqjgkv5l000oqco0wcms4xsh" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AVL树/">AVL树</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/红黑树/">红黑树</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-java基础2：树相关前哨" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/01/05/java基础2：树相关前哨/" class="article-date">
@@ -126,7 +207,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/05/java基础2：树相关前哨/" data-id="cjqjgi46b000tqko0q4ywybrp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/05/java基础2：树相关前哨/" data-id="cjqjgkv84004yqco0zd3i8c1c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -209,7 +290,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/24/ArrayList相关/" data-id="cjqjgi4590000qko0dzkt1kxh" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/24/ArrayList相关/" data-id="cjqjgkv4c0000qco03t798fh7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -290,7 +371,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/暑假学习总结/" data-id="cjqjgi4780020qko0i5a4pxtk" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/暑假学习总结/" data-id="cjqjgkv6h001wqco0gltp0rhp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图谱/">图谱</a></li></ul>
@@ -379,7 +460,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/subgraph概况/" data-id="cjqjgi46u001kqko09y63fe1k" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/subgraph概况/" data-id="cjqjgkv66001gqco0t911af4u" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/subgraph/">subgraph</a></li></ul>
@@ -444,7 +525,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/docker在测试中的作用/" data-id="cjqjgi45x000eqko0zarusfk2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/docker在测试中的作用/" data-id="cjqjgkv57000eqco04tb8jfio" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -508,7 +589,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjqjgi46d000wqko0jkc3gx0o" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjqjgkv5y0016qco05vo7tkmh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -645,7 +726,7 @@ RUN go build
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjqjgi474001wqko0gru2uwem" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjqjgkv6g001uqco0s95pgq6u" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -722,7 +803,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjqjgi467000nqko0sbobye95" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjqjgkv5c000hqco0g6ei9emv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/线程/">线程</a></li></ul>
@@ -814,64 +895,10 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjqjgi45t000bqko02t8ikqgn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjqjgkv500009qco0g54e6d3r" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cayley原理一-获取查询结果" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/08/15/cayley原理一-获取查询结果/" class="article-date">
-  <time datetime="2018-08-15T13:01:47.000Z" itemprop="datePublished">2018-08-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/15/cayley原理一-获取查询结果/">cayley原理一(获取查询结果)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="查询结果的获取"><a href="#查询结果的获取" class="headerlink" title="查询结果的获取"></a>查询结果的获取</h2><p>首先我们假定cayley已将我们的查询语句path转化为mongodb的查询语句 现在我们分析cayley是如何从mongodb里面获取查询结果 并且返回给上层的</p>
-<p>总体的结构如下(只包含从mongodb中获取查询结果 不包含解析为mongodb查询语句)<br><img src="http://static.zybuluo.com/gzm1997/ddaggos1xeyxb8nm3211m1d7/get.jpg" alt="get.jpg-67.1kB"></p>
-<p>由cayley官方提供的hello world的查询方式如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> err := p.Iterate(<span class="literal">nil</span>).EachValue(<span class="literal">nil</span>, <span class="function"><span class="keyword">func</span><span class="params">(value quad.Value)</span></span> &#123;</span><br><span class="line">	<span class="comment">// ignore</span></span><br><span class="line">&#125;); err != <span class="literal">nil</span> &#123;</span><br><span class="line">	<span class="built_in">panic</span>(err)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>可以看见是调用了<strong>EachValue</strong>这个函数 这个函数是属于一个叫做<strong>IterateChain</strong>结构体的一个方法 如上提最左边的类 上图最左边是我们的顶层调用 越往右是底层调用</p>
-<p>为了直观 我们从右边到左边 从底层到高层的调用如下</p>
-<p> 1.mongo.go中的Iterator结构体(称为迭代器1)中调用Next()函数 这个Next()再调用mgo.v2\session.go中Iter结构体中的Next()函数 从而将从<strong>mgo</strong>中迭代的结果保存在迭代器1中的<strong>res字段</strong>中 这个字段类型是bson.M(实质上是一个map[string]interface{}类型) 然后迭代器1调用Doc()方法 将res类型转为Document(实质上为map[string]graph.Value)<br><img src="http://static.zybuluo.com/gzm1997/3cevje4c3hq094ifee3i02d7/image_1ckun71jb1l0s69khljmep15h2s.png" alt="image_1ckun71jb1l0s69khljmep15h2s.png-34.4kB"></p>
-<p> 2.nosql\iterate.go中Iterator结构体(称为迭代器2)调用自己的Next()函数 进而调用步骤1中的迭代器1的Next()和Doc()函数完成步骤1的操作 并且转化为Document的结果存进迭代器2中的<strong>result字段</strong>中 类型是graph.Value<br><img src="http://static.zybuluo.com/gzm1997/o1y86b0ro82yi1clu3eotfrq/image_1ckun822b3bc14dec3k1u2pnvv39.png" alt="image_1ckun822b3bc14dec3k1u2pnvv39.png-60.3kB"></p>
-<p> 3.iterate.go中的IterateChain结构体(称为迭代链)调用自己的Each()方法 进而 调用步骤2中的迭代器2中的Next()函数完成步骤2中的操作 并且使用迭代器2的Result()函数获取这个保存在迭代器2的Result字段中的结果<br><img src="http://static.zybuluo.com/gzm1997/zp9jikpfh9ok7gs7885n1p7i/image_1ckup1a0kv53hqeo1s1lb51c2ds.png" alt="image_1ckup1a0kv53hqeo1s1lb51c2ds.png-50.9kB"></p>
-<hr>
-<h2 id="使用接口实现多种实现方案"><a href="#使用接口实现多种实现方案" class="headerlink" title="使用接口实现多种实现方案"></a>使用接口实现多种实现方案</h2><p>上面图中的两部分绿色非常关键 两部分都是定义了很多方法的<strong>接口</strong> 我们称最右边的接口为接口1 另一个称为接口2</p>
-<p>对于接口1来说<br>这些包含了若干方法的接口是声明在nosql.go中的DocIterator这个接口中的 并且被nosql\iterate.go中进行调用 在接口的具体实现上我们上面的方案是使用了mongo.go文件中的Iterator结构体实现方式 </p>
-<p>试想一下：当我们实现另一个新的Iterator迭代器 并且都实现接口1的方法 但是在这些方法的定义上使用其他的nosql数据库进行底层存储 那么我就可以添加一种新的底层存储可选方案了</p>
-<p>其实cayley可以使用mysql 还是mongodb bolt redis甚至内存等多种存储方式作为底层存储的原因就是：</p>
-<blockquote>
-<p>其实cayley在sql还是nosql类型方案的选择上就是通过<strong>接口2</strong>的实现方式不一样来实现的 而nosql方式的底层存储数据库到底选择何种nosql数据库也是通过<strong>接口1</strong>的实现方式不一样来实现的 sql具体数据库的选择也是类似</p>
-</blockquote>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/15/cayley原理一-获取查询结果/" data-id="cjqjgi45s0009qko06mvctzdh" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
 
     </footer>
   </div>
@@ -898,7 +925,7 @@ type PoolChan chan TaskChan
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/subgraph/">subgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图谱/">图谱</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AVL树/">AVL树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/subgraph/">subgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图谱/">图谱</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -908,7 +935,7 @@ type PoolChan chan TaskChan
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 16px;">aiohttp</a> <a href="/tags/async/" style="font-size: 14px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12px;">beego</a> <a href="/tags/cayley/" style="font-size: 16px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 14px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 12px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/gremlin/" style="font-size: 10px;">gremlin</a> <a href="/tags/hugegraph/" style="font-size: 10px;">hugegraph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 18px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 16px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12px;">sqlalchemy</a> <a href="/tags/subgraph/" style="font-size: 10px;">subgraph</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 12px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/图谱/" style="font-size: 10px;">图谱</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/AVL树/" style="font-size: 10px;">AVL树</a> <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 16px;">aiohttp</a> <a href="/tags/async/" style="font-size: 14px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12px;">beego</a> <a href="/tags/cayley/" style="font-size: 16px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 14px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 12px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/gremlin/" style="font-size: 10px;">gremlin</a> <a href="/tags/hugegraph/" style="font-size: 10px;">hugegraph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 18px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 16px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12px;">sqlalchemy</a> <a href="/tags/subgraph/" style="font-size: 10px;">subgraph</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 12px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/图谱/" style="font-size: 10px;">图谱</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/红黑树/" style="font-size: 10px;">红黑树</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -930,6 +957,10 @@ type PoolChan chan TaskChan
       <ul>
         
           <li>
+            <a href="/2019/01/05/java基础3：红黑树和AVL树/">java基础3：红黑树和AVL树</a>
+          </li>
+        
+          <li>
             <a href="/2019/01/05/java基础2：树相关前哨/">java基础2：树相关前哨</a>
           </li>
         
@@ -943,10 +974,6 @@ type PoolChan chan TaskChan
         
           <li>
             <a href="/2018/12/03/subgraph概况/">subgraph概况</a>
-          </li>
-        
-          <li>
-            <a href="/2018/12/03/docker在测试中的作用/">docker在测试中的作用</a>
           </li>
         
       </ul>
