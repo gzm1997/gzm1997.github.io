@@ -62,6 +62,82 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-java基础2：树相关前哨" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/01/05/java基础2：树相关前哨/" class="article-date">
+  <time datetime="2019-01-05T11:40:59.000Z" itemprop="datePublished">2019-01-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/01/05/java基础2：树相关前哨/">java基础2：树相关前哨</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="元素的比较"><a href="#元素的比较" class="headerlink" title="元素的比较"></a>元素的比较</h2><p>在java里面元素的对象的比较一般是通过实现comparable或者comparator这两个接口来实现的</p>
+<p>比如下面一个类 实现了comparable接口 实现接口必须<strong>覆写compareTo这个方法</strong><br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> basics.compare;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/*下面的Comparable&lt;SearchResult&gt;加上了泛型限定*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SearchResult</span> <span class="keyword">implements</span> <span class="title">Comparable</span>&lt;<span class="title">SearchResult</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> relativeRatio;</span><br><span class="line">    <span class="keyword">long</span> count;</span><br><span class="line">    <span class="keyword">int</span> recentOrders;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">SearchResult</span><span class="params">(<span class="keyword">int</span> relativeRatio, <span class="keyword">long</span> count)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.relativeRatio = relativeRatio;</span><br><span class="line">        <span class="keyword">this</span>.count = count;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*需要覆写compareTo方法*/</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">compareTo</span><span class="params">(SearchResult o)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.relativeRatio != o.relativeRatio) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>.relativeRatio &gt; o.relativeRatio ? <span class="number">1</span> : -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.count != o.count) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>.count &gt; o.count ? <span class="number">1</span> : -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setRecentOrders</span><span class="params">(<span class="keyword">int</span> recentOrders)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.recentOrders =recentOrders;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>但是comparable接口其实不如comparator好 因为当我们需求有改变的时候 如果使用前者 意味着需要修改已经提交的代码 如果我们使用后者 那么当与比较相关的需求改变的时候 我们只需要修改第三方比较器就可以了 下面就是一个后者的例子 注意comparator这个接口的实现必须<strong>覆写compare这个函数</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> basics.compare;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Comparator;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/*这里我们实现的是比较器comparator 这样可以让我们对比较标准进行修改的时候可以不修改我们已经交付的代码SearchResult 直接按照需求修改比较器就可以了</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* 我们可以看到下面的Comparator&lt;SearchResult&gt;接口也是添加了泛型限定的*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SearchResultComparator</span> <span class="keyword">implements</span> <span class="title">Comparator</span>&lt;<span class="title">SearchResult</span>&gt; </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">compare</span><span class="params">(SearchResult o1, SearchResult o2)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (o1.relativeRatio != o2.relativeRatio) &#123;</span><br><span class="line">            <span class="keyword">return</span> o1.relativeRatio &gt; o2.relativeRatio ? <span class="number">1</span> : -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (o1.recentOrders != o2.recentOrders) &#123;</span><br><span class="line">            <span class="keyword">return</span> o1.recentOrders &gt; o2.recentOrders ? <span class="number">1</span> : -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (o1.count != o2.count) &#123;</span><br><span class="line">            <span class="keyword">return</span> o1.count &gt; o2.count ? <span class="number">1</span> : -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面我们也使用了泛型的知识 这个就不展开了</p>
+<hr>
+<h2 id="相等"><a href="#相等" class="headerlink" title="相等"></a>相等</h2><p>上面我们介绍的是比较 主要说的是comparable跟comparator这两个接口 那么跟我们这里说的相等有什么区别呢</p>
+<blockquote>
+<p>comparable跟comparator都是两个类的实例用来判断大小或者说按照一种规则对这些元素进行排序的 但是这里说的相等主要是判断两个对象是否相等 相等或者不想等就完事了 没有所谓的排序 这里的场景主要是在一些map或者set集合中用来判断两个对象是否是一个相同的对象 在去重方面发挥作用</p>
+</blockquote>
+<p>下面我们主要说一下”相等”这个概念在TreeMap跟HashMap这两个常用的Map里面有什么不同</p>
+<p>首先我们了解一下TreeMap跟ConcurrentHashMap和HashMap在使用上的一些不同：</p>
+<ul>
+<li>TreeMap的Key是有序的 可以支持范围查找 所以在一些需要排序的场景下很好用</li>
+<li>ConcurrentHashMap和HashMap在插入和删除方面上更高效 所以后面两者更常用</li>
+</ul>
+<p><strong>TreeMap的key排序去重并不是基于key元素覆写hashcode函数跟equal函数的 而是实现了接口comparable 覆写了compareTo函数</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Key</span> <span class="keyword">implements</span> <span class="title">Comparable</span>&lt;<span class="title">Key</span>&gt; </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">compareTo</span><span class="params">(Key o)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*treeMap一般都是在key需要排序的情况下使用 这样效率很高 但是一般用的很少 因为conncurrentHashMap跟HashMap在插入和删除方面效率很高 后两者用地比较多</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">    * 但是我们要注意 TreeMap的key排序去重并不是基于key元素覆写hashcode函数跟equal函数的 而是实现了接口comparable 覆写了compareTo函数*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TreeMapUsage</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        TreeMap treeMap = <span class="keyword">new</span> TreeMap();</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> Key(), <span class="string">"value one"</span>);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> Key(), <span class="string">"value two"</span>);</span><br><span class="line">        System.out.println(treeMap.size());</span><br><span class="line">        TreeMap treeMap1 = <span class="keyword">new</span> TreeMap();</span><br><span class="line">        treeMap1.put(<span class="number">1</span>, <span class="string">"one"</span>);</span><br><span class="line">        <span class="comment">/*map的key是有类型 即使一开始你没有显示指定类型 但是第一次添加之后key的类型就已经固定了 后面不允许添加其他类型*/</span></span><br><span class="line">        <span class="comment">/*所以下面这一句会报错*/</span></span><br><span class="line"><span class="comment">//        treeMap1.put("2", "two");</span></span><br><span class="line">        <span class="comment">/*但是下面这一句没有报错 说明value是不限定类型的*/</span></span><br><span class="line">        treeMap1.put(<span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">        System.out.println(treeMap1.size());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>那么HashMap是怎样实现元素的去重的呢<br><strong>HashMap依靠hashCode函数跟equal函数来实现去重</strong><br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NewKey</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object obj)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*下面的代码输出是1 因为：</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* TreeMap依靠实现comparable接口 覆写compareTo函数来实现去重</span></span><br><span class="line"><span class="comment">* HashMap依靠hashCode函数跟equal函数来实现去重</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* 所以下面的代码输出是1 HashMap把两个Key都当作是相同的了*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HashMapUsage</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        HashMap hashMap = <span class="keyword">new</span> HashMap();</span><br><span class="line">        hashMap.put(<span class="keyword">new</span> NewKey(), <span class="string">"value one"</span>);</span><br><span class="line">        hashMap.put(<span class="keyword">new</span> NewKey(), <span class="string">"value two"</span>);</span><br><span class="line">        System.out.println(hashMap.size());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="fast-fail和fast-save机制"><a href="#fast-fail和fast-save机制" class="headerlink" title="fast-fail和fast-save机制"></a>fast-fail和fast-save机制</h2><p>fast-fail机制</p>
+<blockquote>
+<p>fast-fail机制是一种对集合遍历操作时的错误检测机制 在遍历途中出现意料之外的修改时 通过uncheck异常暴力反馈出来</p>
+</blockquote>
+<p>这种机制通常出现在多线程环境下 当前线程会维护一个计数比较器 即expectedModCount 记录修改的次数 在遍历之前 会把实时修改modCount赋值给expectedModCount如果两个数据不想等就会抛出异常</p>
+<p>这里我之前看源代码就有发现 具体见<a href="https://gzm1997.github.io/2018/12/24/ArrayList%E7%9B%B8%E5%85%B3/" target="_blank" rel="noopener">ArrayList相关</a><br><img src="http://static.zybuluo.com/gzm1997/md2hhpl0ar2275h0zjfsl6nf/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20190105192702.png" alt="微信图片_20190105192702.png-46.7kB"></p>
+<p>我们知道ArrayList就是fast-fail的 那么我们有哪些常见的是fast-save的呢 下面要介绍CopyOnWriteArrayList用来代替ArrayList 该容器会对内部的迭代器进行加锁操作</p>
+<p>顺便我们这里介绍一下COW奶牛家族 就是copy on write的意思<br><strong>它是并发的一种新思路 实行读写分离</strong></p>
+<ul>
+<li>写操作就复制一个新的集合 在新集合上添加或者删除 等到修改结束 将原集合的引用指向新的集合</li>
+<li>读和遍历操作 不需要加锁 直接读</li>
+</ul>
+<p>但是在使用cow的时候需要注意</p>
+<ol>
+<li>尽量设置合理的初始容量 这跟ArrayList那些是一样的 因为扩容代价太大</li>
+<li>使用批量添加或者修改 避免频繁复制整个集合 消耗内存</li>
+</ol>
+<p>下面是一个简单例子<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*下面我们使用了COW家族的一员 就是copy on write机制</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* 这个机制适合使用在读多写极少的高并发场景下</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* 因为他的原理就是：实行读写分离 如果是写操作 则复制一个新集合 在新集合中添加和删除元素 待一切修改完成之后 再将原集合的引用指向新的集合 这样做的好处就是可以高并发地对COW进行读和遍历操作 而不需要加锁 因为当前集合不会添加任何元素</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* 使用注意要点：</span></span><br><span class="line"><span class="comment">* 1. 尽量设置合理的容量初始值 因为会设置扩容的问题</span></span><br><span class="line"><span class="comment">* 2. 使用批量添加或删除的方法 因为每一次修改都是需要copy出一份新的集合出来的 如果分开修改 那么代价很大</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* 有点和缺点：</span></span><br><span class="line"><span class="comment">* 优点：是线程安全的</span></span><br><span class="line"><span class="comment">* 缺点：不能读取到最新的数据*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CopyOnWrite</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        CopyOnWriteArrayList&lt;Long&gt; list = <span class="keyword">new</span> CopyOnWriteArrayList&lt;Long&gt;();</span><br><span class="line">        <span class="keyword">long</span> start = System.nanoTime();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            list.add(System.nanoTime());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">long</span> end = System.nanoTime();</span><br><span class="line">        System.out.println(<span class="string">"cost time "</span> + (end - start));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/01/05/java基础2：树相关前哨/" data-id="cjqjef6dd0014vko05r2qlz3h" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-ArrayList相关" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/12/24/ArrayList相关/" class="article-date">
@@ -133,7 +209,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/24/ArrayList相关/" data-id="cjq20o0mg0000u8o0nkdtkcsu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/24/ArrayList相关/" data-id="cjqjef6bb0001vko0h7bal00z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -214,7 +290,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/暑假学习总结/" data-id="cjq20o0op001xu8o0pajhibi1" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/暑假学习总结/" data-id="cjqjef6fq004fvko0hbpvzzfc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图谱/">图谱</a></li></ul>
@@ -303,7 +379,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/subgraph概况/" data-id="cjq20o0oe001iu8o04uk0q3e5" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/subgraph概况/" data-id="cjqjef6en002lvko04kt6nwm6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/subgraph/">subgraph</a></li></ul>
@@ -368,7 +444,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/docker在测试中的作用/" data-id="cjq20o0nd000fu8o0rk3mmzer" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/docker在测试中的作用/" data-id="cjqjef6da0011vko0djtjgiwz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -432,7 +508,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjq20o0nw000wu8o0fg9lgpb9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjqjef6dq001ivko04hejsjoe" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -569,7 +645,7 @@ RUN go build
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjq20o0on001uu8o0apr0mjvb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjqjef6et002rvko0o7wlvd5u" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -646,7 +722,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjq20o0nn000mu8o0tz0gr978" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjqjef6d80010vko0vyfp88rs" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/线程/">线程</a></li></ul>
@@ -738,7 +814,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjq20o0mz0009u8o0i9vskdgr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjqjef6bl0005vko0nbom0w4x" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li></ul>
@@ -792,108 +868,10 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/15/cayley原理一-获取查询结果/" data-id="cjq20o0n1000bu8o0nbprcc8l" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/15/cayley原理一-获取查询结果/" data-id="cjqjef6br000avko0zfo0gn9c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-图数据库跟传统数据库以及图算法" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/08/09/图数据库跟传统数据库以及图算法/" class="article-date">
-  <time datetime="2018-08-09T11:59:26.000Z" itemprop="datePublished">2018-08-09</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/09/图数据库跟传统数据库以及图算法/">图数据库跟传统数据库以及图算法</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="为什么需要图数据库"><a href="#为什么需要图数据库" class="headerlink" title="为什么需要图数据库"></a>为什么需要图数据库</h2><ul>
-<li>SQL依然是表哥数据的最好存储方式</li>
-<li>s键值key-value依然是拓展性和速度上最快的</li>
-<li>图数据库只是为我们提供了查询图状数据结构的一种方式</li>
-</ul>
-<p>为什么图状的数据结构的查询会对我们那么有用呢？<br>因为可以使用图状数据结构来表示人类可以直观理解的个体与个体之间的联系</p>
-<p>但是为什么都使用其他的数据存储方式呢？</p>
-<p>图数据库可以给你带来几样关键的好处</p>
-<ol>
-<li>可以更简单地表示更复杂的数据</li>
-<li>可以更灵活地改变你要存储的关系 SQL都是需要预先定义模式的 所以当关系不断变化的时候 SQL相比图数据库的劣势就出来了</li>
-<li>可以更易于自定义关系 两个节点之间的关系想怎么定义就怎么定义<br>4.可以支持一些设计图计算的算法 例如克鲁斯卡尔还有计算机网络的路由选路上涉及的一些算法</li>
-</ol>
-<p>后面好像就没讲什么了 都是讲一些cayley图数据库的一些基础跟查询相关的 没有我想要的一些设计原理和并发处理的一些内容</p>
-<hr>
-<h2 id="戴克斯克拉算法"><a href="#戴克斯克拉算法" class="headerlink" title="戴克斯克拉算法"></a>戴克斯克拉算法</h2><p>全局地寻找一个点到每个点的最短路径<br><img src="http://static.zybuluo.com/gzm1997/5u9ssmlowl90rcqcvsw9g5jk/image_1btdnlnnm15vk1omea11a2f1uth3a.png" alt="此处输入图片的描述"></p>
-<h2 id="距离向量算法"><a href="#距离向量算法" class="headerlink" title="距离向量算法"></a>距离向量算法</h2><p>表示：<br>dx(y)x到y整条路径的最小cost<br><img src="http://static.zybuluo.com/gzm1997/sjsmxla9ylnnml9tyl7zw28e/image_1c3n2opou1sl4tfmv731mvt7bu9.png" alt="此处输入图片的描述"><br>x到y的路径的cost等于它先到邻居的cost加上邻居到y的最小cost<br><img src="http://static.zybuluo.com/gzm1997/0z153qoxt9t1fb10c9117b9n/image_1c3n2qnvi1r4f4brpffas14rpm.png" alt="此处输入图片的描述"></p>
-<p>Bellman-Ford例子：<br><img src="http://static.zybuluo.com/gzm1997/yihmnjt2gaivr7zlfmi8f0wr/image_1c3n3hfes6vs1tv8gufhsjj1v9.png" alt="此处输入图片的描述"><br>要点：<br>Dx(y)是x到y的最小cost估计，N中每个节点都需要估计自己到y节点的最小cost。</p>
-<p>每个节点中有一个距离向量<br>Dx = [Dx(y): y є N ]<br>这个距离向量包含着这个节点到N中所有节点最小cost的估计</p>
-<p>而对于每个节点的邻居节点，也是这样：<br>Dv = [Dv(y): y є N ]</p>
-<p>在距离向量算法下，每个节点需要维护的信息有：</p>
-<ul>
-<li>这个节点到邻居节点的cost</li>
-<li>这个节点到N中每个节点的预计最小cost，也就是距离向量</li>
-<li>这个节点邻居的距离向量</li>
-</ul>
-<p>算法：</p>
-<ul>
-<li>每段时间按之后，每个节点把自己的距离向量副本发送给自己的邻居</li>
-<li>当每个节点接收到邻居发送过来的距离向量，拿这个距离向量更新自己的DV，使用BF公式</li>
-</ul>
-<p>DV算法例子： 注意每个节点定时需要更新和把它的距离向量广播给它的邻居<br><img src="http://static.zybuluo.com/gzm1997/5b8kzvkpk6xovf297hi7xmuo/image_1c3n4hcl41v761u62uqs1d3612e4m.png" alt="此处输入图片的描述"></p>
-<p>LS和DV比较</p>
-<ul>
-<li>LS需要知道达到所有节点的cost，因此需要洪泛，但是DV不需要</li>
-<li>LS的时间复杂度是O(N^2)，时间复杂度比DV更高</li>
-</ul>
-<hr>
-<h2 id="最小生成树"><a href="#最小生成树" class="headerlink" title="最小生成树"></a>最小生成树</h2><p>最小生成树就是给一个图给你 每个点都是可以互相联通的 但是每条边的权重是不一样的 需要找出一堆边 使得这些点都连接起来 但是都不构成环 而且这些权重架起来还是最小</p>
-<p><img src="http://static.zybuluo.com/gzm1997/7dc7aoj3zaj3om0ixf4fcfol/image_1ckf7ba5is713q9122mg2v1i2j1t.png" alt="image_1ckf7ba5is713q9122mg2v1i2j1t.png-58.1kB"></p>
-<p>最小生成树一个很常见的应用场景是 城市之间需要铺电缆 每个城市之间都是可以铺的 但是不同城市之间铺设电缆的成本不一样 那么就需要我们找出一个满足要求的最小生成树 来让成本最低</p>
-<p>找最小生成树的方法 一般有<strong>Kruskal克鲁斯卡尔算法</strong></p>
-<p>步骤</p>
-<ol>
-<li>新建图G，G中拥有原图中相同的节点，但没有边</li>
-<li>将原图中所有的边按权值从小到大排序</li>
-<li>从权值最小的边开始，如果这条边连接的两个节点于图G中不在同一个连通分量中，则添加这条边到图G中</li>
-<li>重复3，直至图G中所有的节点都在同一个连通分量中</li>
-</ol>
-<p>维基百科上给的例子 非常容易理解<br><img src="http://static.zybuluo.com/gzm1997/e2nr8mfyklmpu8wt776j7jux/image_1ckf7k3dbke01d0di4017nm1r0j2a.png" alt="image_1ckf7k3dbke01d0di4017nm1r0j2a.png-158.7kB"></p>
-<p>就是先找出一个图的所有的边 按照权重从小到大排序 一次选取权重最小的边 添加到结果图中 注意会跟已经选到的边构成环的边不要选择 抛弃就可以 知道图中的所有节点都在一个连通分量中</p>
-<hr>
-<h2 id="上面两种图的算法"><a href="#上面两种图的算法" class="headerlink" title="上面两种图的算法"></a>上面两种图的算法</h2><p>其实上面我们要搞清楚<br>寻找最小生成树的算法 </p>
-<blockquote>
-<p>克鲁斯卡尔算法是寻找整个图的边权重之和最小的一种方法 <strong>寻找最小生成树</strong></p>
-</blockquote>
-<p>但是上面的两种算法 1.戴克斯克拉算法 2.距离向量算法 这两个算法都是路由选路算法 </p>
-<blockquote>
-<p>路由选路算法最终找到的结果并不是最小生成树 而是<strong>一个点到其它点距离最小的路径集合</strong> 注意这个<strong>不一定是最小生成树</strong>的</p>
-</blockquote>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/09/图数据库跟传统数据库以及图算法/" data-id="cjq20o0om001su8o0ua4mltyi" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图算法/">图算法</a></li></ul>
 
     </footer>
   </div>
@@ -939,7 +917,7 @@ type PoolChan chan TaskChan
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
     </div>
   </div>
 
@@ -950,6 +928,10 @@ type PoolChan chan TaskChan
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/01/05/java基础2：树相关前哨/">java基础2：树相关前哨</a>
+          </li>
         
           <li>
             <a href="/2018/12/24/ArrayList相关/">ArrayList相关</a>
@@ -967,10 +949,6 @@ type PoolChan chan TaskChan
             <a href="/2018/12/03/docker在测试中的作用/">docker在测试中的作用</a>
           </li>
         
-          <li>
-            <a href="/2018/12/03/java基础：入职华为前的重启/">java基础：入职华为前的重启</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -983,7 +961,7 @@ type PoolChan chan TaskChan
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2018 gzm1997<br>
+      &copy; 2019 gzm1997<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

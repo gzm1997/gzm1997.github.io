@@ -62,6 +62,104 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-图数据库跟传统数据库以及图算法" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/09/图数据库跟传统数据库以及图算法/" class="article-date">
+  <time datetime="2018-08-09T11:59:26.000Z" itemprop="datePublished">2018-08-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/09/图数据库跟传统数据库以及图算法/">图数据库跟传统数据库以及图算法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="为什么需要图数据库"><a href="#为什么需要图数据库" class="headerlink" title="为什么需要图数据库"></a>为什么需要图数据库</h2><ul>
+<li>SQL依然是表哥数据的最好存储方式</li>
+<li>s键值key-value依然是拓展性和速度上最快的</li>
+<li>图数据库只是为我们提供了查询图状数据结构的一种方式</li>
+</ul>
+<p>为什么图状的数据结构的查询会对我们那么有用呢？<br>因为可以使用图状数据结构来表示人类可以直观理解的个体与个体之间的联系</p>
+<p>但是为什么都使用其他的数据存储方式呢？</p>
+<p>图数据库可以给你带来几样关键的好处</p>
+<ol>
+<li>可以更简单地表示更复杂的数据</li>
+<li>可以更灵活地改变你要存储的关系 SQL都是需要预先定义模式的 所以当关系不断变化的时候 SQL相比图数据库的劣势就出来了</li>
+<li>可以更易于自定义关系 两个节点之间的关系想怎么定义就怎么定义<br>4.可以支持一些设计图计算的算法 例如克鲁斯卡尔还有计算机网络的路由选路上涉及的一些算法</li>
+</ol>
+<p>后面好像就没讲什么了 都是讲一些cayley图数据库的一些基础跟查询相关的 没有我想要的一些设计原理和并发处理的一些内容</p>
+<hr>
+<h2 id="戴克斯克拉算法"><a href="#戴克斯克拉算法" class="headerlink" title="戴克斯克拉算法"></a>戴克斯克拉算法</h2><p>全局地寻找一个点到每个点的最短路径<br><img src="http://static.zybuluo.com/gzm1997/5u9ssmlowl90rcqcvsw9g5jk/image_1btdnlnnm15vk1omea11a2f1uth3a.png" alt="此处输入图片的描述"></p>
+<h2 id="距离向量算法"><a href="#距离向量算法" class="headerlink" title="距离向量算法"></a>距离向量算法</h2><p>表示：<br>dx(y)x到y整条路径的最小cost<br><img src="http://static.zybuluo.com/gzm1997/sjsmxla9ylnnml9tyl7zw28e/image_1c3n2opou1sl4tfmv731mvt7bu9.png" alt="此处输入图片的描述"><br>x到y的路径的cost等于它先到邻居的cost加上邻居到y的最小cost<br><img src="http://static.zybuluo.com/gzm1997/0z153qoxt9t1fb10c9117b9n/image_1c3n2qnvi1r4f4brpffas14rpm.png" alt="此处输入图片的描述"></p>
+<p>Bellman-Ford例子：<br><img src="http://static.zybuluo.com/gzm1997/yihmnjt2gaivr7zlfmi8f0wr/image_1c3n3hfes6vs1tv8gufhsjj1v9.png" alt="此处输入图片的描述"><br>要点：<br>Dx(y)是x到y的最小cost估计，N中每个节点都需要估计自己到y节点的最小cost。</p>
+<p>每个节点中有一个距离向量<br>Dx = [Dx(y): y є N ]<br>这个距离向量包含着这个节点到N中所有节点最小cost的估计</p>
+<p>而对于每个节点的邻居节点，也是这样：<br>Dv = [Dv(y): y є N ]</p>
+<p>在距离向量算法下，每个节点需要维护的信息有：</p>
+<ul>
+<li>这个节点到邻居节点的cost</li>
+<li>这个节点到N中每个节点的预计最小cost，也就是距离向量</li>
+<li>这个节点邻居的距离向量</li>
+</ul>
+<p>算法：</p>
+<ul>
+<li>每段时间按之后，每个节点把自己的距离向量副本发送给自己的邻居</li>
+<li>当每个节点接收到邻居发送过来的距离向量，拿这个距离向量更新自己的DV，使用BF公式</li>
+</ul>
+<p>DV算法例子： 注意每个节点定时需要更新和把它的距离向量广播给它的邻居<br><img src="http://static.zybuluo.com/gzm1997/5b8kzvkpk6xovf297hi7xmuo/image_1c3n4hcl41v761u62uqs1d3612e4m.png" alt="此处输入图片的描述"></p>
+<p>LS和DV比较</p>
+<ul>
+<li>LS需要知道达到所有节点的cost，因此需要洪泛，但是DV不需要</li>
+<li>LS的时间复杂度是O(N^2)，时间复杂度比DV更高</li>
+</ul>
+<hr>
+<h2 id="最小生成树"><a href="#最小生成树" class="headerlink" title="最小生成树"></a>最小生成树</h2><p>最小生成树就是给一个图给你 每个点都是可以互相联通的 但是每条边的权重是不一样的 需要找出一堆边 使得这些点都连接起来 但是都不构成环 而且这些权重架起来还是最小</p>
+<p><img src="http://static.zybuluo.com/gzm1997/7dc7aoj3zaj3om0ixf4fcfol/image_1ckf7ba5is713q9122mg2v1i2j1t.png" alt="image_1ckf7ba5is713q9122mg2v1i2j1t.png-58.1kB"></p>
+<p>最小生成树一个很常见的应用场景是 城市之间需要铺电缆 每个城市之间都是可以铺的 但是不同城市之间铺设电缆的成本不一样 那么就需要我们找出一个满足要求的最小生成树 来让成本最低</p>
+<p>找最小生成树的方法 一般有<strong>Kruskal克鲁斯卡尔算法</strong></p>
+<p>步骤</p>
+<ol>
+<li>新建图G，G中拥有原图中相同的节点，但没有边</li>
+<li>将原图中所有的边按权值从小到大排序</li>
+<li>从权值最小的边开始，如果这条边连接的两个节点于图G中不在同一个连通分量中，则添加这条边到图G中</li>
+<li>重复3，直至图G中所有的节点都在同一个连通分量中</li>
+</ol>
+<p>维基百科上给的例子 非常容易理解<br><img src="http://static.zybuluo.com/gzm1997/e2nr8mfyklmpu8wt776j7jux/image_1ckf7k3dbke01d0di4017nm1r0j2a.png" alt="image_1ckf7k3dbke01d0di4017nm1r0j2a.png-158.7kB"></p>
+<p>就是先找出一个图的所有的边 按照权重从小到大排序 一次选取权重最小的边 添加到结果图中 注意会跟已经选到的边构成环的边不要选择 抛弃就可以 知道图中的所有节点都在一个连通分量中</p>
+<hr>
+<h2 id="上面两种图的算法"><a href="#上面两种图的算法" class="headerlink" title="上面两种图的算法"></a>上面两种图的算法</h2><p>其实上面我们要搞清楚<br>寻找最小生成树的算法 </p>
+<blockquote>
+<p>克鲁斯卡尔算法是寻找整个图的边权重之和最小的一种方法 <strong>寻找最小生成树</strong></p>
+</blockquote>
+<p>但是上面的两种算法 1.戴克斯克拉算法 2.距离向量算法 这两个算法都是路由选路算法 </p>
+<blockquote>
+<p>路由选路算法最终找到的结果并不是最小生成树 而是<strong>一个点到其它点距离最小的路径集合</strong> 注意这个<strong>不一定是最小生成树</strong>的</p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/09/图数据库跟传统数据库以及图算法/" data-id="cjqjef6ep002nvko0gi662dzn" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图算法/">图算法</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-使用rabbitMQ作为缓存队列" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/08/08/使用rabbitMQ作为缓存队列/" class="article-date">
@@ -161,7 +259,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/08/使用rabbitMQ作为缓存队列/" data-id="cjq20o0oi001nu8o0ofmq9xtx" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/08/使用rabbitMQ作为缓存队列/" data-id="cjqjef6ed0029vko0epv41toh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li></ul>
@@ -259,7 +357,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/mux学习/" data-id="cjq20o0nz0011u8o0k59yvqdb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/mux学习/" data-id="cjqjef6do001fvko0kl65llx3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mux/">mux</a></li></ul>
@@ -319,7 +417,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/go-web/" data-id="cjq20o0nk000ju8o0qhm0r64h" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/go-web/" data-id="cjqjef6dc0013vko07pglifuh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web/">web</a></li></ul>
@@ -436,7 +534,7 @@ wg.Add(5)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/go多线程/" data-id="cjq20o0np000ou8o01vvngog0" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/go多线程/" data-id="cjqjef6dk001avko0xb3hw52t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/多线程/">多线程</a></li></ul>
@@ -561,7 +659,7 @@ wg.Add(5)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/go注意要点/" data-id="cjq20o0nq000pu8o07wrej7gb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/go注意要点/" data-id="cjqjef6ds001kvko00qqj9oue" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
@@ -617,7 +715,7 @@ wg.Add(5)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/mongodb入门/" data-id="cjq20o0ny000yu8o02c1gtut6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/mongodb入门/" data-id="cjqjef6dj0018vko0ho74aahe" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/database/">database</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mongodb/">mongodb</a></li></ul>
@@ -819,7 +917,7 @@ wg.Add(5)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/dgraph图数据库/" data-id="cjq20o0nb000eu8o0brsv1pyd" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/dgraph图数据库/" data-id="cjqjef6dn001dvko0p7re50io" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dgraph/">dgraph</a></li></ul>
@@ -1021,7 +1119,7 @@ wg.Add(5)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/cayley图数据库/" data-id="cjq20o0n2000cu8o003q91xn4" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/cayley图数据库/" data-id="cjqjef6df0015vko0rfo4cwcu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/database/">database</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li></ul>
@@ -1099,79 +1197,10 @@ wg.Add(5)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/图数据库/" data-id="cjq20o0ok001ru8o0cll919wn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/图数据库/" data-id="cjqjef6ej002gvko0tjnxvwcy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/database/">database</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/graph/">graph</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-beego学习2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/08/06/beego学习2/" class="article-date">
-  <time datetime="2018-08-06T08:11:35.000Z" itemprop="datePublished">2018-08-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/06/beego学习2/">beego学习2</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="beego执行逻辑"><a href="#beego执行逻辑" class="headerlink" title="beego执行逻辑"></a>beego执行逻辑</h2><p><img src="http://static.zybuluo.com/gzm1997/4w8ia8vm9196vkdxpong1dvq/image_1cjtbnflsj961esq4ujqi66fm9.png" alt="image_1cjtbnflsj961esq4ujqi66fm9.png-144.5kB"></p>
-<hr>
-<h2 id="控制器"><a href="#控制器" class="headerlink" title="控制器"></a>控制器</h2><p>beego是严格遵循MVC的模式的 所以它的控制器是非常重要的 他的路由注册是有点特别的 它是一个URL前缀对应一个控制器 然后控制器里面定义不同的http methods对应的处理函数</p>
-<p>一般声明一个控制器的方法就是自创建一个结构体 包含一个<strong>beego.Controller</strong>原生的控制器</p>
-<p>现在我们来看一下控制器的内部<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Controller <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">// 上下文数据</span></span><br><span class="line">	Ctx  *context.Context</span><br><span class="line">   <span class="comment">// 用来存储一些配置等信息非常方便	</span></span><br><span class="line">	Data <span class="keyword">map</span>[<span class="keyword">interface</span>&#123;&#125;]<span class="keyword">interface</span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 控制器的一些基本介绍信息 名字之类的</span></span><br><span class="line">	controllerName <span class="keyword">string</span></span><br><span class="line">	actionName     <span class="keyword">string</span></span><br><span class="line">	methodMapping  <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="function"><span class="keyword">func</span><span class="params">()</span> //<span class="title">method</span>:<span class="title">routertree</span></span></span><br><span class="line"><span class="function">	<span class="title">gotofunc</span>       <span class="title">string</span></span></span><br><span class="line"><span class="function">	<span class="title">AppController</span>  <span class="title">interface</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 渲染模板信息 模板名字等 这个现在而言不是很重要</span></span><br><span class="line">	TplName        <span class="keyword">string</span></span><br><span class="line">	ViewPath       <span class="keyword">string</span></span><br><span class="line">	Layout         <span class="keyword">string</span></span><br><span class="line">	LayoutSections <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">string</span> <span class="comment">// the key is the section name and the value is the template name</span></span><br><span class="line">	TplPrefix      <span class="keyword">string</span></span><br><span class="line">	TplExt         <span class="keyword">string</span></span><br><span class="line">	EnableRender   <span class="keyword">bool</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 跨域数据</span></span><br><span class="line">	_xsrfToken <span class="keyword">string</span></span><br><span class="line">	XSRFExpire <span class="keyword">int</span></span><br><span class="line">	EnableXSRF <span class="keyword">bool</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// session数据</span></span><br><span class="line">	CruSession session.Store</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>所以一个beego控制器中含有以下几部分内容</p>
-<ul>
-<li>上下文数据</li>
-<li>控制器基本信息</li>
-<li>渲染模板信息</li>
-<li>跨域信息</li>
-<li>session信息</li>
-</ul>
-<hr>
-<h2 id="json对象转struct"><a href="#json对象转struct" class="headerlink" title="json对象转struct"></a>json对象转struct</h2><p>当路由的方法是post的时候 旺旺需要post一些json对象到后端 那么将他们转为json对象就尤为必要 但是当这个struct结构含有匿名函数的时候需要注意一下</p>
-<p>1.当struct没有匿名成员的时候 </p>
-<p>一切跟平时将json转struct没什么区别 只注意要讲结构体内的成员首字母为大写来声明 不然没有导出的字段是无法被赋值上去的</p>
-<p>2.当时结构体含有匿名成员的时候</p>
-<p>我们要记住 其实<strong>匿名成员里面的所有字段都是直接属于最外面的结构体的</strong> 所以我们post表单的时候要注意 <strong>不需要给匿名成员提供key 直接将匿名成员里面的字段作为一对key-value对就行了</strong></p>
-<p>例如<br>结构体设计如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">	Desc</span><br><span class="line">	Name <span class="keyword">string</span> <span class="string">`json:"name"`</span></span><br><span class="line">	Id <span class="keyword">int</span> <span class="string">`json:"id"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Desc <span class="keyword">struct</span> &#123;</span><br><span class="line">	Num <span class="keyword">int</span> <span class="string">`json:"num"`</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>那么在postman这边需要这样提交post json对象<br><img src="http://static.zybuluo.com/gzm1997/txinx1cv6pze1t891yt134cb/image_1ck1fk2v9194l1vln1s2mlbl1u349.png" alt="image_1ck1fk2v9194l1vln1s2mlbl1u349.png-20.5kB"></p>
-<p>结果<br><img src="http://static.zybuluo.com/gzm1997/bfhpg6w0au8poa7it1az6pjv/image_1ck1fkq7n1h2319mn1c2vdp6hmpm.png" alt="image_1ck1fkq7n1h2319mn1c2vdp6hmpm.png-9.6kB"></p>
-<hr>
-<h2 id="copybody-bug"><a href="#copybody-bug" class="headerlink" title="copybody bug"></a>copybody bug</h2><p>这里真的是神坑 浪费了我很多时间 在beego的post路由函数中 我们一般是这样接受发送过来的json对象的<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> err := json.Unmarshal(this.Ctx.Input.RequestBody, &amp;f); err == <span class="literal">nil</span> &#123;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>但是有可能一直报错<strong>unexpected end of json data</strong> json对象的结构不对？但是postman上并没有显示报错啊这就很迷了</p>
-<blockquote>
-<p>实质上是这是因为没有设置copyrequestbody = true 所以post过去的数据一直都是空的 但是我的配置文件上一直有这句话啊 比较坑的是 其实配置文件并没有被加载进去 beego没有加载了你的配置文件 而是加载了默认的配置文件 比较坑的是beego并没有报错说配置文件找不到 所以copyrequestbody一直为false</p>
-</blockquote>
-<p>解决方法是在运行配置那里修改working directory修改为beego项目的根目录 这样beego就可以找到你的配置文件的正确目录了</p>
-<p>真的是神坑 beego找不到配置文件目录竟然不会报错。。。</p>
-<hr>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/beego学习2/" data-id="cjq20o0my0008u8o09f9iighz" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/beego/">beego</a></li></ul>
 
     </footer>
   </div>
@@ -1217,7 +1246,7 @@ wg.Add(5)
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
     </div>
   </div>
 
@@ -1228,6 +1257,10 @@ wg.Add(5)
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/01/05/java基础2：树相关前哨/">java基础2：树相关前哨</a>
+          </li>
         
           <li>
             <a href="/2018/12/24/ArrayList相关/">ArrayList相关</a>
@@ -1245,10 +1278,6 @@ wg.Add(5)
             <a href="/2018/12/03/docker在测试中的作用/">docker在测试中的作用</a>
           </li>
         
-          <li>
-            <a href="/2018/12/03/java基础：入职华为前的重启/">java基础：入职华为前的重启</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -1261,7 +1290,7 @@ wg.Add(5)
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2018 gzm1997<br>
+      &copy; 2019 gzm1997<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

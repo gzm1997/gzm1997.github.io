@@ -62,6 +62,77 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-使用异步ORM-aiomysql-sa" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/26/使用异步ORM-aiomysql-sa/" class="article-date">
+  <time datetime="2018-05-26T02:46:37.000Z" itemprop="datePublished">2018-05-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/26/使用异步ORM-aiomysql-sa/">使用异步ORM aiomysql.sa</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>因为系统分析与设计大作业的web框架我选择了使用aiohttp这个异步框架，所以ORM的选择上要做出改变。sqlalchemy是不支持异步IO的，所以用sqlalchemy搭配aiohttp并不可行，最终我选择了整合了sqlalchemy的aiomysql.sa，这是一个支持mysql的异步ORM。</p>
+</blockquote>
+<p>相关的学习链接<br><a href="http://aiomysql.readthedocs.io/en/latest/sa.html" target="_blank" rel="noopener">官方文档</a><br><a href="https://github.com/aio-libs/aiomysql/blob/master/docs/sa.rst" target="_blank" rel="noopener">用法参考</a></p>
+<p>从官方文档上我们可以看到</p>
+<p><img src="http://static.zybuluo.com/gzm1997/qxak3ah9finr2ect9ah131ug/image_1ced39bc8n731hlgijuectil9.png" alt="image_1ced39bc8n731hlgijuectil9.png-12.2kB"></p>
+<p>aiomysql的api接口跟aiopg是非常类似的，可以在学习中参考一下aiopg，同时aiomysql.sa是整合了sqlalchemy的，也可以参考sqlalchemy的文档。为什么我要这么说呢，因为aiomysql.sa官方提供的文档描述相当有限，在学习过程中必须参考少之又少的资料，并且这些资料可能因为版本问题还不一定是对的。</p>
+<hr>
+<h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><p>python的异步io很多都是基于python的协程实现的，asyncio就是，同时aiomysql.sa也是底层由协程实现，所以我们是使用aiomysql.sa过程中，都需要定义各种操作为<strong>协程</strong>。</p>
+<p>1.初始化引擎</p>
+<p>初始化引擎跟mysql.connector很类似，但是返回一个engine实例<br><img src="http://static.zybuluo.com/gzm1997/wau66y7hzv1p6u8bny2sxiu9/image_1ced3mktqg6t1hr35mg1p1qed0m.png" alt="image_1ced3mktqg6t1hr35mg1p1qed0m.png-28.8kB"><br>例子<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">init_engine</span><span class="params">()</span>:</span></span><br><span class="line">    engine = <span class="keyword">await</span> aiomysql.sa.create_engine(user = config[<span class="string">"user"</span>], db = config[<span class="string">"database"</span>], host = config[<span class="string">"host"</span>], password = config[<span class="string">"password"</span>])</span><br><span class="line">    <span class="keyword">return</span> engine</span><br></pre></td></tr></table></figure></p>
+<p>2.引擎获取与事务<br>这部分我看了下文档和github上的用法参考，感觉都不怎么正确，可能因为版本问题，自己总结了如下<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">with</span> engine.acquire() <span class="keyword">as</span> conn:</span><br><span class="line">    trans = <span class="keyword">await</span> conn.begin()</span><br><span class="line">    <span class="keyword">await</span> conn.execute(food.insert().values(name = <span class="string">"test_food"</span>))</span><br><span class="line">    <span class="keyword">await</span> trans.commit()</span><br></pre></td></tr></table></figure></p>
+<p>引擎资源的获取需要engine.acquire()来获取，返回值为一个SAconnection实例，可以进行execute(query, *multiparams, **params)操作。</p>
+<p>最好在with语句里面使用acquire，这样可以自动释放engine资源。</p>
+<p>aiomysql.sa支持事务，它无论是insert delete还是select都需要事务的提交，没错你没看错，select它都必须你提交事务，不然会报错<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Failed to release a connection <span class="keyword">with</span> transaction started at <span class="string">'aiomysql'</span></span><br></pre></td></tr></table></figure></p>
+<p>同时这个报错有点意思，如果你没有主动提交事务，它这个报错一定会出现的，但是如果你之前的增删查着操作出现了错误，它会导致整个事务失败，最终这个事务没办法成功提交，也会报这个错误。<strong>也就是说如果出现这个错误，并一定就是你事务没有主动提交，而是有可能你的增删查着操作出现了错误导致事务的失败。</strong></p>
+<p>事务的获取和提交，事务的获取可以通过SAconnection.begin()获取这个事务<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trans = <span class="keyword">await</span> conn.begin()</span><br></pre></td></tr></table></figure></p>
+<p>事务提交<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">await</span> trans.commit()</span><br></pre></td></tr></table></figure></p>
+<p>嵌套事务<br>文档中这样描述嵌套事务</p>
+<blockquote>
+<p>Nested calls to begin() on the same SAConnection will return new Transaction objects that represent an emulated transaction within the scope of the enclosing transaction</p>
+</blockquote>
+<p>在同一个SAconnection中嵌套调用begin的话，会在外层事务中间返回一个模仿的事务对象</p>
+<p>嵌套事务的特点</p>
+<blockquote>
+<p>Calls to Transaction.commit() only have an effect when invoked via the outermost Transaction object, though the Transaction.rollback() method of any of the Transaction objects will roll back the transaction</p>
+</blockquote>
+<p>只有当最外层的事务被调用，那么事务才会被提交，例子如下<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">trans = <span class="keyword">yield</span> <span class="keyword">from</span> conn.begin()   <span class="comment"># outermost transaction</span></span><br><span class="line">trans2 = <span class="keyword">yield</span> <span class="keyword">from</span> conn.begin()  <span class="comment"># "inner"</span></span><br><span class="line"><span class="keyword">yield</span> <span class="keyword">from</span> trans2.commit()          <span class="comment"># does nothing</span></span><br><span class="line"><span class="keyword">yield</span> <span class="keyword">from</span> trans.commit()           <span class="comment"># actually commits</span></span><br></pre></td></tr></table></figure></p>
+<p>最后说一数据结构的声明，因为在sqlalchemy中我们一般比较习惯使用class User(Base)这样的方式来定义我们的数据库表结构，因为这符合我们面向对象编程的习惯，同时定义了这些class之后我们可以在稍后的增删查着操作中使用这些class。但是在aiomysql.sa中这样做并不好。官方文档中这样解释<br><img src="http://static.zybuluo.com/gzm1997/1ad8i0z2sc9pq3yiasaof0bo/image_1ced511agkr510uc104oevv1qr013.png" alt="image_1ced511agkr510uc104oevv1qr013.png-59.7kB"></p>
+<p>就是说Question.query.filter_by(question_text=’Why’).first()或者session.query(TableName).all()之类的查询并不支持异步，所以把表结构定义为class并没有什么帮助，正确的做法是定义为Table对象。</p>
+<p>关于class和Table对象的关系我之前<a href="https://gzm1997.github.io/2018/05/16/sqlalchemy%E4%B8%80%E4%BA%9B%E5%B8%B8%E8%A7%81%E6%A6%82%E5%BF%B5/" target="_blank" rel="noopener">一篇博客</a>有说过，就是创建一个class就会自动生成一个同名的Table对象，并且使用一个Mapper对象将这两个对象映射在一起。</p>
+<p>所以我们在aiomysql.sa中定义我们的数据库表结构大多形如下面<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">food = sa.Table(</span><br><span class="line">    <span class="string">"food"</span>,</span><br><span class="line">    meta,</span><br><span class="line">    sa.Column(<span class="string">"id"</span>, sa.Integer, primary_key = <span class="keyword">True</span>),</span><br><span class="line">    sa.Column(<span class="string">"name"</span>, sa.String(<span class="number">50</span>), unique = <span class="keyword">True</span>, nullable = <span class="keyword">False</span>),</span><br><span class="line">    sa.Column(<span class="string">"picture"</span>, sa.String(<span class="number">50</span>)),</span><br><span class="line">    sa.Column(<span class="string">"price"</span>, sa.Integer, nullable = <span class="keyword">False</span>),</span><br><span class="line">    sa.Column(<span class="string">"description"</span>, sa.String(<span class="number">50</span>)),</span><br><span class="line">    sa.Column(<span class="string">"rating"</span>, sa.Float),</span><br><span class="line">    sa.Column(<span class="string">"amount"</span>, sa.Integer, nullable = <span class="keyword">False</span>),</span><br><span class="line">    sa.Column(<span class="string">"likes"</span>, sa.Integer, default = <span class="number">0</span>),</span><br><span class="line">    sa.Column(<span class="string">"tag_id"</span>, sa.Integer, sa.ForeignKey(<span class="string">"tag.id"</span>), nullable = <span class="keyword">False</span>)</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>基本用法基本就是上面所说的了，具体可以参考一下<a href="https://github.com/gzm1997/aio_ooad" target="_blank" rel="noopener">我github上系统分析与设计的web后台</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/05/26/使用异步ORM-aiomysql-sa/" data-id="cjqjef6el002ivko0t8xgtdyf" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ORM/">ORM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-aiohttp基本使用" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/05/26/aiohttp基本使用/" class="article-date">
@@ -112,7 +183,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cjq20o0mo0001u8o0xxbz9o28" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/26/aiohttp基本使用/" data-id="cjqjef6bj0004vko0zv1sxamq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/backend/">backend</a></li></ul>
@@ -187,7 +258,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/22/自制简易图片云盘/" data-id="cjq20o0os0022u8o0mrvlc2cm" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/22/自制简易图片云盘/" data-id="cjqjef6es002qvko0zdissj9p" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/git/">git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/image/">image</a></li></ul>
@@ -240,7 +311,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/16/sqlalchemy一些常见概念/" data-id="cjq20o0oc001eu8o0fpl72abc" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/16/sqlalchemy一些常见概念/" data-id="cjqjef6eb0026vko08kmh30pr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li></ul>
@@ -358,7 +429,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cjq20o0ot0024u8o0cjf2d7ah" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/软件生命周期/" data-id="cjqjef6fs004hvko036icf5en" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
@@ -418,7 +489,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/" data-id="cjq20o0of001ju8o02ry4e5oh" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/sysu教务选课系统登陆/" data-id="cjqjef6e80021vko0ylcs7aja" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/requests/">requests</a></li></ul>
@@ -500,7 +571,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/上传和展示pdf以及markdown/" data-id="cjq20o0og001ku8o082qkv3w2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/上传和展示pdf以及markdown/" data-id="cjqjef6ef002bvko0srdwjtzm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask/">flask</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
@@ -649,7 +720,7 @@ f.close()
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/暗网爬虫/" data-id="cjq20o0or001zu8o0sq9twqwl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/暗网爬虫/" data-id="cjqjef6ev002tvko0l6fs2ft2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deep-web/">deep web</a></li></ul>
@@ -726,7 +797,7 @@ f.close()
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/15/sqlalchemy级联/" data-id="cjq20o0od001gu8o0d46bm1ky" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/15/sqlalchemy级联/" data-id="cjqjef6dz001rvko0ahs7d7sq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li></ul>
@@ -772,106 +843,10 @@ f.close()
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/06/多维数组最短路径问题/" data-id="cjq20o0oo001vu8o08xmusmiz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/06/多维数组最短路径问题/" data-id="cjqjef6fn004evko07i3qzrl0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/算法/">算法</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-flask包调用中的的路径问题" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/06/flask包调用中的的路径问题/" class="article-date">
-  <time datetime="2018-05-06T08:00:53.415Z" itemprop="datePublished">2018-05-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/06/flask包调用中的的路径问题/">flask包调用中的的路径问题</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
-<p>这篇短文写在我的腾讯一面搞砸之后，这次面试让我深刻认识到我一直是一个很功利的人。总结了一下一共有几个要点：</p>
-<ul>
-<li><strong>看需求办事</strong>，有什么需求谷歌什么，查看文档相关部分，而其他的部分置之不理，全然没有深入学习的决心</li>
-<li>对一个框架没有深入了解，仅仅止步于<strong>工具化</strong>，也没有对框架有更深层的了解，这让我很惭愧</li>
-<li>做事<strong>没有从工程层面</strong>来思考问题，仅仅从个人角度思考问题</li>
-</ul>
-</blockquote>
-<hr>
-<h2 id="flask包调用过程中的路径问题"><a href="#flask包调用过程中的路径问题" class="headerlink" title="flask包调用过程中的路径问题"></a>flask包调用过程中的路径问题</h2><p>假设有如下情况,my_app是封装为包的一个flask app，app声明在my_app/__init__.py文件中，h.py是包内的一个辅助模块，在run_app.py中调用my_app这个包的flask app进行运行</p>
-<ul>
-<li>my_app<ul>
-<li>static</li>
-<li>templates</li>
-<li>__init__.py</li>
-<li>h.py</li>
-</ul>
-</li>
-<li>run_app.py</li>
-</ul>
-<hr>
-<p>###在辅助模块h.py中加载static中的静态文件###<br>当情况是运行run_app.py，而h.py需要加载static中静态文件的时候，在h.py中使用的路径可以是两种情况：</p>
-<ul>
-<li>绝对路径</li>
-<li>相对路径 ./my_app/static/file_name</li>
-</ul>
-<blockquote>
-<p>注意包调用情况下，如果包内非__init__模块要加载static内静态文件，需要使用从包外路径开始定位</p>
-</blockquote>
-<hr>
-<p>###html内加载静态文件###<br>当情况是运行run_app.py，html内需要加载静态文件，路径必须是相对路径，形式为：/static/file_name</p>
-<hr>
-<p>###实例文件夹###<br>flask除了提供 app.static_folder和app.template_folder之外<br><img src="http://static.zybuluo.com/gzm1997/pjq99hklds5g8hdm90oqgvk6/image_1c8h30e029l51fi92jdv9f1rbt9.png" alt="image_1c8h30e029l51fi92jdv9f1rbt9.png-7.8kB"><br>flask还提供了instance_path<br><img src="http://static.zybuluo.com/gzm1997/ymyj8prm5y05y2psgjni1ct9/image_1c8h31ai6r1hidf187l10fo6q6m.png" alt="image_1c8h31ai6r1hidf187l10fo6q6m.png-4.3kB"><br>instance_path也可以用来存放静态文件，但是要注意的是instance_path所在的位置</p>
-<p>flask文档对instance_path位置的阐述如下：</p>
-<ul>
-<li>未安装的模块:</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/myapp.py</span><br><span class="line">/instance</span><br></pre></td></tr></table></figure>
-<ul>
-<li>未安装的包</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/myapp</span><br><span class="line">    /__init__.py</span><br><span class="line">/instance</span><br></pre></td></tr></table></figure>
-<ul>
-<li>已安装的包或模块:</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$PREFIX/lib/python2.X/site-packages/myapp</span><br><span class="line">$PREFIX/var/myapp-instance</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>$PREFIX 是你 Python 安装的前缀。这个前缀可以是 /usr 或者你的 virtualenv 的路径。你可以打印 sys.prefix 的值来查看前缀被设置成了什么</p>
-</blockquote>
-<p>所以上面已经阐述得很清楚了，在我们包调用的情况下，instance_path是跟my_app并列的位置上的，所以可以在my_app/__init__.py内的app使用app.instance_path来加载位于与my_app并列的instance中的静态文件，如下：</p>
-<ul>
-<li>instance<ul>
-<li>static_file_to_load</li>
-</ul>
-</li>
-<li>my_app</li>
-<li>run.py</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/06/flask包调用中的的路径问题/" data-id="cjq20o0ng000hu8o0cfy8nl2n" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li></ul>
 
     </footer>
   </div>
@@ -917,7 +892,7 @@ f.close()
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
     </div>
   </div>
 
@@ -928,6 +903,10 @@ f.close()
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/01/05/java基础2：树相关前哨/">java基础2：树相关前哨</a>
+          </li>
         
           <li>
             <a href="/2018/12/24/ArrayList相关/">ArrayList相关</a>
@@ -945,10 +924,6 @@ f.close()
             <a href="/2018/12/03/docker在测试中的作用/">docker在测试中的作用</a>
           </li>
         
-          <li>
-            <a href="/2018/12/03/java基础：入职华为前的重启/">java基础：入职华为前的重启</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -961,7 +936,7 @@ f.close()
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2018 gzm1997<br>
+      &copy; 2019 gzm1997<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
