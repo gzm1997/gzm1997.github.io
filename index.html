@@ -129,7 +129,7 @@
 <pre><code>(table.length - 1) &amp; hash
 </code></pre><p>如果table.leng是2^n的时候 有</p>
 <pre><code>(table.length - 1) &amp; hash == hash % table.length
-</code></pre><p>这样按位运算就会非常的快 这应该是JVM里面对于位运算有一些改进</p>
+</code></pre><p>这样按位运算就会非常的快 这应该是JVM里面对于位运算有一些优化</p>
 <p>3.第三个问题 上面我已经写了</p>
 <hr>
 <h2 id="HashMap-Hello-world"><a href="#HashMap-Hello-world" class="headerlink" title="HashMap Hello world"></a>HashMap Hello world</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NewKey</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object obj)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*下面的代码输出是1 因为：</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* TreeMap依靠实现comparable接口 覆写compareTo函数来实现去重</span></span><br><span class="line"><span class="comment">* HashMap依靠hashCode函数跟equal函数来实现去重</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* 所以下面的代码输出是1 HashMap把两个Key都当作是相同的了*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HashMapUsage</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        HashMap hashMap = <span class="keyword">new</span> HashMap();</span><br><span class="line">        hashMap.put(<span class="keyword">new</span> NewKey(), <span class="string">"value one"</span>);</span><br><span class="line">        hashMap.put(<span class="keyword">new</span> NewKey(), <span class="string">"value two"</span>);</span><br><span class="line">        System.out.println(hashMap.size());</span><br><span class="line">        System.out.println(hashMap.entrySet());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -137,7 +137,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/08/java基础4：HashMap/" data-id="cjqnjlov4000xn8o05smkwzxp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/08/java基础4：HashMap/" data-id="cjqnjyqu2000mjco048c5k8bl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HashMap/">HashMap</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/红黑树/">红黑树</a></li></ul>
@@ -218,7 +218,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/05/java基础3：红黑树和AVL树/" data-id="cjqnjloux000on8o0llu4571d" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/05/java基础3：红黑树和AVL树/" data-id="cjqnjyqu1000kjco0p2y43iru" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AVL树/">AVL树</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/红黑树/">红黑树</a></li></ul>
@@ -294,7 +294,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/05/java基础2：树相关前哨/" data-id="cjqnjloxg0054n8o0nq9m7i54" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/05/java基础2：树相关前哨/" data-id="cjqnjyqwv0054jco0nwzu2wg9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -377,7 +377,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/24/ArrayList相关/" data-id="cjqnjlou30006n8o0888jxgbt" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/24/ArrayList相关/" data-id="cjqnjyqtc0001jco0fvpssvdu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -458,7 +458,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/暑假学习总结/" data-id="cjqnjlow9002bn8o0bbe8qtvn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/暑假学习总结/" data-id="cjqnjyqv4001wjco0m7o5t1km" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图谱/">图谱</a></li></ul>
@@ -547,7 +547,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/subgraph概况/" data-id="cjqnjlovt001qn8o0yotkwxab" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/subgraph概况/" data-id="cjqnjyqur001ljco0t9u04sok" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/subgraph/">subgraph</a></li></ul>
@@ -612,7 +612,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/docker在测试中的作用/" data-id="cjqnjlouz000qn8o0eljxmqm2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/docker在测试中的作用/" data-id="cjqnjyqtq000cjco05s1d7y9c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -676,7 +676,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjqnjlovc0015n8o0r9bnfl91" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjqnjyqua000wjco0onuqikyu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -813,7 +813,7 @@ RUN go build
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjqnjlow00021n8o0zfk6uk1q" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjqnjyqv9001zjco02e1vw912" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -890,7 +890,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjqnjlov2000vn8o0p687lf9d" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjqnjyqty000hjco04d4ncxp4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/线程/">线程</a></li></ul>
