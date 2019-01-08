@@ -95,7 +95,7 @@
 <p>上面几个问题是昆仑哥面试阿里的时候被问到的 所以这里我也围绕着三个问题去了解HashMap 文章后面会对这三个问题进行回答</p>
 <hr>
 <h2 id="HashMap关键字段"><a href="#HashMap关键字段" class="headerlink" title="HashMap关键字段"></a>HashMap关键字段</h2><p>下面是一些HashMap初始化容量 扩容的阈值等重要字段<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 默认的初始化容量大小 必须是2的n次方</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_INITIAL_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">4</span>; <span class="comment">// aka 16</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 最大容量</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAXIMUM_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">30</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 默认负载因子</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">float</span> DEFAULT_LOAD_FACTOR = <span class="number">0.75f</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 当哈希表中一个槽的箱中装了8个元素 就将原来在这个箱中的链表转为红黑树</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TREEIFY_THRESHOLD = <span class="number">8</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 在resize过程中需要将箱子逆树化(红黑树-&gt;链表)的阈值?这个没看看到具体在源代码中在哪里使用到 所以不是很确定</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> UNTREEIFY_THRESHOLD = <span class="number">6</span>;</span><br></pre></td></tr></table></figure></p>
-<p>下面我们来看一下跟存储相关的字段<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 整个哈希表 用数组来实现</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> Node&lt;K,V&gt;[] table;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 存储着entrySet()的缓存 这里要注意keySet()和values()这两个重要方法其实是在HashMap的父类AbstractMap中的</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> Set&lt;Map.Entry&lt;K,V&gt;&gt; entrySet;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 有多少对键值对</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> <span class="keyword">int</span> size;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * HashMap不是线程安全的 这个字段主要是fast-fail机制中用来检测在遍历查询过程中HashMap是否被其他线程修改了</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> <span class="keyword">int</span> modCount;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 当哈希表打到阈值这个大小的时候 就扩容 threshold = capacity * loadFactor</span></span><br><span class="line"><span class="comment">    int threshold;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">    /**</span></span><br><span class="line"><span class="comment">     * 负载因子 是哈希表中容量达到了 现容量*负载因子的时候就进行扩容 默认负载因子是0.75</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">float</span> loadFactor;</span><br></pre></td></tr></table></figure></p>
+<p>下面我们来看一下跟存储相关的字段<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 整个哈希表 用数组来实现</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> Node&lt;K,V&gt;[] table;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 存储着entrySet()的缓存 这里要注意keySet()和values()这两个重要方法其实是在HashMap的父类AbstractMap中的</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> Set&lt;Map.Entry&lt;K,V&gt;&gt; entrySet;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 有多少对键值对</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> <span class="keyword">int</span> size;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * HashMap不是线程安全的 这个字段主要是fast-fail机制中用来检测在遍历查询过程中HashMap是否被其他线程修改了</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> <span class="keyword">int</span> modCount;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 当哈希表打到阈值这个大小的时候 就扩容 threshold = capacity * loadFactor</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> threshold;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 负载因子 是哈希表中容量达到了 现容量*负载因子的时候就进行扩容 默认负载因子是0.75</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">float</span> loadFactor;</span><br></pre></td></tr></table></figure></p>
 <hr>
 <h2 id="put流程"><a href="#put流程" class="headerlink" title="put流程"></a>put流程</h2><p>put流程很重要 我们可以通过HaspMap的put流程来了解HashMap的原理</p>
 <p>HashMap的机构是下面这样的<br><img src="http://static.zybuluo.com/gzm1997/8mwdf218u49gzyiv7utcqxct/image_1d0m9nj3j1n8s1sd05g2gqmu829.png" alt="image_1d0m9nj3j1n8s1sd05g2gqmu829.png-22.9kB"></p>
@@ -116,7 +116,7 @@
 <li>如果此处指向一个红黑树的节点 那么往红黑树的插入新的元素</li>
 <li>如果此处指向一个链表节点 那么分两种情况 如果链表中节点数量低于树化阈值 直接插入链表 否则将链表转化为红黑树 然后插入新元素</li>
 </ol>
-<p>所以上面的流程可以得到HashMap的put流程图<br><img src="http://static.zybuluo.com/gzm1997/5kx2rxiqkm0n9yw85wmtydhj/HashMap%E6%B5%81%E7%A8%8B%E5%9B%BE.jpg" alt="HashMap流程图.jpg-61.5kB"></p>
+<p>所以上面的流程可以得到HashMap的put流程图<br><img src="http://static.zybuluo.com/gzm1997/gofzj6ytgchxbwq2c25i4nr3/HashMap%E6%B5%81%E7%A8%8B%E5%9B%BE.jpg" alt="HashMap流程图.jpg-64.1kB"></p>
 <hr>
 <h2 id="回答上面要点"><a href="#回答上面要点" class="headerlink" title="回答上面要点"></a>回答上面要点</h2><ul>
 <li>HashMap JDK1.7有哪些缺点，JDK1.8怎么改进的</li>
@@ -137,7 +137,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/08/java基础4：HashMap/" data-id="cjqnjyqu2000mjco048c5k8bl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/08/java基础4：HashMap/" data-id="cjqnke2ty000p3oo09xrbpq0r" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HashMap/">HashMap</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/红黑树/">红黑树</a></li></ul>
@@ -218,7 +218,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/05/java基础3：红黑树和AVL树/" data-id="cjqnjyqu1000kjco0p2y43iru" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/05/java基础3：红黑树和AVL树/" data-id="cjqnke2u0000s3oo05nntuoyu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AVL树/">AVL树</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/红黑树/">红黑树</a></li></ul>
@@ -294,7 +294,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/05/java基础2：树相关前哨/" data-id="cjqnjyqwv0054jco0nwzu2wg9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/05/java基础2：树相关前哨/" data-id="cjqnke2w600533oo04h1er4md" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -377,7 +377,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/24/ArrayList相关/" data-id="cjqnjyqtc0001jco0fvpssvdu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/24/ArrayList相关/" data-id="cjqnke2sk00013oo0zwxuxpfu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -458,7 +458,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/暑假学习总结/" data-id="cjqnjyqv4001wjco0m7o5t1km" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/暑假学习总结/" data-id="cjqnke2v200253oo0wmc3z78v" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图谱/">图谱</a></li></ul>
@@ -547,7 +547,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/subgraph概况/" data-id="cjqnjyqur001ljco0t9u04sok" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/subgraph概况/" data-id="cjqnke2ul001g3oo0ah4m5stz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/subgraph/">subgraph</a></li></ul>
@@ -612,7 +612,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/docker在测试中的作用/" data-id="cjqnjyqtq000cjco05s1d7y9c" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/docker在测试中的作用/" data-id="cjqnke2ub00183oo0kyg8warp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -676,7 +676,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjqnjyqua000wjco0onuqikyu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjqnke2u4000y3oo0ru0ny90g" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -813,7 +813,7 @@ RUN go build
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjqnjyqv9001zjco02e1vw912" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjqnke2uw001v3oo085eohh3z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -890,7 +890,7 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjqnjyqty000hjco04d4ncxp4" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjqnke2tx000o3oo0sjwkh1bm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/线程/">线程</a></li></ul>
