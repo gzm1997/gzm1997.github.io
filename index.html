@@ -65,6 +65,90 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-java基础4：HashMap" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/01/08/java基础4：HashMap/" class="article-date">
+  <time datetime="2019-01-08T09:17:35.000Z" itemprop="datePublished">2019-01-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/01/08/java基础4：HashMap/">java基础4：HashMap</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="要点"><a href="#要点" class="headerlink" title="要点"></a>要点</h2><ul>
+<li>HashMap JDK1.7有哪些缺点，JDK1.8怎么改进的</li>
+<li>Hashmap扩容为什么要是2的整数次幂</li>
+<li>手写HashMap的put流程图</li>
+</ul>
+<p>上面几个问题是昆仑哥面试阿里的时候被问到的 所以这里我也围绕着三个问题去了解HashMap 文章后面会对这三个问题进行回答</p>
+<hr>
+<h2 id="HashMap关键字段"><a href="#HashMap关键字段" class="headerlink" title="HashMap关键字段"></a>HashMap关键字段</h2><p>下面是一些HashMap初始化容量 扩容的阈值等重要字段<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 默认的初始化容量大小 必须是2的n次方</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_INITIAL_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">4</span>; <span class="comment">// aka 16</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 最大容量</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAXIMUM_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">30</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 默认负载因子</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">float</span> DEFAULT_LOAD_FACTOR = <span class="number">0.75f</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 当哈希表中一个槽的箱中装了8个元素 就将原来在这个箱中的链表转为红黑树</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TREEIFY_THRESHOLD = <span class="number">8</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 在resize过程中需要将箱子逆树化(红黑树-&gt;链表)的阈值?这个没看看到具体在源代码中在哪里使用到 所以不是很确定</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> UNTREEIFY_THRESHOLD = <span class="number">6</span>;</span><br></pre></td></tr></table></figure></p>
+<p>下面我们来看一下跟存储相关的字段<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 整个哈希表 用数组来实现</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> Node&lt;K,V&gt;[] table;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 存储着entrySet()的缓存 这里要注意keySet()和values()这两个重要方法其实是在HashMap的父类AbstractMap中的</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> Set&lt;Map.Entry&lt;K,V&gt;&gt; entrySet;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 有多少对键值对</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> <span class="keyword">int</span> size;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * HashMap不是线程安全的 这个字段主要是fast-fail机制中用来检测在遍历查询过程中HashMap是否被其他线程修改了</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">transient</span> <span class="keyword">int</span> modCount;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 当哈希表打到阈值这个大小的时候 就扩容 threshold = capacity * loadFactor</span></span><br><span class="line"><span class="comment">    int threshold;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">    /**</span></span><br><span class="line"><span class="comment">     * 负载因子 是哈希表中容量达到了 现容量*负载因子的时候就进行扩容 默认负载因子是0.75</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">float</span> loadFactor;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="put流程"><a href="#put流程" class="headerlink" title="put流程"></a>put流程</h2><p>put流程很重要 我们可以通过HaspMap的put流程来了解HashMap的原理</p>
+<p>HashMap的机构是下面这样的<br><img src="http://static.zybuluo.com/gzm1997/8mwdf218u49gzyiv7utcqxct/image_1d0m9nj3j1n8s1sd05g2gqmu829.png" alt="image_1d0m9nj3j1n8s1sd05g2gqmu829.png-22.9kB"></p>
+<p>使用数组实现的哈希表 这个数组是会动态扩容的<br>动态扩容的条件是<br><img src="http://static.zybuluo.com/gzm1997/0362ldysoe8axmmwagj9xh3n/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20190108164404.png" alt="微信图片_20190108164404.png-4.5kB"></p>
+<ul>
+<li>size是HashMap中所有元素的数量之和</li>
+<li>threshold等于capacity * load factor 也就是容量乘上负载因子</li>
+</ul>
+<p>然后哈希表数组的每一个落槽点都会指向三种情况</p>
+<ol>
+<li>null</li>
+<li>链表</li>
+<li>红黑树</li>
+</ol>
+<p>流程是这样的：</p>
+<ol>
+<li>计算到落槽点之后 如果此处指向null 那么直接将新元素放置于此处</li>
+<li>如果此处指向一个红黑树的节点 那么往红黑树的插入新的元素</li>
+<li>如果此处指向一个链表节点 那么分两种情况 如果链表中节点数量低于树化阈值 直接插入链表 否则将链表转化为红黑树 然后插入新元素</li>
+</ol>
+<p>所以上面的流程可以得到HashMap的put流程图<br><img src="http://static.zybuluo.com/gzm1997/5kx2rxiqkm0n9yw85wmtydhj/HashMap%E6%B5%81%E7%A8%8B%E5%9B%BE.jpg" alt="HashMap流程图.jpg-61.5kB"></p>
+<hr>
+<h2 id="回答上面要点"><a href="#回答上面要点" class="headerlink" title="回答上面要点"></a>回答上面要点</h2><ul>
+<li>HashMap JDK1.7有哪些缺点，JDK1.8怎么改进的</li>
+<li>Hashmap扩容为什么要是2的整数次幂</li>
+<li>手写HashMap的put流程图</li>
+</ul>
+<p>1.第一个问题 HashMap JDK1.7有哪些缺点，JDK1.8怎么改进的<br>在JDK1.7中HashMap的底层结构都是<strong>数组实现一个哈希表 然后每个槽点指向一个链表</strong> 但是发展到JDK1.8之后 HashMap的底层存储是<strong>数组实现一个哈希表 每个槽点最开始指向一个链表 当打到阈值的时候会转化为一棵红黑树 然后往红黑树中插入新元素</strong></p>
+<p>由于上面再底层实现方面上 JDK1.7的HashMap查找的时间复杂度是O(1) + O(n) O(1)是哈希表的查找时间复杂度 O(n)是链表的查找时间复杂度 但是到了JDK1.8之后 由链表转化为红黑树 那么当HashMap中元素特别多的时候链表转化为红黑树 那么时间复杂度由O(n)转化为O(logn) 这样的话时间复杂度会降低不少 这就是JDK1.8中改进的地方</p>
+<p>2.第二个问题 为什么扩容都是2的整数次幂<br>这个问题很有意思<br>我们来看一下 在HashMap中在哈希表中落槽位置的计算方式<br><img src="http://static.zybuluo.com/gzm1997/j95qp7kweh1eor57fh7h1izc/image_1d0mbpd5sp6t1sfr1vg6ksk19rq35.png" alt="image_1d0mbpd5sp6t1sfr1vg6ksk19rq35.png-10.4kB"><br>也就是</p>
+<pre><code>(table.length - 1) &amp; hash
+</code></pre><p>如果table.leng是2^n的时候 有</p>
+<pre><code>(table.length - 1) &amp; hash == hash % table.length
+</code></pre><p>这样按位运算就会非常的快 这应该是JVM里面对于位运算有一些改进</p>
+<p>3.第三个问题 上面我已经写了</p>
+<hr>
+<h2 id="HashMap-Hello-world"><a href="#HashMap-Hello-world" class="headerlink" title="HashMap Hello world"></a>HashMap Hello world</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NewKey</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object obj)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*下面的代码输出是1 因为：</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* TreeMap依靠实现comparable接口 覆写compareTo函数来实现去重</span></span><br><span class="line"><span class="comment">* HashMap依靠hashCode函数跟equal函数来实现去重</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* 所以下面的代码输出是1 HashMap把两个Key都当作是相同的了*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HashMapUsage</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        HashMap hashMap = <span class="keyword">new</span> HashMap();</span><br><span class="line">        hashMap.put(<span class="keyword">new</span> NewKey(), <span class="string">"value one"</span>);</span><br><span class="line">        hashMap.put(<span class="keyword">new</span> NewKey(), <span class="string">"value two"</span>);</span><br><span class="line">        System.out.println(hashMap.size());</span><br><span class="line">        System.out.println(hashMap.entrySet());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/01/08/java基础4：HashMap/" data-id="cjqnjlov4000xn8o05smkwzxp" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HashMap/">HashMap</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/红黑树/">红黑树</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-java基础3：红黑树和AVL树" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/01/05/java基础3：红黑树和AVL树/" class="article-date">
@@ -134,7 +218,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/05/java基础3：红黑树和AVL树/" data-id="cjqjh1guf000wp8o0wihbaimd" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/05/java基础3：红黑树和AVL树/" data-id="cjqnjloux000on8o0llu4571d" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AVL树/">AVL树</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/红黑树/">红黑树</a></li></ul>
@@ -210,7 +294,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/05/java基础2：树相关前哨/" data-id="cjqjh1gue000tp8o0ipf1ru93" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/05/java基础2：树相关前哨/" data-id="cjqnjloxg0054n8o0nq9m7i54" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -293,7 +377,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/24/ArrayList相关/" data-id="cjqjh1gtd0000p8o0orhh8oja" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/24/ArrayList相关/" data-id="cjqnjlou30006n8o0888jxgbt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -374,7 +458,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/暑假学习总结/" data-id="cjqjh1gvc0023p8o0ylt1gr9g" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/暑假学习总结/" data-id="cjqnjlow9002bn8o0bbe8qtvn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图谱/">图谱</a></li></ul>
@@ -463,7 +547,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/subgraph概况/" data-id="cjqjh1guw001lp8o0ik2ji830" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/subgraph概况/" data-id="cjqnjlovt001qn8o0yotkwxab" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/subgraph/">subgraph</a></li></ul>
@@ -528,7 +612,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/docker在测试中的作用/" data-id="cjqjh1gu4000gp8o0mebgcgtc" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/docker在测试中的作用/" data-id="cjqnjlouz000qn8o0eljxmqm2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -592,7 +676,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjqjh1gug000yp8o08sdukomo" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/03/java基础：入职华为前的重启/" data-id="cjqnjlovc0015n8o0r9bnfl91" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
@@ -729,7 +813,7 @@ RUN go build
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjqjh1gva001yp8o02j85os1y" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/11/基于容器的开发/" data-id="cjqnjlow00021n8o0zfk6uk1q" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -806,102 +890,10 @@ type PoolChan chan TaskChan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjqjh1gu9000mp8o0pte56kjr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/22/goroutine与工作池/" data-id="cjqnjlov2000vn8o0p687lf9d" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/线程/">线程</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cayley原理2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/08/20/cayley原理2/" class="article-date">
-  <time datetime="2018-08-20T09:25:00.000Z" itemprop="datePublished">2018-08-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/20/cayley原理2/">cayley原理2</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="cayley查询过程"><a href="#cayley查询过程" class="headerlink" title="cayley查询过程"></a>cayley查询过程</h2><p>cayley的查询过程相当复杂 下面是我个人的学习结果 仅仅是个人看法 无法保证绝对正确<br><img src="http://static.zybuluo.com/gzm1997/no1a9uh8euf17s9v1hm9k9ou/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820172126.png" alt="微信图片_20180820172126.png-16.9kB"></p>
-<hr>
-<h2 id="构造态射数组"><a href="#构造态射数组" class="headerlink" title="构造态射数组"></a>构造态射数组</h2><p>在cayley中的查询一般我们都是构造一个path结构体实例 例如查询从A出发 经过节点12 可以达到什么节点</p>
-<pre><code>p := cayley.StartPath(store, quad.String(&quot;A&quot;)).Out(quad.Int(12))
-</code></pre><p>上面的语句实质上返回一个path实例 就是p 对于我们用来查询的结构path<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Path <span class="keyword">struct</span> &#123;</span><br><span class="line">	stack       []morphism</span><br><span class="line">	qs          graph.QuadStore <span class="comment">// Optionally. A nil qs is equivalent to a morphism.</span></span><br><span class="line">	baseContext pathContext</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>上面有一个重要的字段</p>
-<pre><code>stack       []morphism
-</code></pre><p><strong>morphism态射</strong>在范畴论中就是一个函数变换的抽象过程 cayley中的态射我们可以理解是我们每一个out int has等等指向下一个节点迭代的函数封装 我们每一个指向下一个的迭代(in out等)都转换为一个morphism态射 然后存在path中的stack<strong>态射数组</strong></p>
-<blockquote>
-<p>这个stack存储着表示我们查询的每一个划分(out in has等等)的态射</p>
-</blockquote>
-<p>每一个态射在cayley中的定义<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> morphism <span class="keyword">struct</span> &#123;</span><br><span class="line">	IsTag    <span class="keyword">bool</span></span><br><span class="line">	Reversal <span class="function"><span class="keyword">func</span><span class="params">(*pathContext)</span> <span class="params">(morphism, *pathContext)</span></span></span><br><span class="line"><span class="function">	<span class="title">Apply</span>    <span class="title">applyMorphism</span></span></span><br><span class="line"><span class="function">	<span class="title">tags</span>     []<span class="title">string</span></span></span><br><span class="line"><span class="function">&#125;</span></span><br></pre></td></tr></table></figure></p>
-<ul>
-<li>其中Reversal返回的态射是一个反向的态射(比如out的反向态射就是in) 这就是cayley实现无向图的原因 每个态射都包含一个它的反向态射</li>
-<li>Apply为执行这个态射的具体函数 这个函数返回值中得到的shape中就表示了执行态射后得到的节点</li>
-</ul>
-<p>举一个简答的例子 也是上面那个例子</p>
-<pre><code>p := cayley.StartPath(store, quad.String(&quot;A&quot;)).Out(quad.Int(12))
-</code></pre><p>上面这条查询语句在声明了一个path结构体的同时 也构造出我们上面所说的<strong>态射数组</strong><br>下面的绿色大框即为我们的态射数组stack 两个蓝色框即为我们数组中的两个态射 都是morphism结构体 但是我们可以看红色框框 他们的apply这个函数是不一样的 一个是isMorphism 一个outMorphism</p>
-<p><img src="http://static.zybuluo.com/gzm1997/76y9vn6l45cx30d3w747rpy2/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820155549.png" alt="微信图片_20180820155549.png-45.6kB"></p>
-<p>我们可以很容易理解为什么有outMorphism态射 但是不能理解为什么有isMorphism这个态射 其实isMorphism是初始化的态射</p>
-<hr>
-<h2 id="构造shape"><a href="#构造shape" class="headerlink" title="构造shape"></a>构造shape</h2><p>shape顾名思义就是我们查询路径的一种表现形式 表示了我们使用path查询始末的一条抽象路径 如上面的查询抽象的一个shape就是</p>
-<pre><code>A -&gt; 12 -&gt;
-</code></pre><p>shape在cayley中只是一个接口 但凡实现了这个接口中的方法的结构体都是shape 具体的形式非常多样和复杂 我们这里不做详细研究 shape接口定义如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Shape represent a query tree shape.</span></span><br><span class="line"><span class="keyword">type</span> Shape <span class="keyword">interface</span> &#123;</span><br><span class="line">	<span class="comment">// BuildIterator constructs an iterator tree from a given shapes and binds it to QuadStore.</span></span><br><span class="line">	BuildIterator(qs graph.QuadStore) graph.Iterator</span><br><span class="line">	<span class="comment">// Optimize runs an optimization pass over a query shape.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// It returns a bool that indicates if shape was replaced and should always return a copy of shape in this case.</span></span><br><span class="line">	<span class="comment">// In case no optimizations were made, it returns the same unmodified shape.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// If Optimizer is specified, it will be used instead of default optimizations.</span></span><br><span class="line">	Optimize(r Optimizer) (Shape, <span class="keyword">bool</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>一个具体的shape的例子 可见shape的具体类型和机构是很多样的 没必要具体研究<br><img src="http://static.zybuluo.com/gzm1997/bamzi6zpilvq6sha5khhxro8/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162647.png" alt="微信图片_20180820162647.png-31.5kB"></p>
-<p>可以看到下面 随着态射一个一个被执行 我们的到的构造出来的shape也是变化的 每一次态射之后的到的shape都作为参数传入下一个被执行的态射函数 shape不断积累 不断拓张 最终形成我们需要的查询路径<br><img src="http://static.zybuluo.com/gzm1997/2x1c3zt37b32j3u8st294mu5/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180820162145.png" alt="微信图片_20180820162145.png-17.3kB"></p>
-<p>构造shape部分还包含了大量的shape优化 这部分复杂而内容很多 这里不展开</p>
-<hr>
-<h2 id="构造迭代器和迭代链"><a href="#构造迭代器和迭代链" class="headerlink" title="构造迭代器和迭代链"></a>构造迭代器和迭代链</h2><p><strong>Iterator迭代器</strong>这个概念我们可以理解只负责某一部分计算工作的组件 cayley的查询设计是由若干个迭代器<strong>嵌套</strong>或者<strong>依次排列</strong>组合成的 呈现一个<strong>分布式结构</strong> 组合成的最终迭代器叫做<strong>IterateChain迭代器链</strong> 跟上面的shape一样 迭代的种类也是多种多样的 在这个分布式结构中的迭代器种类也不是都是类型一样的 所以宏观上我们不必关系具体使用了何种迭代器</p>
-<p>cayley中对于迭代器的声明也是一个接口 在cayley中但凡实现了这个接口中所有方法的结构体我们都统称为迭代器Iterator</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Iterator <span class="keyword">interface</span> &#123;</span><br><span class="line">	String() <span class="keyword">string</span></span><br><span class="line">	Tagger() *Tagger</span><br><span class="line">	TagResults(<span class="keyword">map</span>[<span class="keyword">string</span>]Value)</span><br><span class="line">	Result() Value</span><br><span class="line">	Next(ctx context.Context) <span class="keyword">bool</span></span><br><span class="line">	NextPath(ctx context.Context) <span class="keyword">bool</span></span><br><span class="line">	Contains(ctx context.Context, v Value) <span class="keyword">bool</span></span><br><span class="line">	Err() error</span><br><span class="line">	Reset()</span><br><span class="line">	Clone() Iterator</span><br><span class="line">	Stats() IteratorStats</span><br><span class="line">	Size() (<span class="keyword">int64</span>, <span class="keyword">bool</span>)</span><br><span class="line">	Type() Type</span><br><span class="line">	Optimize() (Iterator, <span class="keyword">bool</span>)</span><br><span class="line">	SubIterators() []Iterator</span><br><span class="line">	Close() error</span><br><span class="line">	UID() <span class="keyword">uint64</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面最重要的迭代器方法就是</p>
-<ul>
-<li>Result() Value</li>
-<li>Next(ctx context.Context) bool</li>
-</ul>
-<p>Next方法被这个迭代器用来执行内嵌在它自己内部的另一个迭代器 Result这个函数用来获取执行结果</p>
-<p>那么我们会很好奇迭代器这么抽象是怎样最终转化为mongodb的查询语句的呢？因为在cayley中使用的mongodb连接第三方包就是mgo.v2</p>
-<p>其实我们知道迭代是一层一层嵌套的 那么我们可以看一下最底层的迭代器的结构 最底层的迭代器如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Iterator <span class="keyword">struct</span> &#123;</span><br><span class="line">	uid        <span class="keyword">uint64</span></span><br><span class="line">	tags       graph.Tagger</span><br><span class="line">	qs         *QuadStore</span><br><span class="line">	collection <span class="keyword">string</span></span><br><span class="line">	limit      <span class="keyword">int64</span></span><br><span class="line">	constraint []FieldFilter</span><br><span class="line">	links      []Linkage <span class="comment">// used in Contains</span></span><br><span class="line"></span><br><span class="line">	iter   DocIterator</span><br><span class="line">	result graph.Value</span><br><span class="line">	size   <span class="keyword">int64</span></span><br><span class="line">	err    error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>这个迭代是位于cayley源代码中的nosql\iterator.go中声明的迭代器 其中我们可以看到它包含一个字段</p>
-<pre><code>constraint []FieldFilter
-</code></pre><p>FieldFilter在cayley定义如下<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// FieldFilter represents a single field comparison operation.</span></span><br><span class="line"><span class="keyword">type</span> FieldFilter <span class="keyword">struct</span> &#123;</span><br><span class="line">	Path   []<span class="keyword">string</span> <span class="comment">// path is a path to specific field in the document</span></span><br><span class="line">	Filter FilterOp <span class="comment">// comparison operation</span></span><br><span class="line">	Value  Value    <span class="comment">// value that will be compared with field of the document</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>Filter FilterO是一个用来表示比较的字段 有</p>
-<ul>
-<li>Equal</li>
-<li>NotEqual</li>
-<li>GT</li>
-<li>GTE</li>
-<li>LT</li>
-<li>LTE</li>
-</ul>
-<p>Value  Value就是存储的节点值</p>
-<p>语义上 上面这个结构体可以根据比较大小的操作符FilterOp和它的值value 来转化为在mongodb中对图的具体某个节点的查询</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/20/cayley原理2/" data-id="cjqjh1gtw0009p8o0f4mrawq2" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cayley/">cayley</a></li></ul>
 
     </footer>
   </div>
@@ -928,7 +920,7 @@ type PoolChan chan TaskChan
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AVL树/">AVL树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/subgraph/">subgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图谱/">图谱</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AVL树/">AVL树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HashMap/">HashMap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORM/">ORM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aiohttp/">aiohttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/async/">async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/backend/">backend</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beego/">beego</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cayley/">cayley</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookies/">cookies</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cors/">cors</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/database/">database</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-web/">deep web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deploy/">deploy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dgraph/">dgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask深入学习/">flask深入学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/graph/">graph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gremlin/">gremlin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hugegraph/">hugegraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mux/">mux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package/">package</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/">rabbitMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/requests/">requests</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/servlet/">servlet</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/session/">session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/subgraph/">subgraph</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tomcat/">tomcat</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/">web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图数据库/">图数据库</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图算法/">图算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图谱/">图谱</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/软件开发生命周期/">软件开发生命周期</a></li></ul>
     </div>
   </div>
 
@@ -938,7 +930,7 @@ type PoolChan chan TaskChan
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/AVL树/" style="font-size: 10px;">AVL树</a> <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 16px;">aiohttp</a> <a href="/tags/async/" style="font-size: 14px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12px;">beego</a> <a href="/tags/cayley/" style="font-size: 16px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 14px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 12px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/gremlin/" style="font-size: 10px;">gremlin</a> <a href="/tags/hugegraph/" style="font-size: 10px;">hugegraph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 18px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 16px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12px;">sqlalchemy</a> <a href="/tags/subgraph/" style="font-size: 10px;">subgraph</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 12px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/图谱/" style="font-size: 10px;">图谱</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/红黑树/" style="font-size: 10px;">红黑树</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
+      <a href="/tags/AVL树/" style="font-size: 10px;">AVL树</a> <a href="/tags/HashMap/" style="font-size: 10px;">HashMap</a> <a href="/tags/ORM/" style="font-size: 10px;">ORM</a> <a href="/tags/aiohttp/" style="font-size: 17.5px;">aiohttp</a> <a href="/tags/async/" style="font-size: 15px;">async</a> <a href="/tags/backend/" style="font-size: 10px;">backend</a> <a href="/tags/beego/" style="font-size: 12.5px;">beego</a> <a href="/tags/cayley/" style="font-size: 17.5px;">cayley</a> <a href="/tags/cookies/" style="font-size: 10px;">cookies</a> <a href="/tags/cors/" style="font-size: 10px;">cors</a> <a href="/tags/database/" style="font-size: 15px;">database</a> <a href="/tags/deep-web/" style="font-size: 10px;">deep web</a> <a href="/tags/deploy/" style="font-size: 10px;">deploy</a> <a href="/tags/dgraph/" style="font-size: 10px;">dgraph</a> <a href="/tags/docker/" style="font-size: 12.5px;">docker</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/flask深入学习/" style="font-size: 10px;">flask深入学习</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/go/" style="font-size: 20px;">go</a> <a href="/tags/graph/" style="font-size: 10px;">graph</a> <a href="/tags/gremlin/" style="font-size: 10px;">gremlin</a> <a href="/tags/hugegraph/" style="font-size: 10px;">hugegraph</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/java/" style="font-size: 20px;">java</a> <a href="/tags/mongodb/" style="font-size: 10px;">mongodb</a> <a href="/tags/mux/" style="font-size: 10px;">mux</a> <a href="/tags/mysql/" style="font-size: 17.5px;">mysql</a> <a href="/tags/package/" style="font-size: 10px;">package</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rabbitMQ/" style="font-size: 10px;">rabbitMQ</a> <a href="/tags/requests/" style="font-size: 10px;">requests</a> <a href="/tags/servlet/" style="font-size: 10px;">servlet</a> <a href="/tags/session/" style="font-size: 12.5px;">session</a> <a href="/tags/socket/" style="font-size: 10px;">socket</a> <a href="/tags/sqlalchemy/" style="font-size: 12.5px;">sqlalchemy</a> <a href="/tags/subgraph/" style="font-size: 10px;">subgraph</a> <a href="/tags/tomcat/" style="font-size: 10px;">tomcat</a> <a href="/tags/ubuntu/" style="font-size: 10px;">ubuntu</a> <a href="/tags/web/" style="font-size: 10px;">web</a> <a href="/tags/图数据库/" style="font-size: 12.5px;">图数据库</a> <a href="/tags/图算法/" style="font-size: 10px;">图算法</a> <a href="/tags/图谱/" style="font-size: 10px;">图谱</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a> <a href="/tags/红黑树/" style="font-size: 12.5px;">红黑树</a> <a href="/tags/线程/" style="font-size: 10px;">线程</a> <a href="/tags/软件开发生命周期/" style="font-size: 10px;">软件开发生命周期</a>
     </div>
   </div>
 
@@ -960,6 +952,10 @@ type PoolChan chan TaskChan
       <ul>
         
           <li>
+            <a href="/2019/01/08/java基础4：HashMap/">java基础4：HashMap</a>
+          </li>
+        
+          <li>
             <a href="/2019/01/05/java基础3：红黑树和AVL树/">java基础3：红黑树和AVL树</a>
           </li>
         
@@ -973,10 +969,6 @@ type PoolChan chan TaskChan
         
           <li>
             <a href="/2018/12/03/暑假学习总结/">暑假学习总结</a>
-          </li>
-        
-          <li>
-            <a href="/2018/12/03/subgraph概况/">subgraph概况</a>
           </li>
         
       </ul>
